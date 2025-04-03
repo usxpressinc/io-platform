@@ -1,0 +1,37 @@
+---
+# yamllint disable rule:line-length
+name: CI
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MASTER_BRANCH: master
+
+jobs:
+  build:
+    name: Build Image and Push to Octo
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Artifact 📦
+        uses: variant-inc/actions-python@feature/RLA-29-api-authentication---python-proxy
+        with:
+          python-version: 3.13
+          ecr_repository: demo/python-demo-poc
+
+      - name: Release 🛸
+        uses: variant-inc/actions-octopus@v3
+        with:
+          deploy_yaml_dir: .octopus/deploy

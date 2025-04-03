@@ -1,0 +1,22 @@
+---
+name: python-demo-poc
+octopus:
+  space: USXpress
+  group: demo
+tags:
+  owner: Vibin Daniel
+  team: Arch
+  purpose: DX for POC Apps
+api:
+  service:
+    targetPort: 8080
+  configVars:
+    HIGHWAY_URL: https://staging.highway.com
+  secretVars:
+    HIGHWAY_API_KEY: ''
+  routes:
+    subdomains:
+      - type: api
+        product: customers
+    public:
+      enabled: true
