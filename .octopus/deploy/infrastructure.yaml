@@ -13,12 +13,12 @@ api:
   configVars:
     HIGHWAY_URL: https://staging.highway.com
     NORA_GOOGLE_MAPS_KML: https://www.google.com/maps/d/kml?forcekml=1&mid=1iNsKmiW5tueDvtslqiSiKf4XoNrnyVk
-    NORA_MILES_JOB: 100
   secretVars:
     HIGHWAY_API_KEY: ''
   routes:
     subdomains:
       - type: api
-        product: customers
+        app: poc
+        product: demo
     public:
       enabled: true

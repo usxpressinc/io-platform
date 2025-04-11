@@ -25,4 +25,3 @@ class Settings(BaseSettings):
     Lea_HighwayApiKey: str = Field(alias="HIGHWAY_API_KEY")
 
     Nora_GoogleMapsKml: str = Field(alias="NORA_GOOGLE_MAPS_KML")
-    Nora_MilesFromJob: float = Field(alias="NORA_MILES_JOB")

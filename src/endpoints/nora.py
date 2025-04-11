@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class Job(BaseModel):
     name: str
-    description: str
+    description: str | None = None
 
 
 class JobLookupResponse(BaseModel):
@@ -30,6 +30,7 @@ class JobLookupResponse(BaseModel):
 class JobLookupRequest(BaseModel):
     city: str
     state: str
+    distanceFromJob: int = 0
 
 
 class JobCoords(BaseModel):
@@ -37,9 +38,7 @@ class JobCoords(BaseModel):
     lon: float
 
 
-class JobLocation(BaseModel):
-    name: str
-    description: str
+class JobLocation(Job):
     coords: list[JobCoords]
 
 
@@ -61,41 +60,45 @@ def parse_geometries(placemark: Placemark):
     geom = placemark.geometry
     if isinstance(geom, geometry.Point):
         for _ in range(5):
-            coords.append(JobCoords(lat=geom.x, lon=geom.y))
+            coords.append(JobCoords(lat=geom.y, lon=geom.x))
     elif isinstance(geom, geometry.LineString) or isinstance(
         geom, geometry.LinearRing
     ):
         for coordinates in geom.coords:
-            coords.append(JobCoords(lat=coordinates[0], lon=coordinates[1]))
+            coords.append(JobCoords(lat=coordinates[1], lon=coordinates[0]))
     elif isinstance(geom, geometry.Polygon):
         for coordinates in geom.exterior.coords:
-            coords.append(JobCoords(lat=coordinates[0], lon=coordinates[1]))
+            coords.append(JobCoords(lat=coordinates[1], lon=coordinates[0]))
         for interior in geom.interiors:
             for coordinates in interior.coords:
-                coords.append(JobCoords(lat=coordinates[0], lon=coordinates[1]))
-    elif isinstance(geom, geometry.MultiGeometry):
+                coords.append(JobCoords(lat=coordinates[1], lon=coordinates[0]))
+    elif isinstance(geom, geometry.MultiPolygon):
         for g in geom.geoms:
-            coords.append(JobCoords(lat=g.x, lon=g.y))
+            for coordinates in g.exterior.coords:
+                coords.append(JobCoords(lat=coordinates[1], lon=coordinates[0]))
+            for interior in g.interiors:
+                for coordinates in interior.coords:
+                    coords.append(
+                        JobCoords(lat=coordinates[1], lon=coordinates[0])
+                    )
+            # print(g.y, g.x)
+            # coords.append(JobCoords(lat=g.y, lon=g.x))
     return coords
 
 
 def extract_polygons_from_kml(kml_str):
     k = kml.KML.from_string(kml_str)
-    # logger.info(kml_str)
     polygons: list[JobLocation] = []
 
-    try:
-        placemarks: list[Placemark] = list(find_all(k, of_type=Placemark))
-        for p in placemarks:
-            coords = parse_geometries(p)
+    placemarks: list[Placemark] = list(find_all(k, of_type=Placemark))
+    for p in placemarks:
+        if "closed" in p.name.lower():
+            continue
+        coords = parse_geometries(p)
 
-            polygons.append(
-                JobLocation(
-                    name=p.name, description=p.description, coords=coords
-                )
-            )
-    except Exception as e:
-        logger.error(repr(e))
+        polygons.append(
+            JobLocation(name=p.name, description=p.description, coords=coords)
+        )
     return polygons
 
 
@@ -103,33 +106,37 @@ def extract_polygons_from_kml(kml_str):
 
 
 def get_jobs_point_against_polygons(
-    polygons: list[JobLocation], latitude: float, longitude: float
+    polygons: list[JobLocation],
+    latitude: float,
+    longitude: float,
+    distanceFromJob: int,
 ) -> list[Job]:
     transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
     x, y = transformer.transform(longitude, latitude)
     point = Point(x, y)
 
+    logger.info("Lat, Long is %s %s", latitude, longitude)
+
     jobs: list[Job] = []
 
     for i, poly in enumerate(polygons):
-        print(poly.name)
         coords = [transformer.transform(p.lon, p.lat) for p in poly.coords]
         metric_polygon = Polygon(coords)
 
         good_job = False
         if metric_polygon.contains(point):
-            logger.info("Point is inside polygon %s", i)
+            logger.info("Point %s is inside polygon %s", poly.name, i)
             good_job = True
         else:
-            distance = point.distance(metric_polygon)
-            if distance * 0.000621371 <= settings.Nora_MilesFromJob:
+            distance = point.distance(metric_polygon) * 0.000621371
+            if distance <= distanceFromJob:
                 logger.info(
-                    f"Point is within {distance:.2f} meters of polygon {i}"
+                    f"Job {poly.name} is within {distance:.2f} miles of polygon {i}"
                 )
                 good_job = True
             else:
                 logger.warning(
-                    f"Point is {distance:.2f} meters away from polygon {i}"
+                    f"Job {poly.name} is {distance:.2f} miles away from polygon {i}"
                 )
         if good_job:
             jobs.append(Job(name=poly.name, description=poly.description))
@@ -154,7 +161,10 @@ def lookup_jobs(
         polygons = extract_polygons_from_kml(linked_kml_str)
         data = geoservices.get_location_match(item.city, item.state)
         jobs = get_jobs_point_against_polygons(
-            polygons, data["Match"]["X"], data["Match"]["Y"]
+            polygons=polygons,
+            latitude=data["Match"]["Y"],
+            longitude=data["Match"]["X"],
+            distanceFromJob=item.distanceFromJob,
         )
         return JobLookupResponse(jobs=jobs)
     except Exception as e:

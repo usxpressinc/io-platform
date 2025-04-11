@@ -5,3 +5,4 @@ rules:
   line-length:
     ignore:
       - configs/
+      - .octopus/deploy
