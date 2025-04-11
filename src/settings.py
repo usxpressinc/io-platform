@@ -21,5 +21,8 @@ class Settings(BaseSettings):
     Host: str = Field("*", alias="HOST")
     Port: int = Field(8080, alias="PORT")
 
-    HighwayUrl: str = Field(alias="HIGHWAY_URL")
-    HighwayApiKey: str = Field(alias="HIGHWAY_API_KEY")
+    Lea_HighwayUrl: str = Field(alias="HIGHWAY_URL")
+    Lea_HighwayApiKey: str = Field(alias="HIGHWAY_API_KEY")
+
+    Nora_GoogleMapsKml: str = Field(alias="NORA_GOOGLE_MAPS_KML")
+    Nora_MilesFromJob: float = Field(alias="NORA_MILES_JOB")

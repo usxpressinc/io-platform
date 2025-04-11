@@ -15,4 +15,6 @@ services:
       REVISION: 0.10.0
     env_file:
       - .env
-    stop_grace_period: 2s
+    stop_grace_period: 0s
+    volumes:
+      - ./outputs:/outputs

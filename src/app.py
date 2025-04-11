@@ -5,8 +5,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import src.events as events
-from src.endpoints.apis import router as api_router
 from src.endpoints.health import router as health_router
+from src.endpoints.lea import router as lea_router
+from src.endpoints.nora import router as nora_router
 from src.events import shutdown_event
 from src.monitoring import setting_otlp
 from src.settings import Settings
@@ -53,7 +54,8 @@ def create_app() -> FastAPI:
 
     events.otel_providers = setting_otlp(app=app)
 
-    app.include_router(api_router)
+    app.include_router(lea_router)
+    app.include_router(nora_router)
     app.include_router(health_router)
     return app
 

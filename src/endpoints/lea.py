@@ -3,13 +3,12 @@ from typing import Annotated
 from urllib.parse import urljoin
 
 import requests
-from fastapi import APIRouter, HTTPException, Query, Security, status
+from fastapi import HTTPException, Query, Security, status
 from pydantic import BaseModel
 
+from src.endpoints.router import router
 from src.helpers.auth import authenticate_token
 from src.settings import Settings
-
-router = APIRouter(prefix="/api", include_in_schema=True)
 
 settings = Settings()
 logger = logging.getLogger(__name__)
@@ -37,7 +36,7 @@ def get_carrier_validity(
     ## Check whether a carrier is valid using Highway API
     """
     headers = {
-        "Authorization": f"Bearer {settings.HighwayApiKey}",
+        "Authorization": f"Bearer {settings.Lea_HighwayApiKey}",
     }
 
     if dotNumber is not None:
@@ -53,7 +52,7 @@ def get_carrier_validity(
             detail=CarrierResponse(valid=False).model_dump(),
         )
     c_response = requests.get(
-        url=urljoin(settings.HighwayUrl, path), headers=headers
+        url=urljoin(settings.Lea_HighwayUrl, path), headers=headers
     )
     carrier_json = c_response.json()
     if not c_response.ok:

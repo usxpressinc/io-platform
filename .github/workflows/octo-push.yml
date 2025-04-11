@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Artifact 📦
-        uses: variant-inc/actions-python@feature/RLA-29-api-authentication---python-proxy
+        uses: variant-inc/actions-python@v2
         with:
           python-version: 3.13
           ecr_repository: demo/python-demo-poc
