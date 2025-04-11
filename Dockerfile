@@ -22,10 +22,16 @@ FROM base AS runtime
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+RUN groupadd -g 1000 app \
+  && useradd -rm -d /home/app -g 1000 -u 1000 app \
+  && usermod -aG app app
+
 WORKDIR /app
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY . /app
+
+USER 1000:1000
 
 CMD ["python3", "/app/main.py"]
