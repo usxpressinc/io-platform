@@ -144,7 +144,7 @@ def get_jobs_point_against_polygons(
 
 
 @router.post(
-    "/v1/nora/jobs/lookup",
+    "/lea/jobs/lookup",
     tags=["nora"],
     summary="Get list of jobs for an endpoint",
     response_description="Return HTTP Status Code 200 (OK)",

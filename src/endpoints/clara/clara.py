@@ -20,7 +20,7 @@ class CarrierResponse(BaseModel):
 
 
 @router.get(
-    "/v1/carriers",
+    "/clara/carriers",
     tags=["highway"],
     summary="Check whether a carrier is valid using Highway API",
     response_description="Return HTTP Status Code 200 (OK)",

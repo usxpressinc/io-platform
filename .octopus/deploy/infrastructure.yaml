@@ -15,6 +15,9 @@ api:
     NORA_GOOGLE_MAPS_KML: https://www.google.com/maps/d/kml?forcekml=1&mid=1iNsKmiW5tueDvtslqiSiKf4XoNrnyVk
   secretVars:
     HIGHWAY_API_KEY: ''
+  global:
+    upstream:
+      perTryTimeout: 10s
   routes:
     subdomains:
       - type: api
