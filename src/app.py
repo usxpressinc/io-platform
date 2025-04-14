@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import src.events as events
 from src.endpoints.health import router as health_router
-from endpoints.router import router as endpoints_router
+from src.endpoints.router import routers as endpoints_routers
 from src.events import shutdown_event
 from src.monitoring import setting_otlp
 from src.settings import Settings
@@ -53,7 +53,8 @@ def create_app() -> FastAPI:
 
     events.otel_providers = setting_otlp(app=app)
 
-    app.include_router(endpoints_router)
+    for r in endpoints_routers:
+        app.include_router(r)
     app.include_router(health_router)
     return app
 

@@ -1,3 +1,3 @@
-from fastapi import APIRouter
+from .lea.router import router as lea_router
 
-router = APIRouter(prefix="/api", include_in_schema=True)
+routers = [lea_router]
