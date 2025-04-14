@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, status
+from fastapi import APIRouter, Response, Security, status
 
 from src.helpers.auth import authenticate_token
 
@@ -16,13 +16,17 @@ router = APIRouter(prefix="/api/clara", include_in_schema=True, tags=["clara"])
 )
 def get_carrier_validity(
     item: carrier_vetting_models.CarrierValidityRequest,
+    response: Response,
     authenticated: bool = Security(authenticate_token, scopes=["clara"]),
 ) -> carrier_vetting_models.CarrierValidityResponse:
     """
     ## Check whether a carrier is valid using Highway API
     """
-    return carrier_vetting_service.get_carrier_validity(
+    result = carrier_vetting_service.get_carrier_validity(
         dotNumber=item.dotNumber,
         mcNumber=item.mcNumber,
         brokerage_order_id=item.brokerageOrderId,
     )
+    if len(result.errors):
+        response.status_code = status.HTTP_400_BAD_REQUEST
+    return result

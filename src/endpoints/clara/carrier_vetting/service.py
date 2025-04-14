@@ -96,6 +96,28 @@ def get_carrier_validity(
     ):
         return models.CarrierValidityResponse(valid=True, errors=[])
 
+    # rules_assessment.overall_result == "partial_pass"
+    if (
+        glom(highway_json, "rules_assessment.overall_result", default="")
+        == "partial_pass"
+    ):
+        order_details = helpers.get_mcleod_order(order_id=brokerage_order_id)
+        mcleod_carrier_validity = helpers.check_mcleod_carrier_qualification(
+            carrier_id=mcleod_carrier_json[0]["id"],
+            movement=order_details["curr_movement_id"],
+        )
+        if not mcleod_carrier_validity:
+            return models.CarrierValidityResponse(
+                valid=False,
+                errors=[errors.SellAltLoad],
+                failedBy=models.FailedBy(
+                    fields=[
+                        "rules_assessment.overall_result",
+                    ],
+                    endpoint="highway",
+                ),
+            )
+
     # rules_assessment.overall_result == "incomplete"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")

@@ -74,9 +74,7 @@ def get_mcleod_carrier_details(
         search = f"drsPayee.icc_number={mcNumber}"
     c_response = requests.get(
         url=urljoin(
-            url=urljoin(
-                settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
-            ),
+            settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
         ),
         headers=headers,
     )
