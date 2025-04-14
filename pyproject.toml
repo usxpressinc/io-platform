@@ -19,6 +19,7 @@ python-json-logger = "^3.2.1"
 fastkml = "^1.1.0"
 pyproj = "^3.7.1"
 shapely = "^2.1.0"
+glom = "^24.11.0"
 
 
 [tool.black]

@@ -21,7 +21,11 @@ class Settings(BaseSettings):
     Host: str = Field("*", alias="HOST")
     Port: int = Field(8080, alias="PORT")
 
-    Lea_HighwayUrl: str = Field(alias="HIGHWAY_URL")
-    Lea_HighwayApiKey: str = Field(alias="HIGHWAY_API_KEY")
+    Clara_HighwayUrl: str = Field(alias="HIGHWAY_URL")
+    Clara_HighwayApiKey: str = Field(alias="HIGHWAY_API_KEY")
+
+    Clara_McleodUrl: str = Field(alias="MCLEOD_BASE_URL")
+    Clara_McleodAuth: str = Field(alias="MCLEOD_AUTH")
+    Clara_McleodCompany: str = Field(alias="MCLEOD_COMPANY")
 
     Nora_GoogleMapsKml: str = Field(alias="NORA_GOOGLE_MAPS_KML")
