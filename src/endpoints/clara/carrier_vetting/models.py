@@ -1,12 +1,18 @@
 from pydantic import BaseModel
 
 
-class CarrierValidityResponse(BaseModel):
-    valid: bool = False
-    errors: list[str] = []
+class FailedBy(BaseModel):
+    fields: list[str] = []
+    endpoint: str
 
 
 class CarrierValidityRequest(BaseModel):
-    dotNumber: int | None = None
-    mcNumber: int | None = None
-    movementNumber: int | None = None
+    dotNumber: str | None = None
+    mcNumber: str | None = None
+    brokerageOrderId: str | None = None
+
+
+class CarrierValidityResponse(BaseModel):
+    valid: bool = False
+    errors: list[str] = []
+    failedBy: FailedBy | None = None

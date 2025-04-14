@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_highway_details(
-    dotNumber: int | None = None,
-    mcNumber: int | None = None,
+    dotNumber: str | None = None,
+    mcNumber: str | None = None,
 ):
     """
     ## Check whether a carrier is valid using Highway API
@@ -33,7 +33,7 @@ def get_highway_details(
         )
     if mcNumber:
         logger.info("mcNumber is not None")
-        path = f"/core/connect/external_api/v1/carriers/{mcNumber}"
+        path = f"/core/connect/external_api/v1/carriers//MC/{mcNumber}/by_identifier"
 
     if path is None:
         raise HTTPException(
@@ -55,8 +55,8 @@ def get_highway_details(
 
 
 def get_mcleod_carrier_details(
-    dotNumber: int | None = None,
-    mcNumber: int | None = None,
+    dotNumber: str | None = None,
+    mcNumber: str | None = None,
 ):
     """
     ## Check whether a carrier is valid using Mcleod API
@@ -73,7 +73,11 @@ def get_mcleod_carrier_details(
         logger.info("mcNumber is not None")
         search = f"drsPayee.icc_number={mcNumber}"
     c_response = requests.get(
-        url=urljoin(settings.Clara_McleodUrl + "/", f"carriers/search?{search}".lstrip("/")),
+        url=urljoin(
+            url=urljoin(
+                settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
+            ),
+        ),
         headers=headers,
     )
     logger.info("Carrier Json is %s", c_response.text)
@@ -82,18 +86,48 @@ def get_mcleod_carrier_details(
         logger.error("Error thrown %s", repr(carrier_json))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(valid=False, errors=["Mcleod id down"]).model_dump(),
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["Mcleod id down"]
+            ).model_dump(),
         )
-    if carrier_json == None:
+    if carrier_json is None:
         logger.error("Error thrown %s", repr(carrier_json))
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(valid=False, errors=["Mcleod couldn't find carrier"]).model_dump(),
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["Mcleod couldn't find carrier"]
+            ).model_dump(),
         )
     return carrier_json
 
 
-def check_mcleod_carrier_qualification(carrier_id: str, movement: int) -> bool:
+def get_mcleod_order(order_id: str):
+    """
+    ## Check whether a carrier is valid using Mcleod API
+    """
+    headers = {
+        "Authorization": settings.Clara_McleodAuth,
+        "Accept": "application/json",
+        "X-com.mcleodsoftware.CompanyID": settings.Clara_McleodCompany,
+    }
+    c_response = requests.get(
+        url=urljoin(settings.Clara_McleodUrl, f"/ws/api/orders/{order_id}"),
+        headers=headers,
+    )
+    result = c_response.json()
+    logger.info("Mcleod Order is %s", result)
+    if not c_response.ok:
+        logger.error("Error thrown %s", repr(result))
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["Mcleod id down"]
+            ).model_dump(),
+        )
+    return result
+
+
+def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
     """
     ## Check whether a carrier is valid using Mcleod API
     """
@@ -104,7 +138,9 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: int) -> bool:
     }
     req = PreparedRequest()
     req.prepare_url(
-        url=urljoin(settings.Clara_McleodUrl + "/", "carriers/checkQualification"),
+        url=urljoin(
+            settings.Clara_McleodUrl, "/ws/api/carriers/checkQualification"
+        ),
         params={"carrier": carrier_id, "movement": movement},
     )
     c_response = requests.get(url=req.url, headers=headers)
@@ -114,6 +150,8 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: int) -> bool:
         logger.error("Error thrown %s", repr(result))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(valid=False, errors=["Mcleod id down"]).model_dump(),
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["Mcleod id down"]
+            ).model_dump(),
         )
     return result.lower() == "true"

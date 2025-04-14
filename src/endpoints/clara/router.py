@@ -24,5 +24,5 @@ def get_carrier_validity(
     return carrier_vetting_service.get_carrier_validity(
         dotNumber=item.dotNumber,
         mcNumber=item.mcNumber,
-        movementNumber=item.movementNumber,
+        brokerage_order_id=item.brokerageOrderId,
     )
