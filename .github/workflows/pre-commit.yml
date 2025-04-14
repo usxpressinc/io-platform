@@ -1,0 +1,41 @@
+---
+# yamllint disable rule:line-length
+name: Pre-Commit
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preCommit:
+    permissions:
+      id-token: write
+      contents: read
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: variant-inc/actions-setup@v2
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: pre-commit dependencies
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+          sudo apt install shellcheck
+
+          SHFFMT_VERSION="$(curl -sfSL https://api.github.com/repos/mvdan/sh/releases/latest | jq -r '.tag_name')"
+          curl -sfSLo ./shfmt "https://github.com/mvdan/sh/releases/download/$SHFFMT_VERSION/shfmt_${SHFFMT_VERSION}_$(uname)_amd64"
+          chmod +x shfmt
+          mv shfmt $HOME/.local/bin/
+      - uses: pre-commit/action@main

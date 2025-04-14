@@ -1,0 +1,56 @@
+---
+repos:
+  # - repo: local
+  #   hooks:
+  #     - id: requirements
+  #       name: requirements
+  #       entry: bash
+  #       args:
+  #         - -c
+  #         - >-
+  #           poetry export --without-hashes \
+  #             --format=requirements.txt > requirements.txt
+  #       language: system
+  #       files: poetry.lock
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        args: [--config=pyproject.toml]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.2
+    hooks:
+      - id: flake8
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        files: \.(py)$
+        args: [--settings-path=pyproject.toml]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-shebang-scripts-are-executable
+      - id: check-case-conflict
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: shellcheck
+      - id: shfmt
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.44.0
+    hooks:
+      - id: markdownlint
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.2.3
+    hooks:
+      - id: yamlfmt
+        args: [--mapping, '2', --sequence, '4', --offset, '2']
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.36.2
+    hooks:
+      - id: yamllint
+        args: [--format, parsable, --strict]
