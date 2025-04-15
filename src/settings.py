@@ -29,3 +29,5 @@ class Settings(BaseSettings):
     Clara_McleodCompany: str = Field(alias="MCLEOD_COMPANY")
 
     Nora_GoogleMapsKml: str = Field(alias="NORA_GOOGLE_MAPS_KML")
+
+    Email_SendgridKey: str = Field(alias="EMAIL_SendgridKey")

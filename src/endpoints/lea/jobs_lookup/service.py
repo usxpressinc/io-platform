@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 def lookup_jobs(item: models.JobLookupRequest) -> models.JobLookupResponse:
     try:
         linked_kml_href = settings.Nora_GoogleMapsKml
-        linked_kml_str = helpers.download_linked_kml(linked_kml_href)
-        polygons = helpers.extract_polygons_from_kml(linked_kml_str)
+        linked_kml_bytes = helpers.download_linked_kml(linked_kml_href)
+        polygons = helpers.extract_polygons_from_kml(linked_kml_bytes)
         data = get_location_match(item.city, item.state)
         jobs = helpers.get_jobs_point_against_polygons(
             polygons=polygons,
