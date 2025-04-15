@@ -26,6 +26,7 @@ def get_highway_details(
 
     logger.info("dotNumber %s mcNumber %s", dotNumber, mcNumber)
 
+    path = ""
     if dotNumber:
         logger.info("dotNumber is not None")
         path = (
@@ -35,10 +36,13 @@ def get_highway_details(
         logger.info("mcNumber is not None")
         path = f"/core/connect/external_api/v1/carriers//MC/{mcNumber}/by_identifier"
 
-    if path is None:
+    if path:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(valid=False).model_dump(),
+            detail=models.CarrierValidityResponse(
+                valid=False,
+                errors=["dotNumber or mcNumber is empty", "highway"],
+            ).model_dump(),
         )
     c_response = requests.get(
         url=urljoin(settings.Clara_HighwayUrl, path), headers=headers
