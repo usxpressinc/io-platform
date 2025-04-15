@@ -18,6 +18,7 @@ api:
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
+    EMAIL_SendgridKey: ''
   global:
     upstream:
       perTryTimeout: 10s
