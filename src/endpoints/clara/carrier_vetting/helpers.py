@@ -36,7 +36,7 @@ def get_highway_details(
         logger.info("mcNumber is not None")
         path = f"/core/connect/external_api/v1/carriers//MC/{mcNumber}/by_identifier"
 
-    if path:
+    if not path:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=models.CarrierValidityResponse(
