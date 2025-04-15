@@ -60,7 +60,7 @@ def get_carrier_validity(
 
     # Mcleod do_not_dispatch == true
     mcleod_carrier_json = helpers.get_mcleod_carrier_details(
-        dotNumber=dotNumber, mcNumber=mcNumber
+        dotNumber=int(highway_json.get("dot_number", "0"))
     )
     if len(mcleod_carrier_json) == 1:
         if glom(mcleod_carrier_json[0], "drsPayee.no_dispatch", default=False):
@@ -113,6 +113,7 @@ def get_carrier_validity(
                 failedBy=models.FailedBy(
                     fields=[
                         "rules_assessment.overall_result",
+                        "check_mcleod_carrier_qualification",
                     ],
                     endpoint="highway",
                 ),

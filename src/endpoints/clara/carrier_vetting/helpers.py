@@ -44,7 +44,6 @@ def get_highway_details(
         url=urljoin(settings.Clara_HighwayUrl, path), headers=headers
     )
     carrier_json = c_response.json()
-    # logger.info("Carrier Json is %s", carrier_json)
     if not c_response.ok:
         logger.error("Error thrown %s", repr(carrier_json))
         raise HTTPException(
@@ -55,8 +54,7 @@ def get_highway_details(
 
 
 def get_mcleod_carrier_details(
-    dotNumber: str | None = None,
-    mcNumber: str | None = None,
+    dotNumber: int | None = None
 ):
     """
     ## Check whether a carrier is valid using Mcleod API
@@ -66,19 +64,21 @@ def get_mcleod_carrier_details(
         "Accept": "application/json",
         "X-com.mcleodsoftware.CompanyID": settings.Clara_McleodCompany,
     }
-    if dotNumber:
-        logger.info("dotNumber is not None")
-        search = f"drsPayee.dot_number={dotNumber}"
-    if mcNumber:
-        logger.info("mcNumber is not None")
-        search = f"drsPayee.icc_number={mcNumber}"
+    if not dotNumber:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["dotNumber should not be empty from highway API"]
+            ).model_dump(),
+        )
+    logger.info("dotNumber is not None")
+    search = f"drsPayee.dot_number={dotNumber}"
     c_response = requests.get(
         url=urljoin(
             settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
         ),
         headers=headers,
     )
-    logger.info("Carrier Json is %s", c_response.text)
     carrier_json = c_response.json()
     if not c_response.ok:
         logger.error("Error thrown %s", repr(carrier_json))
@@ -103,6 +103,14 @@ def get_mcleod_order(order_id: str):
     """
     ## Check whether a carrier is valid using Mcleod API
     """
+    if not order_id:
+        logger.error("order_id is empty")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["brokerageOrderId should not be empty"]
+            ).model_dump(),
+        )
     headers = {
         "Authorization": settings.Clara_McleodAuth,
         "Accept": "application/json",
@@ -112,16 +120,24 @@ def get_mcleod_order(order_id: str):
         url=urljoin(settings.Clara_McleodUrl, f"/ws/api/orders/{order_id}"),
         headers=headers,
     )
-    result = c_response.json()
-    logger.info("Mcleod Order is %s", result)
+    if not c_response.text:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["brokerageOrderId is invalid"]
+            ).model_dump(),
+        )
+
     if not c_response.ok:
-        logger.error("Error thrown %s", repr(result))
+        logger.error("Error thrown %s", c_response.text)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=models.CarrierValidityResponse(
                 valid=False, errors=["Mcleod id down"]
             ).model_dump(),
         )
+    result = c_response.json()
+    logger.info("Mcleod Order is %s", result)
     return result
 
 
