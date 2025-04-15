@@ -1,5 +1,6 @@
 import logging
 
+import pydash
 from fastapi import HTTPException, status
 from glom import Match, glom
 
@@ -60,8 +61,10 @@ def get_carrier_validity(
 
     # Mcleod do_not_dispatch == true
     mcleod_carrier_json = helpers.get_mcleod_carrier_details(
-        dotNumber=int(highway_json.get("dot_number", "0"))
+        dotNumber=int(pydash.get(highway_json, "dot_number") or 0),
+        mcNumber=int(pydash.get(highway_json, "mc_number") or 0),
     )
+
     if len(mcleod_carrier_json) == 1:
         if glom(mcleod_carrier_json[0], "drsPayee.no_dispatch", default=False):
             return models.CarrierValidityResponse(
@@ -113,6 +116,7 @@ def get_carrier_validity(
                 failedBy=models.FailedBy(
                     fields=[
                         "rules_assessment.overall_result",
+                        "partial_pass",
                         "check_mcleod_carrier_qualification",
                     ],
                     endpoint="highway",
@@ -128,7 +132,8 @@ def get_carrier_validity(
             valid=False,
             errors=[errors.HighwaySetup],
             failedBy=models.FailedBy(
-                fields=["rules_assessment.overall_result"], endpoint="highway"
+                fields=["rules_assessment.overall_result", "incomplete"],
+                endpoint="highway",
             ),
         )
 
@@ -157,6 +162,8 @@ def get_carrier_validity(
                 errors=[errors.ComplianceCheck],
                 failedBy=models.FailedBy(
                     fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
                         "has_no_published_identity_alerts",
                         "has_no_published_identity_theft_alerts",
                     ],
@@ -172,6 +179,8 @@ def get_carrier_validity(
                 errors=[errors.DispatchConnection],
                 failedBy=models.FailedBy(
                     fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
                         "no_active_dispatcher_connections",
                     ],
                     endpoint="highway",
@@ -205,6 +214,8 @@ def get_carrier_validity(
                 errors=[errors.DoNotUse],
                 failedBy=models.FailedBy(
                     fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
                         "authority_assessment.carrier_interstate_authority_check",
                         "authority_assessment.latest_safety_rating",
                         "authority_assessment.carrier_interstate_authority_check",
@@ -228,6 +239,8 @@ def get_carrier_validity(
                 errors=[errors.DispatchConnection],
                 failedBy=models.FailedBy(
                     fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
                         "authority_age_requirement",
                         "has_dot_number",
                         "has_verified_manually_entered_identifier",
@@ -246,7 +259,11 @@ def get_carrier_validity(
                 valid=False,
                 errors=[errors.FmcsaContactChange],
                 failedBy=models.FailedBy(
-                    fields=["no_recent_fmcsa_phone_or_email_change"],
+                    fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
+                        "no_recent_fmcsa_phone_or_email_change",
+                    ],
                     endpoint="highway",
                 ),
             )
@@ -265,6 +282,8 @@ def get_carrier_validity(
                 errors=[errors.HighwayInsuranceUpdate],
                 failedBy=models.FailedBy(
                     fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
                         "new_jersey_auto_liability",
                         "has_vin_if_auto_policy_is_scheduled_autos",
                         "multi_currency_bipd_requirement",
@@ -286,6 +305,8 @@ def get_carrier_validity(
                 errors=[errors.TransferAgent],
                 failedBy=models.FailedBy(
                     fields=[
+                        "rules_assessment.overall_result",
+                        "fail",
                         "has_verified_physical_location_activity",
                         "has_eld_connected_and_active",
                     ],
@@ -351,6 +372,8 @@ def get_carrier_validity(
                     errors=[errors.SellAltLoad],
                     failedBy=models.FailedBy(
                         fields=[
+                            "rules_assessment.overall_result",
+                            "fail",
                             "authority.latest_li_authority.is_bond_surety_on_file",
                             "certifications.all",
                             "certifications.verified.carb_acf",

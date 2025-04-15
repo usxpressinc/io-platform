@@ -43,6 +43,13 @@ def get_highway_details(
     c_response = requests.get(
         url=urljoin(settings.Clara_HighwayUrl, path), headers=headers
     )
+    if not c_response.text:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=models.CarrierValidityResponse(
+                valid=False, errors=["carrier is invalid", "highway"]
+            ).model_dump(),
+        )
     carrier_json = c_response.json()
     if not c_response.ok:
         logger.error("Error thrown %s", repr(carrier_json))
@@ -54,7 +61,8 @@ def get_highway_details(
 
 
 def get_mcleod_carrier_details(
-    dotNumber: int | None = None
+    dotNumber: int | None = None,
+    mcNumber: int | None = None,
 ):
     """
     ## Check whether a carrier is valid using Mcleod API
@@ -64,15 +72,22 @@ def get_mcleod_carrier_details(
         "Accept": "application/json",
         "X-com.mcleodsoftware.CompanyID": settings.Clara_McleodCompany,
     }
-    if not dotNumber:
+    if not (dotNumber or mcNumber):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=models.CarrierValidityResponse(
-                valid=False, errors=["dotNumber should not be empty from highway API"]
+                valid=False,
+                errors=[
+                    "dotNumber or mcNumber should not be empty from highway API"
+                ],
             ).model_dump(),
         )
-    logger.info("dotNumber is not None")
-    search = f"drsPayee.dot_number={dotNumber}"
+    if dotNumber:
+        logger.info("dotNumber is not None")
+        search = f"drsPayee.dot_number={dotNumber}"
+    if mcNumber:
+        logger.info("mcNumber is not None")
+        search = f"drsPayee.icc_number={mcNumber}"
     c_response = requests.get(
         url=urljoin(
             settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
