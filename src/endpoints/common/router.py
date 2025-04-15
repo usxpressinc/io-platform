@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Body, Security, status
-from pydantic import EmailStr
 
 from src.helpers.auth import authenticate_token
 
@@ -18,8 +17,8 @@ router = APIRouter(
     response_model=email_models.SendEmailResponse,
 )
 async def send_email(
-    from_email: EmailStr,
-    to_email: EmailStr,
+    from_email: str,
+    to_email: str,
     subject: str,
     body: str = Body(..., media_type="text/plain"),
     authenticated: bool = Security(authenticate_token, scopes=["common"]),

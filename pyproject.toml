@@ -23,7 +23,6 @@ glom = "^24.11.0"
 lxml = "^5.3.2"
 pydash = "^8.0.5"
 sendgrid = "^6.11.0"
-email-validator = "^2.2.0"
 
 
 [tool.black]

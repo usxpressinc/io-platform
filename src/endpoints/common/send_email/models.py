@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class SendEmailResponse(BaseModel):
@@ -7,6 +7,6 @@ class SendEmailResponse(BaseModel):
 
 class SendEmailRequest(BaseModel):
     body: str
-    from_email: EmailStr
-    to_email: EmailStr
+    from_email: str
+    to_email: str
     subject: str

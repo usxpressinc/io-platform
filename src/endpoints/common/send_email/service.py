@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 def send_email(item: models.SendEmailRequest) -> models.SendEmailResponse:
     sg = sendgrid.SendGridAPIClient(api_key=settings.Email_SendgridKey)
 
+    logger.info(repr(item))
+
     from_email = Email(item.from_email)
     to_email = To(item.to_email)
     subject = item.subject
