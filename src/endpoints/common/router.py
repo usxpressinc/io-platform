@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Security, status
+from fastapi import APIRouter, Security, status
 
 from src.helpers.auth import authenticate_token
 
@@ -17,14 +17,7 @@ router = APIRouter(
     response_model=email_models.SendEmailResponse,
 )
 async def send_email(
-    from_email: str,
-    to_email: str,
-    subject: str,
-    body: str = Body(..., media_type="text/plain"),
+    item: email_models.SendEmailRequest,
     authenticated: bool = Security(authenticate_token, scopes=["common"]),
 ) -> email_models.SendEmailResponse:
-    return email_service.send_email(
-        item=email_models.SendEmailRequest(
-            from_email=from_email, to_email=to_email, subject=subject, body=body
-        )
-    )
+    return email_service.send_email(item=item)
