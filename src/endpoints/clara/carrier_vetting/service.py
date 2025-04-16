@@ -1,7 +1,7 @@
 import logging
 
 import pydash
-from fastapi import HTTPException, status
+from fastapi import status
 from glom import Match, glom
 
 from src.settings import Settings
@@ -29,21 +29,17 @@ def get_carrier_validity(
     if not glom(highway_json, "connection.is_monitored", default=True):
         logger.error("Setup Highway connection.is_monitored")
         return models.CarrierValidityResponse(
-            valid=False,
-            errors=[errors.HighwaySetup],
-            failedBy=models.FailedBy(
-                fields=["connection.is_monitored"], endpoint="highway"
-            ),
+            isValid=False,
+            error=errors.HighwaySetup,
+            failedBy=["connection.is_monitored"],
         )
 
     # connection.status == "do_not_dispatch"
     if glom(highway_json, "connection.status", default="") == "do_not_dispatch":
         return models.CarrierValidityResponse(
-            valid=False,
-            errors=[errors.DoNotUse],
-            failedBy=models.FailedBy(
-                fields=["connection.status"], endpoint="highway"
-            ),
+            isValid=False,
+            error=errors.DoNotUse,
+            failedBy=["connection.status"],
         )
 
     # connection.status == "needs_to_onboard"
@@ -52,11 +48,10 @@ def get_carrier_validity(
         == "needs_to_onboard"
     ):
         return models.CarrierValidityResponse(
-            valid=False,
-            errors=[errors.HighwayConnect],
-            failedBy=models.FailedBy(
-                fields=["connection.status"], endpoint="highway"
-            ),
+            isValid=False,
+            error=errors.HighwayConnect,
+            failedBy=["connection.status"],
+            endpoint="highway",
         )
 
     # Mcleod do_not_dispatch == true
@@ -68,28 +63,22 @@ def get_carrier_validity(
     if len(mcleod_carrier_json) == 1:
         if glom(mcleod_carrier_json[0], "drsPayee.no_dispatch", default=False):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.DoNotUse],
-                failedBy=models.FailedBy(
-                    fields=["drsPayee.no_dispatch"], endpoint="mcleod"
-                ),
+                isValid=False,
+                error=errors.DoNotUse,
+                failedBy=["drsPayee.no_dispatch"],
             )
     elif len(mcleod_carrier_json) > 1:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.McleodManyCarrier].extend(
-                    [x["id"] for x in mcleod_carrier_json]
-                ),
-            ).model_dump(),
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.McleodManyCarrier,
+            failedBy=[x["id"] for x in mcleod_carrier_json],
+            statusCode=status.HTTP_400_BAD_REQUEST,
         )
     else:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=[errors.McleodNoCarrier]
-            ).model_dump(),
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.McleodNoCarrier,
+            statusCode=status.HTTP_502_BAD_GATEWAY,
         )
 
     # rules_assessment.overall_result == "pass"
@@ -97,9 +86,9 @@ def get_carrier_validity(
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "pass"
     ):
-        return models.CarrierValidityResponse(valid=True, errors=[])
+        return models.CarrierValidityResponse(isValid=True)
 
-    # rules_assessment.overall_result == "partial_pass"
+        # rules_assessment.overall_result == "partial_pass"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "partial_pass"
@@ -111,33 +100,27 @@ def get_carrier_validity(
         )
         if not mcleod_carrier_validity:
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.SellAltLoad],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "partial_pass",
-                        "check_mcleod_carrier_qualification",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.SellAltLoad,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "partial_pass",
+                    "check_mcleod_carrier_qualification",
+                ],
             )
 
-    # rules_assessment.overall_result == "incomplete"
+            # rules_assessment.overall_result == "incomplete"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "incomplete"
     ):
         return models.CarrierValidityResponse(
-            valid=False,
-            errors=[errors.HighwaySetup],
-            failedBy=models.FailedBy(
-                fields=["rules_assessment.overall_result", "incomplete"],
-                endpoint="highway",
-            ),
+            isValid=False,
+            error=errors.HighwaySetup,
+            failedBy=["rules_assessment.overall_result", "incomplete"],
         )
 
-    # rules_assessment.overall_result == "fail"
+        # rules_assessment.overall_result == "fail"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "fail"
@@ -158,33 +141,27 @@ def get_carrier_validity(
             ]
         ).issubset(failed_assessments):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.ComplianceCheck],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "has_no_published_identity_alerts",
-                        "has_no_published_identity_theft_alerts",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.ComplianceCheck,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "has_no_published_identity_alerts",
+                    "has_no_published_identity_theft_alerts",
+                ],
             )
 
         if set(["no_active_dispatcher_connections"]).issubset(
             failed_assessments
         ):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.DispatchConnection],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "no_active_dispatcher_connections",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.DispatchConnection,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "no_active_dispatcher_connections",
+                ],
             )
 
         if (
@@ -210,18 +187,15 @@ def get_carrier_validity(
             )
         ):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.DoNotUse],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "authority_assessment.carrier_interstate_authority_check",
-                        "authority_assessment.latest_safety_rating",
-                        "authority_assessment.carrier_interstate_authority_check",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.DoNotUse,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "authority_assessment.carrier_interstate_authority_check",
+                    "authority_assessment.latest_safety_rating",
+                    "authority_assessment.carrier_interstate_authority_check",
+                ],
             )
 
         if set(
@@ -235,37 +209,31 @@ def get_carrier_validity(
             ]
         ).issubset(failed_assessments):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.DispatchConnection],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "authority_age_requirement",
-                        "has_dot_number",
-                        "has_verified_manually_entered_identifier",
-                        "is_authorized_for_property",
-                        "no_active_oos_orders",
-                        "safer_operating_status_active",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.DispatchConnection,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "authority_age_requirement",
+                    "has_dot_number",
+                    "has_verified_manually_entered_identifier",
+                    "is_authorized_for_property",
+                    "no_active_oos_orders",
+                    "safer_operating_status_active",
+                ],
             )
 
         if set(["no_recent_fmcsa_phone_or_email_change"]).issubset(
             failed_assessments
         ):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.FmcsaContactChange],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "no_recent_fmcsa_phone_or_email_change",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.FmcsaContactChange,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "no_recent_fmcsa_phone_or_email_change",
+                ],
             )
 
         if set(
@@ -278,20 +246,17 @@ def get_carrier_validity(
             ]
         ).issubset(failed_assessments):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.HighwayInsuranceUpdate],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "new_jersey_auto_liability",
-                        "has_vin_if_auto_policy_is_scheduled_autos",
-                        "multi_currency_bipd_requirement",
-                        "multi_currency_cargo_requirement",
-                        "multi_currency_general_liability_requirement",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.HighwayInsuranceUpdate,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "new_jersey_auto_liability",
+                    "has_vin_if_auto_policy_is_scheduled_autos",
+                    "multi_currency_bipd_requirement",
+                    "multi_currency_cargo_requirement",
+                    "multi_currency_general_liability_requirement",
+                ],
             )
 
         if set(
@@ -301,20 +266,17 @@ def get_carrier_validity(
             ]
         ).issubset(failed_assessments):
             return models.CarrierValidityResponse(
-                valid=False,
-                errors=[errors.TransferAgent],
-                failedBy=models.FailedBy(
-                    fields=[
-                        "rules_assessment.overall_result",
-                        "fail",
-                        "has_verified_physical_location_activity",
-                        "has_eld_connected_and_active",
-                    ],
-                    endpoint="highway",
-                ),
+                isValid=False,
+                error=errors.TransferAgent,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "has_verified_physical_location_activity",
+                    "has_eld_connected_and_active",
+                ],
             )
 
-        # Call the mcleod api "GET /carriers/checkQualification"
+            # Call the mcleod api "GET /carriers/checkQualification"
         if (
             not glom(
                 highway_json,
@@ -368,21 +330,18 @@ def get_carrier_validity(
             )
             if not mcleod_carrier_validity:
                 return models.CarrierValidityResponse(
-                    valid=False,
-                    errors=[errors.SellAltLoad],
-                    failedBy=models.FailedBy(
-                        fields=[
-                            "rules_assessment.overall_result",
-                            "fail",
-                            "authority.latest_li_authority.is_bond_surety_on_file",
-                            "certifications.all",
-                            "certifications.verified.carb_acf",
-                            "certifications.verified.carb_tru",
-                            "insurance.insurance_policies[is_type=motor_truck_cargo].is_refrigeration_breakdown_included",
-                            "insurance.insurance_policies[is_type=trailer_interchange].limit",
-                        ],
-                        endpoint="highway",
-                    ),
+                    isValid=False,
+                    error=errors.SellAltLoad,
+                    failedBy=[
+                        "rules_assessment.overall_result",
+                        "fail",
+                        "authority.latest_li_authority.is_bond_surety_on_file",
+                        "certifications.all",
+                        "certifications.verified.carb_acf",
+                        "certifications.verified.carb_tru",
+                        "insurance.insurance_policies[is_type=motor_truck_cargo].is_refrigeration_breakdown_included",
+                        "insurance.insurance_policies[is_type=trailer_interchange].limit",
+                    ],
                 )
 
-    return models.CarrierValidityResponse(valid=True)
+    return models.CarrierValidityResponse(isValid=True)

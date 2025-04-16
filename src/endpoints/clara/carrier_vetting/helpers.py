@@ -5,6 +5,7 @@ import requests
 from fastapi import HTTPException, status
 from requests.models import PreparedRequest
 
+from src.models.response import LLMResponse
 from src.settings import Settings
 
 from . import models
@@ -39,9 +40,14 @@ def get_highway_details(
     if not path:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(
-                valid=False,
-                errors=["dotNumber or mcNumber is empty", "highway"],
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="dotNumber or mcNumber is empty",
+                    failedBy=["highway"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     c_response = requests.get(
@@ -50,16 +56,29 @@ def get_highway_details(
     if not c_response.text:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["carrier is invalid", "highway"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="carrier is invalid",
+                    failedBy=["highway"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     carrier_json = c_response.json()
     if not c_response.ok:
         logger.error("Error thrown %s", repr(carrier_json))
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=models.CarrierValidityResponse(valid=False).model_dump(),
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    failedBy=["Highway API is down"],
+                    statusCode=status.HTTP_502_BAD_GATEWAY,
+                ),
+                schema=models.schema,
+            ).model_dump(),
         )
     return carrier_json
 
@@ -79,11 +98,14 @@ def get_mcleod_carrier_details(
     if not (dotNumber or mcNumber):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(
-                valid=False,
-                errors=[
-                    "dotNumber or mcNumber should not be empty from highway API"
-                ],
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="dotNumber or mcNumber should not be empty from highway API",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     if dotNumber:
@@ -103,16 +125,28 @@ def get_mcleod_carrier_details(
         logger.error("Error thrown %s", repr(carrier_json))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["Mcleod id down"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="Mcleod is down",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_502_BAD_GATEWAY,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     if carrier_json is None:
         logger.error("Error thrown %s", repr(carrier_json))
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["Mcleod couldn't find carrier"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="Mcleod couldn't find carrier",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     return carrier_json
@@ -126,8 +160,14 @@ def get_mcleod_order(order_id: str):
         logger.error("order_id is empty")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["brokerageOrderId should not be empty"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="brokerageOrderId should not be empty",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     headers = {
@@ -142,8 +182,14 @@ def get_mcleod_order(order_id: str):
     if not c_response.text:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["brokerageOrderId is invalid"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="brokerageOrderId is invalid",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
 
@@ -151,8 +197,14 @@ def get_mcleod_order(order_id: str):
         logger.error("Error thrown %s", c_response.text)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["Mcleod id down"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="Mcleod id down",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_502_BAD_GATEWAY,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     result = c_response.json()
@@ -183,8 +235,14 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
         logger.error("Error thrown %s", repr(result))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=models.CarrierValidityResponse(
-                valid=False, errors=["Mcleod id down"]
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error="Mcleod id down",
+                    failedBy=["Mcleod"],
+                    statusCode=status.HTTP_502_BAD_GATEWAY,
+                ),
+                schema=models.schema,
             ).model_dump(),
         )
     return result.lower() == "true"

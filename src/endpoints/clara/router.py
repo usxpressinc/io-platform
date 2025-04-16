@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Response, Security, status
 
 from src.helpers.auth import authenticate_token
+from src.models.response import LLMResponse
 
 from .carrier_vetting import carrier_vetting_models, carrier_vetting_service
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/api/clara", include_in_schema=True, tags=["clara"])
     summary="Check whether a carrier is valid using Highway API",
     response_description="Return HTTP Status Code 200 (OK)",
     status_code=status.HTTP_200_OK,
-    response_model=carrier_vetting_models.CarrierValidityResponse,
+    response_model=LLMResponse[carrier_vetting_models.CarrierValidityResponse],
 )
 def get_carrier_validity(
     item: carrier_vetting_models.CarrierValidityRequest,
@@ -27,6 +28,10 @@ def get_carrier_validity(
         mcNumber=item.mcNumber,
         brokerage_order_id=item.brokerageOrderId,
     )
-    if len(result.errors):
+    response.status_code = result.statusCode
+    if result.error:
         response.status_code = status.HTTP_400_BAD_REQUEST
-    return result
+
+    return LLMResponse[carrier_vetting_models.CarrierValidityResponse](
+        data=result, schema=carrier_vetting_models.schema
+    )
