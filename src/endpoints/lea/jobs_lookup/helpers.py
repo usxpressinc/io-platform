@@ -16,7 +16,7 @@ def download_linked_kml(href):
     if href.startswith("http"):
         response = requests.get(href)
         response.raise_for_status()
-        return response.text
+        return response.content
     else:
         with open(href, "r", encoding="utf-8") as f:
             return f.read()
@@ -59,8 +59,8 @@ def parse_geometries(placemark: Placemark):
     return coords
 
 
-def extract_polygons_from_kml(kml_str):
-    k = kml.KML.from_string(kml_str)
+def extract_polygons_from_kml(kml_bytes):
+    k = kml.KML.from_string(kml_bytes)
     polygons: list[models.JobLocation] = []
 
     placemarks: list[Placemark] = list(find_all(k, of_type=Placemark))

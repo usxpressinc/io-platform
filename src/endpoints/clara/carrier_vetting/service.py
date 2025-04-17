@@ -1,0 +1,347 @@
+import logging
+
+import pydash
+from fastapi import status
+from glom import Match, glom
+
+from src.settings import Settings
+
+from . import constants, helpers, models
+
+settings = Settings()
+errors = constants.Errors()
+logger = logging.getLogger(__name__)
+
+
+def get_carrier_validity(
+    dotNumber: str | None = None,
+    mcNumber: str | None = None,
+    brokerage_order_id: str | None = None,
+) -> models.CarrierValidityResponse:
+    """
+    ## Check whether a carrier is valid using Highway API
+    """
+    highway_json = helpers.get_highway_details(
+        dotNumber=dotNumber, mcNumber=mcNumber
+    )
+
+    # Check if connection.is_monitored == true
+    if not glom(highway_json, "connection.is_monitored", default=True):
+        logger.error("Setup Highway connection.is_monitored")
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.HighwaySetup,
+            failedBy=["connection.is_monitored"],
+        )
+
+    # connection.status == "do_not_dispatch"
+    if glom(highway_json, "connection.status", default="") == "do_not_dispatch":
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.DoNotUse,
+            failedBy=["connection.status"],
+        )
+
+    # connection.status == "needs_to_onboard"
+    if (
+        glom(highway_json, "connection.status", default="")
+        == "needs_to_onboard"
+    ):
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.HighwayConnect,
+            failedBy=["connection.status"],
+            endpoint="highway",
+        )
+
+    # Mcleod do_not_dispatch == true
+    mcleod_carrier_json = helpers.get_mcleod_carrier_details(
+        dotNumber=int(pydash.get(highway_json, "dot_number") or 0),
+        mcNumber=int(pydash.get(highway_json, "mc_number") or 0),
+    )
+
+    if len(mcleod_carrier_json) == 1:
+        if glom(mcleod_carrier_json[0], "drsPayee.no_dispatch", default=False):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.DoNotUse,
+                failedBy=["drsPayee.no_dispatch"],
+            )
+    elif len(mcleod_carrier_json) > 1:
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.McleodManyCarrier,
+            failedBy=[x["id"] for x in mcleod_carrier_json],
+            statusCode=status.HTTP_400_BAD_REQUEST,
+        )
+    else:
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.McleodNoCarrier,
+            statusCode=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    # rules_assessment.overall_result == "pass"
+    if (
+        glom(highway_json, "rules_assessment.overall_result", default="")
+        == "pass"
+    ):
+        return models.CarrierValidityResponse(isValid=True)
+
+        # rules_assessment.overall_result == "partial_pass"
+    if (
+        glom(highway_json, "rules_assessment.overall_result", default="")
+        == "partial_pass"
+    ):
+        order_details = helpers.get_mcleod_order(order_id=brokerage_order_id)
+        mcleod_carrier_validity = helpers.check_mcleod_carrier_qualification(
+            carrier_id=mcleod_carrier_json[0]["id"],
+            movement=order_details["curr_movement_id"],
+        )
+        if not mcleod_carrier_validity:
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.SellAltLoad,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "partial_pass",
+                    "check_mcleod_carrier_qualification",
+                ],
+            )
+
+            # rules_assessment.overall_result == "incomplete"
+    if (
+        glom(highway_json, "rules_assessment.overall_result", default="")
+        == "incomplete"
+    ):
+        return models.CarrierValidityResponse(
+            isValid=False,
+            error=errors.HighwayConnect,
+            failedBy=["rules_assessment.overall_result", "incomplete"],
+        )
+
+        # rules_assessment.overall_result == "fail"
+    if (
+        glom(highway_json, "rules_assessment.overall_result", default="")
+        == "fail"
+    ):
+        failed_assessments = []
+        for classification in glom(
+            highway_json, "rules_assessment.classifications", default=[]
+        ):
+            for rule, result in classification.get("rules", dict()).items():
+                if result.get("result", "") != "pass":
+                    failed_assessments.append(rule)
+        failed_assessments = list(set(failed_assessments))
+
+        if set(
+            [
+                "has_no_published_identity_alerts",
+                "has_no_published_identity_theft_alerts",
+            ]
+        ).issubset(failed_assessments):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.ComplianceCheck,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "has_no_published_identity_alerts",
+                    "has_no_published_identity_theft_alerts",
+                ],
+            )
+
+        if set(["no_active_dispatcher_connections"]).issubset(
+            failed_assessments
+        ):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.DispatchConnection,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "no_active_dispatcher_connections",
+                ],
+            )
+
+        if (
+            glom(
+                highway_json,
+                "authority_assessment.carrier_interstate_authority_check",
+                default="",
+            ).lower()
+            != "active"
+            or glom(
+                highway_json,
+                "authority_assessment.latest_safety_rating",
+                default="",
+            ).lower()
+            not in ["satisfactory", "unrated"]
+            or (
+                glom(
+                    highway_json,
+                    "authority_assessment.carrier_interstate_authority_check",
+                    default="",
+                ).lower()
+                != "active"
+            )
+        ):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.DoNotUse,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "authority_assessment.carrier_interstate_authority_check",
+                    "authority_assessment.latest_safety_rating",
+                    "authority_assessment.carrier_interstate_authority_check",
+                ],
+            )
+
+        if set(
+            [
+                "authority_age_requirement",
+                "has_dot_number",
+                "has_verified_manually_entered_identifier",
+                "is_authorized_for_property",
+                "no_active_oos_orders",
+                "safer_operating_status_active",
+            ]
+        ).issubset(failed_assessments):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.DispatchConnection,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "authority_age_requirement",
+                    "has_dot_number",
+                    "has_verified_manually_entered_identifier",
+                    "is_authorized_for_property",
+                    "no_active_oos_orders",
+                    "safer_operating_status_active",
+                ],
+            )
+
+        if set(["no_recent_fmcsa_phone_or_email_change"]).issubset(
+            failed_assessments
+        ):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.FmcsaContactChange,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "no_recent_fmcsa_phone_or_email_change",
+                ],
+            )
+
+        if set(
+            [
+                "new_jersey_auto_liability",
+                "has_vin_if_auto_policy_is_scheduled_autos",
+                "multi_currency_bipd_requirement",
+                "multi_currency_cargo_requirement",
+                "multi_currency_general_liability_requirement",
+            ]
+        ).issubset(failed_assessments):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.HighwayInsuranceUpdate,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "new_jersey_auto_liability",
+                    "has_vin_if_auto_policy_is_scheduled_autos",
+                    "multi_currency_bipd_requirement",
+                    "multi_currency_cargo_requirement",
+                    "multi_currency_general_liability_requirement",
+                ],
+            )
+
+        if set(
+            [
+                "has_verified_physical_location_activity",
+                "has_eld_connected_and_active",
+            ]
+        ).issubset(failed_assessments):
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.TransferAgent,
+                failedBy=[
+                    "rules_assessment.overall_result",
+                    "fail",
+                    "has_verified_physical_location_activity",
+                    "has_eld_connected_and_active",
+                ],
+            )
+
+            # Call the mcleod api "GET /carriers/checkQualification"
+        if (
+            not glom(
+                highway_json,
+                "authority.latest_li_authority.is_bond_surety_on_file",
+                default=False,
+            )
+            or not glom(
+                highway_json,
+                (
+                    "certifications.all",
+                    Match({"is_type": "phmsa"}),
+                    "is_verified",
+                ),
+                default=False,
+            )
+            or not glom(
+                highway_json, "certifications.verified.carb_acf", default=False
+            )
+            or not glom(
+                highway_json, "certifications.verified.carb_tru", default=False
+            )
+            or not glom(
+                highway_json,
+                (
+                    "insurance.insurance_policies",
+                    Match({"is_type": "motor_truck_cargo"}),
+                    "is_refrigeration_breakdown_included",
+                ),
+                default=False,
+            )
+            or glom(
+                highway_json,
+                (
+                    "insurance.insurance_policies",
+                    Match({"is_type": "trailer_interchange"}),
+                    "limit",
+                ),
+                default="",
+            )
+            != "pass"
+        ):
+            # helpers.check_mcleod_carrier_qualification(carrier_id=mcleod_carrier_json["id"], )
+            order_details = helpers.get_mcleod_order(
+                order_id=brokerage_order_id
+            )
+            mcleod_carrier_validity = (
+                helpers.check_mcleod_carrier_qualification(
+                    carrier_id=mcleod_carrier_json[0]["id"],
+                    movement=order_details["curr_movement_id"],
+                )
+            )
+            if not mcleod_carrier_validity:
+                return models.CarrierValidityResponse(
+                    isValid=False,
+                    error=errors.SellAltLoad,
+                    failedBy=[
+                        "rules_assessment.overall_result",
+                        "fail",
+                        "authority.latest_li_authority.is_bond_surety_on_file",
+                        "certifications.all",
+                        "certifications.verified.carb_acf",
+                        "certifications.verified.carb_tru",
+                        "insurance.insurance_policies[is_type=motor_truck_cargo].is_refrigeration_breakdown_included",
+                        "insurance.insurance_policies[is_type=trailer_interchange].limit",
+                    ],
+                )
+
+    return models.CarrierValidityResponse(isValid=True)

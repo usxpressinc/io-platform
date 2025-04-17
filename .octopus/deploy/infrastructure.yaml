@@ -13,8 +13,12 @@ api:
   configVars:
     HIGHWAY_URL: https://staging.highway.com
     NORA_GOOGLE_MAPS_KML: https://www.google.com/maps/d/kml?forcekml=1&mid=1iNsKmiW5tueDvtslqiSiKf4XoNrnyVk
+    MCLEOD_COMPANY: TMS2
+    MCLEOD_BASE_URL: https://mcleod.knightswiftlogistics.com
   secretVars:
     HIGHWAY_API_KEY: ''
+    MCLEOD_AUTH: ''
+    EMAIL_SendgridKey: ''
   global:
     upstream:
       perTryTimeout: 10s
