@@ -7,6 +7,15 @@ tags:
   owner: Vibin Daniel
   team: Arch
   purpose: DX for POC Apps
+infrastructure:
+  kafka:
+    topics:
+      - full_name: stage_usx_order_management_orders_data_change_json
+        reference: rapid_alert
+    consumer_group:
+      enabled: true
+      suffix: orders
+    service_account: orders
 api:
   service:
     targetPort: 8080
