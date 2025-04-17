@@ -116,7 +116,7 @@ def get_carrier_validity(
     ):
         return models.CarrierValidityResponse(
             isValid=False,
-            error=errors.HighwaySetup,
+            error=errors.HighwayConnect,
             failedBy=["rules_assessment.overall_result", "incomplete"],
         )
 
