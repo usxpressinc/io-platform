@@ -7,16 +7,24 @@ class CarrierValidityRequest(BaseModel):
     brokerageOrderId: str | None = None
 
 
+class CarrierValidityError(BaseModel):
+    code: str
+    description: str
+
+
 class CarrierValidityResponse(BaseModel):
     isValid: bool | str
-    error: str | None = None
+    error: CarrierValidityError | None = None
     failedBy: list[str] = []
     statusCode: int | str = 200
 
 
 schema = CarrierValidityResponse(
-    isValid="If true, then the carrier is valid for the load",
-    error="If not valid, then this tells you why the carrier failed",
+    isValid="If true, then you're good to sell this load to the carrier. Please use the 'move_on' tool.",
+    error=CarrierValidityError(
+        code="If not valid, then this tells you why the carrier failed the check",
+        description="This gives more information about the code. This is what should be provided to the user",
+    ),
     failedBy=[
         "This isn't useful for the user but it helps us understand which check the validity failed"
     ],

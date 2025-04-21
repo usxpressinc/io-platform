@@ -29,6 +29,12 @@ def get_carrier_validity(
             mcNumber=item.mcNumber,
             brokerage_order_id=item.brokerageOrderId,
         )
+        if result.error:
+            result.error.description = (
+                " ".join(result.error.description.split())
+                .replace("\n", " ")
+                .replace("\r", "")
+            )
         response.status_code = status.HTTP_202_ACCEPTED
         return LLMResponse[carrier_vetting_models.CarrierValidityResponse](
             data=result, schema=carrier_vetting_models.schema

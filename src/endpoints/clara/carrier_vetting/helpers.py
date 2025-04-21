@@ -43,7 +43,7 @@ def get_highway_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="dotNumber or mcNumber is empty",
+                    error="dotNumber && mcNumber is empty",
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -238,7 +238,7 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="Mcleod id down",
+                    error="Mcleod is down",
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_502_BAD_GATEWAY,
                 ),
