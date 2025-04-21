@@ -1,4 +1,49 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+
+class DispatchContact(BaseModel):
+    name: str
+    phone: str
+    email_address: str
+
+
+class LineItemContact(BaseModel):
+    is_type: str
+    name: str
+    email_address: str
+    phone: str
+
+
+class Contact(BaseModel):
+    is_type: str
+    name: str
+
+
+class Phone(BaseModel):
+    is_type: str
+    value: str
+    country_code: str
+    country_code_prefix: str
+
+
+class EmailAddress(BaseModel):
+    is_type: str
+    value: str
+
+
+class Model(BaseModel):
+    dispatch_contact: DispatchContact
+    line_item_contacts: list[LineItemContact]
+    contacts: list[Contact]
+    phones: list[Phone]
+    email_addresses: list[EmailAddress]
+
+
+class CarrierContacts(BaseModel):
+    name: str | None
+    emailAddresses: list[EmailStr] = []
+    phones: list[str] = []
+    is_type: str | None
 
 
 class CarrierValidityRequest(BaseModel):
@@ -17,6 +62,7 @@ class CarrierValidityResponse(BaseModel):
     error: CarrierValidityError | None = None
     failedBy: list[str] = []
     statusCode: int | str = 200
+    contacts: list[CarrierContacts] | str = []
 
 
 schema = CarrierValidityResponse(

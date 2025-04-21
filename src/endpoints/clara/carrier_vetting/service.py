@@ -13,6 +13,107 @@ errors = constants.Errors()
 logger = logging.getLogger(__name__)
 
 
+def get_highway_contacts(highway_json) -> list[models.CarrierContacts]:
+    contacts: list[models.CarrierContacts] = []
+
+    dispatch_contact = glom(
+        highway_json, "contact_information.dispatch_contact", default=None
+    )
+
+    if dispatch_contact:
+        name = dispatch_contact.get("name", "dispatch")
+        contacts.append(
+            models.CarrierContacts(
+                name=name,
+                phones=[dispatch_contact.get("phone", [])],
+                emailAddresses=[dispatch_contact.get("email", [])],
+                is_type="dispatch",
+            )
+        )
+
+    line_item_contacts = glom(
+        highway_json, "contact_information.line_item_contacts", default=[]
+    )
+    for contact in line_item_contacts:
+        is_type = contact.get("is_type", "unknown")
+        name = contact.get("name", is_type)
+        phone = contact.get("phone")
+        email_address = contact.get("email_address")
+
+        my_item = next((item for item in contacts if item.name == name), None)
+
+        if my_item:
+            if phone:
+                my_item.phones.append(phone)
+                my_item.phones = list(set(contacts.get(name).phones))
+            if email_address:
+                my_item.emailAddresses.append(email_address)
+                my_item.emailAddresses = list(
+                    set(contacts.get(name).emailAddresses)
+                )
+        else:
+            contacts = models.CarrierContacts(
+                name=name,
+                phones=[phone],
+                emailAddresses=[email_address],
+                is_type=is_type,
+            )
+
+    h_contacts = glom(highway_json, "contact_information.contacts", default=[])
+    for contact in h_contacts:
+        is_type = contact.get("is_type", "unknown")
+        name = contact.get("name", is_type)
+
+        my_item = next((item for item in contacts if item.name == name), None)
+
+        if not my_item:
+            contacts = models.CarrierContacts(
+                name=name,
+                is_type=is_type,
+            )
+    phones = glom(highway_json, "contact_information.phones", default=[])
+    for contact in phones:
+        is_type = contact.get("is_type", "unknown")
+        phone = contact.get("value")
+        country_code_prefix = contact.get("country_code_prefix", "+1")
+        full_phone = f"{country_code_prefix} {phone}"
+
+        my_item = next(
+            (item for item in contacts if phone in item.phones), None
+        )
+
+        if my_item:
+            if phone:
+                my_item.phones = [
+                    full_phone if phone == p else p for p in my_item.phones
+                ]
+        else:
+            contacts = models.CarrierContacts(
+                name=is_type,
+                phones=[full_phone],
+                is_type=is_type,
+            )
+    email_addresses = glom(
+        highway_json, "contact_information.email_addresses", default=[]
+    )
+    for contact in email_addresses:
+        is_type = contact.get("is_type", "unknown")
+        email_address = contact.get("value")
+
+        my_item = next(
+            (item for item in contacts if email_address in item.emailAddresses),
+            None,
+        )
+
+        if not my_item:
+            contacts = models.CarrierContacts(
+                name=is_type,
+                emailAddresses=[email_address],
+                is_type=is_type,
+            )
+    return contacts
+
+
 def get_carrier_validity(
     dotNumber: str | None = None,
     mcNumber: str | None = None,
