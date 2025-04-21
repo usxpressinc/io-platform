@@ -43,7 +43,10 @@ def get_highway_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="dotNumber && mcNumber is empty",
+                    error=models.CarrierValidityError(
+                        code="invalid_dot_mcNumber",
+                        description="dotNumber && mcNumber is empty",
+                    ),
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -59,7 +62,9 @@ def get_highway_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="carrier is invalid",
+                    error=models.CarrierValidityError(
+                        code="invalid_carrier", description="carrier is invalid"
+                    ),
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -74,7 +79,10 @@ def get_highway_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    failedBy=["Highway API is down"],
+                    error=models.CarrierValidityError(
+                        code="highway_down", description="Highway API is down"
+                    ),
+                    failedBy=["highway"],
                     statusCode=status.HTTP_502_BAD_GATEWAY,
                 ),
                 schema=models.schema,
@@ -101,7 +109,10 @@ def get_mcleod_carrier_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="dotNumber or mcNumber should not be empty from highway API",
+                    error=models.CarrierValidityError(
+                        code="invalid_dot_mc_number",
+                        description="dotNumber or mcNumber should not be empty from highway API",
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -128,7 +139,10 @@ def get_mcleod_carrier_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="Mcleod is down",
+                    error=models.CarrierValidityError(
+                        code="invalid_dot_mc_number",
+                        description="Mcleod is down",
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_502_BAD_GATEWAY,
                 ),
@@ -142,7 +156,10 @@ def get_mcleod_carrier_details(
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="Mcleod couldn't find carrier",
+                    error=models.CarrierValidityError(
+                        code="invalid_carrier",
+                        description="Mcleod couldn't find carrier",
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -163,7 +180,10 @@ def get_mcleod_order(order_id: str):
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="brokerageOrderId should not be empty",
+                    error=models.CarrierValidityError(
+                        code="invalid_order",
+                        description="brokerageOrderId should not be empty",
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -185,7 +205,10 @@ def get_mcleod_order(order_id: str):
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="brokerageOrderId is invalid",
+                    error=models.CarrierValidityError(
+                        code="invalid_order",
+                        description="brokerageOrderId is invalid",
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
@@ -200,7 +223,9 @@ def get_mcleod_order(order_id: str):
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="Mcleod id down",
+                    error=models.CarrierValidityError(
+                        code="mcleod_down", description="Mcleod id down"
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_502_BAD_GATEWAY,
                 ),
@@ -238,7 +263,9 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
                     isValid=False,
-                    error="Mcleod is down",
+                    error=models.CarrierValidityError(
+                        code="mcleod_down", description="Mcleod is down"
+                    ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_502_BAD_GATEWAY,
                 ),
