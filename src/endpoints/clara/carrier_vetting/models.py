@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class DispatchContact(BaseModel):
@@ -39,11 +39,11 @@ class Model(BaseModel):
     email_addresses: list[EmailAddress]
 
 
-class CarrierContacts(BaseModel):
-    name: str | None
-    emailAddresses: list[EmailStr] = []
+class CarrierContact(BaseModel):
+    name: str | None = None
+    emailAddresses: list[EmailStr] | str = []
     phones: list[str] = []
-    is_type: str | None
+    isType: str | None = None
 
 
 class CarrierValidityRequest(BaseModel):
@@ -57,12 +57,19 @@ class CarrierValidityError(BaseModel):
     description: str
 
 
+CARRIER_CONTACTS: list[CarrierContact] = []
+
+
+def get_carrier_contacts():
+    return CARRIER_CONTACTS
+
+
 class CarrierValidityResponse(BaseModel):
     isValid: bool | str
     error: CarrierValidityError | None = None
     failedBy: list[str] = []
     statusCode: int | str = 200
-    contacts: list[CarrierContacts] | str = []
+    contacts: list[CarrierContact] = Field(default_factory=get_carrier_contacts)
 
 
 schema = CarrierValidityResponse(
@@ -75,5 +82,22 @@ schema = CarrierValidityResponse(
         "This isn't useful for the user but it helps us understand which check the validity failed"
     ],
     statusCode="""If it is 400s, then it means that what the user provided has some issues.
-        If it is in 500s, then there is some network or application issue""",
+If it is in 500s, then there is some network or application issue""".replace(
+        "\n", " "
+    ).replace(
+        "\r", ""
+    ),
+    contacts=[
+        CarrierContact(
+            emailAddresses="""This contains list of email addresses of the carrier.
+Use this list of to verify if the email address provided by the caller is here""".replace(
+                "\n", " "
+            ).replace(
+                "\r", ""
+            ),
+            phones=["This contains list of phone numbers of the contact."],
+            isType="This tells you about the role of the contact",
+            name="Name of the contact",
+        )
+    ],
 )
