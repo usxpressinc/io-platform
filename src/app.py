@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import src.consumer as consumer
 import src.events as events
 from src.endpoints.health import router as health_router
 from src.endpoints.router import routers as endpoints_routers
@@ -16,7 +17,9 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await consumer.kafka_consumer_start()
     yield
+    await consumer.kafka_consumer_end()
     await shutdown_event()
 
 
