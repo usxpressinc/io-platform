@@ -35,10 +35,10 @@ def get_carrier_validity(
                 .replace("\n", " ")
                 .replace("\r", "")
             )
-        response.status_code = status.HTTP_202_ACCEPTED
+        response.status_code = status.HTTP_200_OK
         return LLMResponse[carrier_vetting_models.CarrierValidityResponse](
             data=result, schema=carrier_vetting_models.schema
         )
     except HTTPException as e:
-        response.status_code = status.HTTP_202_ACCEPTED
+        response.status_code = status.HTTP_200_OK
         return e.detail
