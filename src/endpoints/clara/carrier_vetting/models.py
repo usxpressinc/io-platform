@@ -73,7 +73,10 @@ class CarrierValidityResponse(BaseModel):
 
 
 schema = CarrierValidityResponse(
-    isValid="If true, then you're good to sell this load to the carrier. Please use the 'move_on' tool.",
+    isValid="""If true, then you're good to sell this load to the carrier by using the move_on tool.
+If false, you cannot sell this load to this carrier,
+meaning the carrier is not eligible to move this load and thus you cannot use the "move_on"
+tool under any circumstances, instead when this field is "false" follow the description for next steps.""",
     error=CarrierValidityError(
         code="If not valid, then this tells you why the carrier failed the check",
         description="This gives more information about the code. This is what should be provided to the user",
