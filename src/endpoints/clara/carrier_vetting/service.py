@@ -155,7 +155,11 @@ def get_carrier_validity(
         return models.CarrierValidityResponse(
             isValid=False,
             error=errors.HighwaySetup,
-            failedBy=["connection.is_monitored"],
+            failedBy=[
+                "connection.is_monitored={}".format(
+                    glom(highway_json, "connection.is_monitored", default=True)
+                )
+            ],
         )
 
     # connection.status == "do_not_dispatch"
@@ -163,7 +167,11 @@ def get_carrier_validity(
         return models.CarrierValidityResponse(
             isValid=False,
             error=errors.DoNotUse,
-            failedBy=["connection.status"],
+            failedBy=[
+                "connection.status={}".format(
+                    glom(highway_json, "connection.status", default="")
+                )
+            ],
         )
 
     # connection.status == "needs_to_onboard"
@@ -174,7 +182,11 @@ def get_carrier_validity(
         return models.CarrierValidityResponse(
             isValid=False,
             error=errors.HighwayConnect,
-            failedBy=["connection.status"],
+            failedBy=[
+                "connection.status={}".format(
+                    glom(highway_json, "connection.status", default="")
+                )
+            ],
             endpoint="highway",
         )
 
@@ -186,19 +198,27 @@ def get_carrier_validity(
 
     mcleod_carrier = dict()
     if len(mcleod_carrier_json) == 1:
-        mcleod_carrier = next(mcleod_carrier_json)
+        mcleod_carrier = mcleod_carrier_json[0]
         if glom(mcleod_carrier_json, "drsPayee.no_dispatch", default=False):
             return models.CarrierValidityResponse(
                 isValid=False,
                 error=errors.DoNotUse,
-                failedBy=["drsPayee.no_dispatch"],
+                failedBy=[
+                    "drsPayee.no_dispatch={}".format(
+                        glom(
+                            mcleod_carrier_json,
+                            "drsPayee.no_dispatch",
+                            default=False,
+                        )
+                    )
+                ],
             )
     elif len(mcleod_carrier_json) > 1:
         mcleod_carrier_json = [
             x for x in mcleod_carrier_json if x["status"] == "A"
         ]
         if len(mcleod_carrier_json) == 1:
-            mcleod_carrier = next(mcleod_carrier_json)
+            mcleod_carrier = mcleod_carrier_json[0]
         elif len(mcleod_carrier_json) > 1:
             return models.CarrierValidityResponse(
                 isValid=False,
@@ -235,7 +255,7 @@ def get_carrier_validity(
     ):
         return models.CarrierValidityResponse(isValid=True)
 
-        # rules_assessment.overall_result == "partial_pass"
+    # rules_assessment.overall_result == "partial_pass"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "partial_pass"
@@ -250,13 +270,20 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.SellAltLoad,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "partial_pass",
-                    "check_mcleod_carrier_qualification",
+                    "rules_assessment.overall_result={}".format(
+                        glom(
+                            highway_json,
+                            "rules_assessment.overall_result",
+                            default="",
+                        )
+                    ),
+                    "check_mcleod_carrier_qualification={}".format(
+                        mcleod_carrier_validity
+                    ),
                 ],
             )
 
-            # rules_assessment.overall_result == "incomplete"
+    # rules_assessment.overall_result == "incomplete"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "incomplete"
@@ -264,10 +291,18 @@ def get_carrier_validity(
         return models.CarrierValidityResponse(
             isValid=False,
             error=errors.HighwayConnect,
-            failedBy=["rules_assessment.overall_result", "incomplete"],
+            failedBy=[
+                "rules_assessment.overall_result={}".format(
+                    glom(
+                        highway_json,
+                        "rules_assessment.overall_result",
+                        default="",
+                    )
+                )
+            ],
         )
 
-        # rules_assessment.overall_result == "fail"
+    # rules_assessment.overall_result == "fail"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "fail"
@@ -291,10 +326,9 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.ComplianceCheck,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "has_no_published_identity_alerts",
-                    "has_no_published_identity_theft_alerts",
+                    "rules_assessment.overall_result=fail",
+                    "has_no_published_identity_alerts=fail",
+                    "has_no_published_identity_theft_alerts=fail",
                 ],
             )
 
@@ -305,9 +339,8 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.DispatchConnection,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "no_active_dispatcher_connections",
+                    "rules_assessment.overall_result=fail",
+                    "no_active_dispatcher_connections=fail",
                 ],
             )
 
@@ -337,11 +370,21 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.DoNotUse,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "authority_assessment.carrier_interstate_authority_check",
-                    "authority_assessment.latest_safety_rating",
-                    "authority_assessment.carrier_interstate_authority_check",
+                    "rules_assessment.overall_result=fail",
+                    "authority_assessment.carrier_interstate_authority_check={}".format(
+                        glom(
+                            highway_json,
+                            "authority_assessment.carrier_interstate_authority_check",
+                            default="",
+                        )
+                    ),
+                    "authority_assessment.latest_safety_rating={}".format(
+                        glom(
+                            highway_json,
+                            "authority_assessment.latest_safety_rating",
+                            default="",
+                        )
+                    ),
                 ],
             )
 
@@ -359,14 +402,13 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.DoNotUse,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "authority_age_requirement",
-                    "has_dot_number",
-                    "has_verified_manually_entered_identifier",
-                    "is_authorized_for_property",
-                    "no_active_oos_orders",
-                    "safer_operating_status_active",
+                    "rules_assessment.overall_result=fail",
+                    "authority_age_requirement=fail",
+                    "has_dot_number=fail",
+                    "has_verified_manually_entered_identifier=fail",
+                    "is_authorized_for_property=fail",
+                    "no_active_oos_orders=fail",
+                    "safer_operating_status_active=fail",
                 ],
             )
 
@@ -377,9 +419,8 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.FmcsaContactChange,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "no_recent_fmcsa_phone_or_email_change",
+                    "rules_assessment.overall_result=fail",
+                    "no_recent_fmcsa_phone_or_email_change=fail",
                 ],
             )
 
@@ -390,9 +431,8 @@ def get_carrier_validity(
                     item="new_jersey_auto_liability"
                 ),
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "new_jersey_auto_liability",
+                    "rules_assessment.overall_result=fail",
+                    "new_jersey_auto_liability=fail",
                 ],
             )
         if "has_vin_if_auto_policy_is_scheduled_autos" in failed_assessments:
@@ -402,9 +442,8 @@ def get_carrier_validity(
                     item="has_vin_if_auto_policy_is_scheduled_autos"
                 ),
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "has_vin_if_auto_policy_is_scheduled_autos",
+                    "rules_assessment.overall_result=fail",
+                    "has_vin_if_auto_policy_is_scheduled_autos=fail",
                 ],
             )
         if "multi_currency_bipd_requirement" in failed_assessments:
@@ -414,9 +453,8 @@ def get_carrier_validity(
                     item="multi_currency_bipd_requirement"
                 ),
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "multi_currency_bipd_requirement",
+                    "rules_assessment.overall_result=fail",
+                    "multi_currency_bipd_requirement=fail",
                 ],
             )
         if "multi_currency_cargo_requirement" in failed_assessments:
@@ -426,9 +464,8 @@ def get_carrier_validity(
                     item="multi_currency_cargo_requirement"
                 ),
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "multi_currency_cargo_requirement",
+                    "rules_assessment.overall_result=fail",
+                    "multi_currency_cargo_requirement=fail",
                 ],
             )
         if "multi_currency_general_liability_requirement" in failed_assessments:
@@ -438,9 +475,8 @@ def get_carrier_validity(
                     item="multi_currency_general_liability_requirement"
                 ),
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "multi_currency_general_liability_requirement",
+                    "rules_assessment.overall_result=fail",
+                    "multi_currency_general_liability_requirement=fail",
                 ],
             )
 
@@ -454,10 +490,9 @@ def get_carrier_validity(
                 isValid=False,
                 error=errors.TransferAgent,
                 failedBy=[
-                    "rules_assessment.overall_result",
-                    "fail",
-                    "has_verified_physical_location_activity",
-                    "has_eld_connected_and_active",
+                    "rules_assessment.overall_result=fail",
+                    "has_verified_physical_location_activity=fail",
+                    "has_eld_connected_and_active=fail",
                 ],
             )
 
@@ -479,8 +514,7 @@ def get_carrier_validity(
                     isValid=False,
                     error=err,
                     failedBy=[
-                        "rules_assessment.overall_result",
-                        "fail",
+                        "rules_assessment.overall_result=fail",
                         "authority.latest_li_authority.is_bond_surety_on_file",
                         "certifications.all",
                         "certifications.verified.carb_acf",
@@ -494,6 +528,12 @@ def get_carrier_validity(
 
 
 def to_check_mcleod_qualification(highway_json) -> models.CarrierValidityError:
+    response = models.CarrierValidityResponse(
+        isValid=False,
+        failedBy=[
+            "rules_assessment.overall_result=fail",
+        ],
+    )
     if (
         not glom(
             highway_json,
@@ -540,8 +580,17 @@ def to_check_mcleod_qualification(highway_json) -> models.CarrierValidityError:
             "authority.latest_li_authority.is_bond_surety_on_file",
             default=False,
         ):
-            return errors.CheckQualificationFailure(
+            response.error = errors.CheckQualificationFailure(
                 item=constants.McleodCheckQualification.is_bond_surety_on_file
+            )
+            response.failedBy.append(
+                "is_bond_surety_on_file={}".format(
+                    glom(
+                        highway_json,
+                        "authority.latest_li_authority.is_bond_surety_on_file",
+                        default=False,
+                    )
+                )
             )
         if not glom(
             highway_json,
@@ -552,22 +601,53 @@ def to_check_mcleod_qualification(highway_json) -> models.CarrierValidityError:
             ),
             default=False,
         ):
-            return errors.CheckQualificationFailure(
+            response.error = errors.CheckQualificationFailure(
                 item=constants.McleodCheckQualification.phmsa_is_verified
+            )
+            response.failedBy.append(
+                "certifications.all.phmsa.is_verified={}".format(
+                    glom(
+                        highway_json,
+                        (
+                            "certifications.all",
+                            Match({"is_type": "phmsa"}),
+                            "is_verified",
+                        ),
+                        default=False,
+                    ),
+                )
             )
 
         if not glom(
             highway_json, "certifications.verified.carb_acf", default=False
         ):
-            return errors.CheckQualificationFailure(
+            response.error = errors.CheckQualificationFailure(
                 item=constants.McleodCheckQualification.carb_acf
+            )
+            response.failedBy.append(
+                "certifications.verified.carb_acf={}".format(
+                    glom(
+                        highway_json,
+                        "certifications.verified.carb_acf",
+                        default=False,
+                    )
+                )
             )
 
         if not glom(
             highway_json, "certifications.verified.carb_tru", default=False
         ):
-            return errors.CheckQualificationFailure(
+            response.error = errors.CheckQualificationFailure(
                 item=constants.McleodCheckQualification.carb_tru
+            )
+            response.failedBy.append(
+                "certifications.verified.carb_tru={}".format(
+                    glom(
+                        highway_json,
+                        "certifications.verified.carb_tru",
+                        default=False,
+                    )
+                )
             )
         if not glom(
             highway_json,
@@ -578,8 +658,21 @@ def to_check_mcleod_qualification(highway_json) -> models.CarrierValidityError:
             ),
             default=False,
         ):
-            return errors.CheckQualificationFailure(
+            response.error = errors.CheckQualificationFailure(
                 item=constants.McleodCheckQualification.is_refrigeration_breakdown_included
+            )
+            response.failedBy.append(
+                "insurance.insurance_policies.motor_truck_cargo.is_refrigeration_breakdown_included={}".format(
+                    glom(
+                        highway_json,
+                        (
+                            "insurance.insurance_policies",
+                            Match({"is_type": "motor_truck_cargo"}),
+                            "is_refrigeration_breakdown_included",
+                        ),
+                        default=False,
+                    )
+                )
             )
         if glom(
             highway_json,
@@ -590,7 +683,20 @@ def to_check_mcleod_qualification(highway_json) -> models.CarrierValidityError:
             ),
             default="",
         ):
-            return errors.CheckQualificationFailure(
+            response.error = errors.CheckQualificationFailure(
                 item=constants.McleodCheckQualification.trailer_interchange
+            )
+            response.failedBy.append(
+                "insurance.insurance_policies.trailer_interchange.limit={}".format(
+                    glom(
+                        highway_json,
+                        (
+                            "insurance.insurance_policies",
+                            Match({"is_type": "trailer_interchange"}),
+                            "limit",
+                        ),
+                        default="",
+                    )
+                )
             )
     return None
