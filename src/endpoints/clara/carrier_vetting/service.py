@@ -184,23 +184,40 @@ def get_carrier_validity(
         mcNumber=int(pydash.get(highway_json, "mc_number") or 0),
     )
 
+    mcleod_carrier = dict()
     if len(mcleod_carrier_json) == 1:
-        if glom(mcleod_carrier_json[0], "drsPayee.no_dispatch", default=False):
+        mcleod_carrier = next(mcleod_carrier_json)
+        if glom(mcleod_carrier_json, "drsPayee.no_dispatch", default=False):
             return models.CarrierValidityResponse(
                 isValid=False,
                 error=errors.DoNotUse,
                 failedBy=["drsPayee.no_dispatch"],
             )
     elif len(mcleod_carrier_json) > 1:
-        return models.CarrierValidityResponse(
-            isValid=False,
-            error=models.CarrierValidityError(
-                code="multiple_mcleod_carrier",
-                description="Too many carriers found in Mcleod for the same carrier ID",
-            ),
-            failedBy=[x["id"] for x in mcleod_carrier_json],
-            statusCode=status.HTTP_400_BAD_REQUEST,
-        )
+        mcleod_carrier_json = [
+            x for x in mcleod_carrier_json if x["status"] == "A"
+        ]
+        if len(mcleod_carrier_json) == 1:
+            mcleod_carrier = next(mcleod_carrier_json)
+        elif len(mcleod_carrier_json) > 1:
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=models.CarrierValidityError(
+                    code="multiple_mcleod_carrier",
+                    description="Too many Active carriers found in Mcleod for the same carrier ID",
+                ),
+                failedBy=[x["id"] for x in mcleod_carrier_json],
+                statusCode=status.HTTP_400_BAD_REQUEST,
+            )
+        else:
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=models.CarrierValidityError(
+                    code="no_mcleod_active_carrier",
+                    description="No Carriers were found in Mcleod with the provided carrier ID",
+                ),
+                statusCode=status.HTTP_404_NOT_FOUND,
+            )
     else:
         return models.CarrierValidityResponse(
             isValid=False,
@@ -208,7 +225,7 @@ def get_carrier_validity(
                 code="no_mcleod_carrier",
                 description="No Carriers were found in Mcleod with the provided carrier ID",
             ),
-            statusCode=status.HTTP_400_BAD_REQUEST,
+            statusCode=status.HTTP_404_NOT_FOUND,
         )
 
     # rules_assessment.overall_result == "pass"
@@ -225,7 +242,7 @@ def get_carrier_validity(
     ):
         order_details = helpers.get_mcleod_order(order_id=brokerage_order_id)
         mcleod_carrier_validity = helpers.check_mcleod_carrier_qualification(
-            carrier_id=mcleod_carrier_json[0]["id"],
+            carrier_id=mcleod_carrier["id"],
             movement=order_details["curr_movement_id"],
         )
         if not mcleod_carrier_validity:
@@ -453,7 +470,7 @@ def get_carrier_validity(
             )
             mcleod_carrier_validity = (
                 helpers.check_mcleod_carrier_qualification(
-                    carrier_id=mcleod_carrier_json[0]["id"],
+                    carrier_id=mcleod_carrier["id"],
                     movement=order_details["curr_movement_id"],
                 )
             )
