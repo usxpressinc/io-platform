@@ -28,6 +28,8 @@ api:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
     EMAIL_SendgridKey: ''
+    KAFKA__api_key: ''
+    KAFKA__api_secret: ''
   global:
     upstream:
       perTryTimeout: 10s
