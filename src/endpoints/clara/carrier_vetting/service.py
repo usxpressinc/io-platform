@@ -1,7 +1,7 @@
 import logging
 
 import pydash
-from fastapi import status
+from fastapi import HTTPException, status
 from glom import Match, glom
 
 from src.settings import Settings
@@ -189,99 +189,12 @@ def get_carrier_validity(
             ],
             endpoint="highway",
         )
-
-    # Mcleod do_not_dispatch == true
-    mcleod_carrier_json = helpers.get_mcleod_carrier_details(
-        dotNumber=int(pydash.get(highway_json, "dot_number") or 0),
-        mcNumber=int(pydash.get(highway_json, "mc_number") or 0),
-    )
-
-    mcleod_carrier = dict()
-    if len(mcleod_carrier_json) == 1:
-        mcleod_carrier = mcleod_carrier_json[0]
-        if glom(mcleod_carrier_json, "drsPayee.no_dispatch", default=False):
-            return models.CarrierValidityResponse(
-                isValid=False,
-                error=errors.DoNotUse,
-                failedBy=[
-                    "drsPayee.no_dispatch={}".format(
-                        glom(
-                            mcleod_carrier_json,
-                            "drsPayee.no_dispatch",
-                            default=False,
-                        )
-                    )
-                ],
-            )
-    elif len(mcleod_carrier_json) > 1:
-        mcleod_carrier_json = [
-            x for x in mcleod_carrier_json if x["status"] == "A"
-        ]
-        if len(mcleod_carrier_json) == 1:
-            mcleod_carrier = mcleod_carrier_json[0]
-        elif len(mcleod_carrier_json) > 1:
-            return models.CarrierValidityResponse(
-                isValid=False,
-                error=models.CarrierValidityError(
-                    code="multiple_mcleod_carrier",
-                    description="Too many Active carriers found in Mcleod for the same carrier ID",
-                ),
-                failedBy=[x["id"] for x in mcleod_carrier_json],
-                statusCode=status.HTTP_400_BAD_REQUEST,
-            )
-        else:
-            return models.CarrierValidityResponse(
-                isValid=False,
-                error=models.CarrierValidityError(
-                    code="no_mcleod_active_carrier",
-                    description="No Carriers were found in Mcleod with the provided carrier ID",
-                ),
-                statusCode=status.HTTP_404_NOT_FOUND,
-            )
-    else:
-        return models.CarrierValidityResponse(
-            isValid=False,
-            error=models.CarrierValidityError(
-                code="no_mcleod_carrier",
-                description="No Carriers were found in Mcleod with the provided carrier ID",
-            ),
-            statusCode=status.HTTP_404_NOT_FOUND,
-        )
-
     # rules_assessment.overall_result == "pass"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "pass"
     ):
         return models.CarrierValidityResponse(isValid=True)
-
-    # rules_assessment.overall_result == "partial_pass"
-    if (
-        glom(highway_json, "rules_assessment.overall_result", default="")
-        == "partial_pass"
-    ):
-        order_details = helpers.get_mcleod_order(order_id=brokerage_order_id)
-        mcleod_carrier_validity = helpers.check_mcleod_carrier_qualification(
-            carrier_id=mcleod_carrier["id"],
-            movement=order_details["curr_movement_id"],
-        )
-        if not mcleod_carrier_validity:
-            return models.CarrierValidityResponse(
-                isValid=False,
-                error=errors.SellAltLoad,
-                failedBy=[
-                    "rules_assessment.overall_result={}".format(
-                        glom(
-                            highway_json,
-                            "rules_assessment.overall_result",
-                            default="",
-                        )
-                    ),
-                    "check_mcleod_carrier_qualification={}".format(
-                        mcleod_carrier_validity
-                    ),
-                ],
-            )
 
     # rules_assessment.overall_result == "incomplete"
     if (
@@ -500,14 +413,8 @@ def get_carrier_validity(
         err = to_check_mcleod_qualification(highway_json=highway_json)
         if err:
             # helpers.check_mcleod_carrier_qualification(carrier_id=mcleod_carrier_json["id"], )
-            order_details = helpers.get_mcleod_order(
-                order_id=brokerage_order_id
-            )
-            mcleod_carrier_validity = (
-                helpers.check_mcleod_carrier_qualification(
-                    carrier_id=mcleod_carrier["id"],
-                    movement=order_details["curr_movement_id"],
-                )
+            mcleod_carrier_validity = get_mcleod_validity(
+                highway_json=highway_json, brokerage_order_id=brokerage_order_id
             )
             if not mcleod_carrier_validity:
                 return models.CarrierValidityResponse(
@@ -524,7 +431,115 @@ def get_carrier_validity(
                     ],
                 )
 
+    # rules_assessment.overall_result == "partial_pass"
+    if (
+        glom(highway_json, "rules_assessment.overall_result", default="")
+        == "partial_pass"
+    ):
+        mcleod_carrier_validity = get_mcleod_validity(
+            highway_json=highway_json, brokerage_order_id=brokerage_order_id
+        )
+        if not mcleod_carrier_validity:
+            return models.CarrierValidityResponse(
+                isValid=False,
+                error=errors.SellAltLoad,
+                failedBy=[
+                    "rules_assessment.overall_result={}".format(
+                        glom(
+                            highway_json,
+                            "rules_assessment.overall_result",
+                            default="",
+                        )
+                    ),
+                    "check_mcleod_carrier_qualification={}".format(
+                        mcleod_carrier_validity
+                    ),
+                ],
+            )
+
     return models.CarrierValidityResponse(isValid=True)
+
+
+def get_mcleod_validity(highway_json, brokerage_order_id: str) -> bool:
+    order_details = helpers.get_mcleod_order(order_id=brokerage_order_id)
+    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
+    return helpers.check_mcleod_carrier_qualification(
+        carrier_id=mcleod_carrier["id"],
+        movement=order_details["curr_movement_id"],
+    )
+
+
+def get_mcleod_carrier(highway_json):
+    # Mcleod do_not_dispatch == true
+    mcleod_carrier_json = helpers.get_mcleod_carrier_details(
+        dotNumber=int(pydash.get(highway_json, "dot_number") or 0),
+        mcNumber=int(pydash.get(highway_json, "mc_number") or 0),
+    )
+    mcleod_carrier = dict()
+    if len(mcleod_carrier_json) == 1:
+        mcleod_carrier = mcleod_carrier_json[0]
+        if glom(mcleod_carrier_json, "drsPayee.no_dispatch", default=False):
+            raise HTTPException(
+                status_code=status.HTTP_200_OK,
+                detail=models.CarrierValidityResponse(
+                    isValid=False,
+                    error=errors.DoNotUse,
+                    failedBy=[
+                        "drsPayee.no_dispatch={}".format(
+                            glom(
+                                mcleod_carrier_json,
+                                "drsPayee.no_dispatch",
+                                default=False,
+                            )
+                        )
+                    ],
+                ),
+            )
+    elif len(mcleod_carrier_json) > 1:
+        mcleod_carrier_json = [
+            x for x in mcleod_carrier_json if x["status"] == "A"
+        ]
+        if len(mcleod_carrier_json) == 1:
+            mcleod_carrier = mcleod_carrier_json[0]
+        elif len(mcleod_carrier_json) > 1:
+            raise HTTPException(
+                status_code=status.HTTP_200_OK,
+                detail=models.CarrierValidityResponse(
+                    isValid=False,
+                    error=models.CarrierValidityError(
+                        code="multiple_mcleod_carrier",
+                        description="""Too many Active carriers found in Mcleod for the same carrier ID.
+Transfer the call using the transfer_to_carrier_sales_rep tool""",
+                    ),
+                    failedBy=[x["id"] for x in mcleod_carrier_json],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_200_OK,
+                detail=models.CarrierValidityResponse(
+                    isValid=False,
+                    error=models.CarrierValidityError(
+                        code="no_mcleod_active_carrier",
+                        description="Use the 'compliance_check' tool to proceed.",
+                    ),
+                    statusCode=status.HTTP_404_NOT_FOUND,
+                ),
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail=models.CarrierValidityResponse(
+                isValid=False,
+                error=models.CarrierValidityError(
+                    code="no_mcleod_carrier",
+                    description="Use the 'compliance_check' tool to proceed.",
+                ),
+                statusCode=status.HTTP_404_NOT_FOUND,
+            ),
+        )
+    return mcleod_carrier
 
 
 def to_check_mcleod_qualification(highway_json) -> models.CarrierValidityError:

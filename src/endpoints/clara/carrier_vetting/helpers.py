@@ -218,7 +218,7 @@ def get_mcleod_order(order_id: str):
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_order",
-                        description="Confirm the order ID/number again with the carrier & call this tool again",
+                        description="Use the 'tentative_pass' tool",
                     ),
                     failedBy=["Mcleod", "brokerageOrderId_empty"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
