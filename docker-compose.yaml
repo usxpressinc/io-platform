@@ -13,6 +13,7 @@ services:
       APPLICATION__PROJECT: python-demo-poc
       APPLICATION__GROUP: demo
       REVISION: 0.10.0
+      HOST: '*'
     env_file:
       - .env
     stop_grace_period: 0s
