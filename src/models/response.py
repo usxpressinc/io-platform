@@ -1,10 +1,10 @@
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+from src.models.common import BaseCleanModel
 
 DataType = TypeVar("DataType")
 
 
-class LLMResponse(BaseModel, Generic[DataType]):
+class LLMResponse(BaseCleanModel, Generic[DataType]):
     data: DataType
     schema: DataType

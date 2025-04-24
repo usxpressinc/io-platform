@@ -1,5 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 
+from src.models.common import BaseCleanModel
+
 
 class DispatchContact(BaseModel):
     name: str
@@ -39,7 +41,7 @@ class Model(BaseModel):
     email_addresses: list[EmailAddress]
 
 
-class CarrierContact(BaseModel):
+class CarrierContact(BaseCleanModel):
     name: str | None = None
     emailAddresses: list[EmailStr] | str = []
     phones: list[str] = []
@@ -52,7 +54,7 @@ class CarrierValidityRequest(BaseModel):
     brokerageOrderId: str | None = None
 
 
-class CarrierValidityError(BaseModel):
+class CarrierValidityError(BaseCleanModel):
     code: str
     description: str
 
@@ -64,7 +66,7 @@ def get_carrier_contacts():
     return CARRIER_CONTACTS
 
 
-class CarrierValidityResponse(BaseModel):
+class CarrierValidityResponse(BaseCleanModel):
     isValid: bool | str
     error: CarrierValidityError | None = None
     failedBy: list[str] = []
@@ -85,19 +87,11 @@ tool under any circumstances, instead when this field is "false" follow the desc
         "This isn't useful for the user but it helps us understand which check the validity failed"
     ],
     statusCode="""If it is 400s, then it means that what the user provided has some issues.
-If it is in 500s, then there is some network or application issue""".replace(
-        "\n", " "
-    ).replace(
-        "\r", ""
-    ),
+If it is in 500s, then there is some network or application issue""",
     contacts=[
         CarrierContact(
             emailAddresses="""This contains list of email addresses of the carrier.
-Use this list of to verify if the email address provided by the caller is here""".replace(
-                "\n", " "
-            ).replace(
-                "\r", ""
-            ),
+Use this list of to verify if the email address provided by the caller is here""",
             phones=["This contains list of phone numbers of the contact."],
             isType="This tells you about the role of the contact",
             name="Name of the contact",

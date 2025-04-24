@@ -282,6 +282,7 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
     """
     ## Check whether a carrier is valid using Mcleod API
     """
+    logger.debug("Movement Id is %s", movement)
     headers = {
         "Authorization": settings.Clara_McleodAuth,
         "Accept": "text/plain",
