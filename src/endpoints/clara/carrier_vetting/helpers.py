@@ -231,6 +231,25 @@ def get_mcleod_order(order_id: str):
         "Accept": "application/json",
         "X-com.mcleodsoftware.CompanyID": settings.Clara_McleodCompany,
     }
+    try:
+        int(order_id)
+    except ValueError as e:
+        logger.error(repr(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=LLMResponse[models.CarrierValidityResponse](
+                data=models.CarrierValidityResponse(
+                    isValid=False,
+                    error=models.CarrierValidityError(
+                        code="invalid_order",
+                        description="Confirm the order ID/number again with the carrier & call this tool again",
+                    ),
+                    failedBy=["Mcleod", "brokerageOrderId_invalid"],
+                    statusCode=status.HTTP_400_BAD_REQUEST,
+                ),
+                schema=models.schema,
+            ).model_dump(),
+        )
     c_response = requests.get(
         url=urljoin(settings.Clara_McleodUrl, f"/ws/api/orders/{order_id}"),
         headers=headers,
@@ -269,7 +288,7 @@ def get_mcleod_order(order_id: str):
                         description="Transfer the call using the transfer_to_carrier_sales_rep tool",
                     ),
                     failedBy=["Mcleod", c_response.text],
-                    statusCode=status.HTTP_502_BAD_GATEWAY,
+                    statusCode=c_response.status_code,
                 ),
                 schema=models.schema,
             ).model_dump(),
@@ -310,7 +329,7 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
                         description="Transfer the call using the transfer_to_carrier_sales_rep tool",
                     ),
                     failedBy=["Mcleod", c_response.text],
-                    statusCode=status.HTTP_502_BAD_GATEWAY,
+                    statusCode=c_response.status_code,
                 ),
                 schema=models.schema,
             ).model_dump(),

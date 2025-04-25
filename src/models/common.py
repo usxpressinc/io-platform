@@ -10,7 +10,6 @@ class BaseCleanModel(BaseModel):
     @classmethod
     def _clean_data(cls, value):
         if isinstance(value, str):
-            print(cls.clean_new_lines(value))
             return cls.clean_new_lines(value)
         elif isinstance(value, dict):
             return {k: cls._clean_data(v) for k, v in value.items()}
