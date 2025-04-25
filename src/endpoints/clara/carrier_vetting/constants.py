@@ -13,32 +13,34 @@ class HighwayInsuranceUpdate:
     )
 
     def description(item: str):
+        desc = ""
         match item:
             case HighwayInsuranceUpdate.multi_currency_bipd_requirement:
-                return """Explain that they do not have our minimum BIPD coverage of $1,000,000 USD,
+                desc = """Explain that they do not have our minimum BIPD coverage of $1,000,000 USD,
 $2,000,000 CAD, or $20,000,000 MXN, then explain if they do have that coverage,
 then we are going to work together we need them to get their insurance company send Highway their updated COI.
 If they don't have the coverage, we won't be able to work together."""
             case HighwayInsuranceUpdate.new_jersey_auto_liability:
-                return """Explain that they do not have our minimum BIPD coverage of $1,500,000 USD,
+                desc = """Explain that they do not have our minimum BIPD coverage of $1,500,000 USD,
 then explain if they do have that coverage, then we are going to work together we need them to get their
 insurance company send Highway their updated COI. If they don't have the coverage, we won't be able to work together."""
             case HighwayInsuranceUpdate.multi_currency_cargo_requirement:
-                return """Explain that they do not have our minimum Cargo coverage of $100,000 USD,
+                desc = """Explain that they do not have our minimum Cargo coverage of $100,000 USD,
 $200,000 CAD, or $2,000,000 MXN, then explain if we are going to work together
 we need them to get their insurance company send Highway their updated COI."""
             case (
                 HighwayInsuranceUpdate.multi_currency_general_liability_requirement
             ):
-                return """Explain that they do not have our minimum General Liability insurance coverage of
+                desc = """Explain that they do not have our minimum General Liability insurance coverage of
 $1,000,000 USD or $1,500,000 CAD, then explain if we are going to work together we need them
 to get their insurance company send Highway their updated COI."""
             case (
                 HighwayInsuranceUpdate.has_vin_if_auto_policy_is_scheduled_autos
             ):
-                return """Explain that they do not have schedule of VINs on COI if auto policy is Scheduled Autos and
+                desc = """Explain that they do not have schedule of VINs on COI if auto policy is Scheduled Autos and
 the make of the VIN must map to a known power unit, then explain if we are going to work together
 we need them to get their insurance company send Highway their updated COI."""
+        return desc
 
 
 class McleodCheckQualification:
@@ -133,17 +135,13 @@ then ask the carrier if they would be interested in any other loads?
 If yes, then ask the carrier what direction they want to go then use the 'find_loads_by_lane' tool""",
     )
 
-    @property
-    def CheckQualificationFailure(item: str) -> CarrierValidityError:
-
+    def CheckQualificationFailure(self, item: str) -> CarrierValidityError:
         return CarrierValidityError(
             code="mcleod_carrier_check_qualification_failed",
             description=McleodCheckQualification.description(item=item),
         )
 
-    @property
-    def HighwayInsuranceUpdate(item: str) -> CarrierValidityError:
-
+    def HighwayInsuranceUpdate(self, item: str) -> CarrierValidityError:
         return CarrierValidityError(
             code="highway_insurance_update",
             description=HighwayInsuranceUpdate.description(item=item),
