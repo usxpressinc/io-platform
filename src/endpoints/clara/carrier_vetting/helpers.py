@@ -7,12 +7,14 @@ from fastapi import HTTPException, status
 from requests.models import PreparedRequest
 
 from src.models.response import LLMResponse
+from src.prompts import ClaraPrompts
 from src.settings import Settings
 
 from . import models
 
 settings = Settings()
 logger = logging.getLogger(__name__)
+prompts = ClaraPrompts()
 
 
 def get_highway_details(
@@ -46,7 +48,7 @@ def get_highway_details(
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_dot_mcNumber",
-                        description="Confirm the MC or DOT number again with the carrier",
+                        description=prompts.InvalidDotMcNumber,
                     ),
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -65,7 +67,7 @@ def get_highway_details(
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_carrier",
-                        description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                        description=prompts.UseTransferToCarrierSalesRep,
                     ),
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -84,7 +86,7 @@ def get_highway_details(
                         isValid=False,
                         error=models.CarrierValidityError(
                             code="highway_down",
-                            description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                            description=prompts.UseTransferToCarrierSalesRep,
                         ),
                         failedBy=["highway"],
                         statusCode=status.HTTP_502_BAD_GATEWAY,
@@ -100,7 +102,7 @@ def get_highway_details(
                         isValid=False,
                         error=models.CarrierValidityError(
                             code="highway_issue",
-                            description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                            description=prompts.UseTransferToCarrierSalesRep,
                         ),
                         failedBy=["highway", carrier_text],
                         statusCode=c_response.status_code,
@@ -131,7 +133,7 @@ def get_mcleod_carrier_details(
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_dot_mc_number",
-                        description="Confirm the MC or DOT number again with the carrier",
+                        description=prompts.InvalidDotMcNumber,
                     ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -161,7 +163,7 @@ def get_mcleod_carrier_details(
                         isValid=False,
                         error=models.CarrierValidityError(
                             code="invalid_dot_mc_number",
-                            description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                            description=prompts.UseTransferToCarrierSalesRep,
                         ),
                         failedBy=["Mcleod", c_response.text],
                         statusCode=status.HTTP_502_BAD_GATEWAY,
@@ -177,7 +179,7 @@ def get_mcleod_carrier_details(
                         isValid=False,
                         error=models.CarrierValidityError(
                             code="invalid_dot_mc_number",
-                            description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                            description=prompts.UseTransferToCarrierSalesRep,
                         ),
                         failedBy=["Mcleod", c_response.text],
                         statusCode=c_response.status_code,
@@ -194,7 +196,7 @@ def get_mcleod_carrier_details(
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_carrier",
-                        description="Confirm the MC or DOT number again with the carrier",
+                        description=prompts.InvalidDotMcNumber,
                     ),
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -218,7 +220,7 @@ def get_mcleod_order(order_id: str):
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_order",
-                        description="Use the 'tentative_pass' tool",
+                        description=prompts.UseTentativePass,
                     ),
                     failedBy=["Mcleod", "brokerageOrderId_empty"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -242,7 +244,7 @@ def get_mcleod_order(order_id: str):
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_order",
-                        description="Confirm the order ID/number again with the carrier & call this tool again",
+                        description=prompts.InvalidOrder,
                     ),
                     failedBy=["Mcleod", "brokerageOrderId_invalid"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -267,7 +269,7 @@ def get_mcleod_order(order_id: str):
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="invalid_order",
-                        description="Confirm the order ID/number again with the carrier & call this tool again",
+                        description=prompts.InvalidOrder,
                     ),
                     failedBy=["Mcleod", "brokerageOrderId_invalid"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -285,7 +287,7 @@ def get_mcleod_order(order_id: str):
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="mcleod_down",
-                        description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                        description=prompts.UseTransferToCarrierSalesRep,
                     ),
                     failedBy=["Mcleod", c_response.text],
                     statusCode=c_response.status_code,
@@ -326,7 +328,7 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="mcleod_down",
-                        description="Transfer the call using the transfer_to_carrier_sales_rep tool",
+                        description=prompts.UseTransferToCarrierSalesRep,
                     ),
                     failedBy=["Mcleod", c_response.text],
                     statusCode=c_response.status_code,

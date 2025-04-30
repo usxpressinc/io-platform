@@ -24,6 +24,63 @@ api:
     NORA_GOOGLE_MAPS_KML: https://www.google.com/maps/d/kml?forcekml=1&mid=1iNsKmiW5tueDvtslqiSiKf4XoNrnyVk
     MCLEOD_COMPANY: TMS2
     MCLEOD_BASE_URL: https://mcleod.knightswiftlogistics.com
+    CLARA_PROMPT_multiple_mcleod_carrier: Too many Active carriers found in Mcleod for the same carrier ID. Transfer the call using the transfer_to_carrier_sales_rep
+      tool
+    CLARA_PROMPT_use_compliance_check: Use the 'compliance_check' tool to proceed.
+
+    CLARA_PROMPT_multi_currency_bipd_requirement: Explain that they do not have our minimum BIPD coverage of $1,000,000 USD, $2,000,000 CAD, or $20,000,000
+      MXN, then explain if they do have that coverage, then we are going to work together we need them to get their insurance company send Highway their
+      updated COI. If they don't have the coverage, we won't be able to work together.
+    CLARA_PROMPT_new_jersey_auto_liability: Explain that they do not have our minimum BIPD coverage of $1,500,000 USD, then explain if they do have that
+      coverage,  when we are going to work together we need them to get their insurance company send Highway their updated COI. If they don't have the coverage,
+      we won't be able to work together.
+    CLARA_PROMPT_multi_currency_cargo_requirement: Explain that they do not have our minimum Cargo coverage of $100,000 USD, $200,000 CAD, or $2,000,000
+      MXN, then explain if we are going to work together we need them to get their insurance company send Highway their updated COI.
+    CLARA_PROMPT_multi_currency_general_liability_requirement: Explain that they do not have our minimum General Liability insurance coverage of $1,000,000
+      USD or $1,500,000 CAD, then explain if we are going to work together we need them to get their insurance company send Highway their updated COI.
+    CLARA_PROMPT_has_vin_if_auto_policy_is_scheduled_autos: Explain that they do not have schedule of VINs on COI if auto policy is Scheduled Autos and
+      the make of the VIN must map to a known power unit, then explain if we are going to work together we need them to get their insurance company send
+      Highway their updated COI.
+
+
+    CLARA_PROMPT_is_bond_surety_on_file: Explain that we cannot use them because they do not have a surety bond on file with the FMCSA.
+    CLARA_PROMPT_phmsa_is_verified: Explain that we cannot use them because this load is hazmat and they do not have a PHMSA certification on file with
+      Highway
+    CLARA_PROMPT_interstate_carrier_authority_is_active: Explain to the carrier we don't see they have the authority to run interstate and the load they
+      called about crosses state lines. Don't use 'move_on' - if the carrier wants to dispute this, use the 'transfer_to_carrier_sales_rep' tool
+    CLARA_PROMPT_is_refrigeration_breakdown_included: Explain we cannot use them because this load is refrigerated and we cannot use them unless they have
+      refrigerations breakdown coverage
+    CLARA_PROMPT_trailer_interchange: Explain we cannot use them because this load is refrigerated and we cannot use them unless they have refrigerations
+      breakdown coverage
+    CLARA_PROMPT_carb_acf: Explain we cannot use them on this load because they aren't Advanced Clean Fleets certified.
+    CLARA_PROMPT_carb_tru: Explain we cannot use them on this load because they aren't Carb certified.
+
+
+    CLARA_PROMPT_highway_setup: Explain that we need them to register with Highway, because Highway manages our carrier compliance and setup packages. Then
+      use the 'highway_setup' tool. Then ask for the best email to send a link to.
+    CLARA_PROMPT_do_not_use: You cannot use this carrier. If the carrier asks why, you tell them that you do not have access to that information, all you
+      know is that they are not set up to work with you. Then politely end the call. We CAN NOT sell them the load and CAN NOT use the 'move_on' tool, under
+      any circumstances.
+    CLARA_PROMPT_highway_connect: Explain that we need them to complete their highway connection with us. Then use the 'highway_connect' tool. Then ask
+      for the best email to send a link to.
+    CLARA_PROMPT_compliance_check: Explain to the carrier that we need our compliance team to review their account. Tell the carrier you're submitting a
+      request to the compliance team to review it now & we will call them back if they get approved. Then use the 'compliance_check' call.
+    CLARA_PROMPT_dispatch_connection: Explain we can't use them right now because they have unverified highway users, they need to login to highway and
+      resolve that before we are able to use them.
+    CLARA_PROMPT_transfer_agent: Explain that we don't show them as being ELD integrated with Highway & can't use them unless this is resolved. If they
+      dispute this or claim to be exempt, then use the 'transfer_to_carrier_sales_rep' tool
+    CLARA_PROMPT_fmcsa_contact_change: Explain that we have a red flag for them because their FMCSA information has changed. Ask them to explain what FMCSA
+      info was changed, who made the change, and why was the change made. Then tell them they need our compliance team to review their account. Tell the
+      carrier you're submitting a request to the compliance team to review it now & we will call them back if they get approved. Then use the 'compliance_check'
+      call.
+    CLARA_PROMPT_sell_alt_load: Explain that this carrier isn't eligible to book this load, then ask the carrier if they would be interested in any other
+      loads? If yes, then ask the carrier what direction they want to go then use the 'find_loads_by_lane' tool
+
+    CLARA_PROMPT_invalid_dot_mcNumber: Confirm the MC or DOT number again with the carrier
+    CLARA_PROMPT_use_transfer_to_carrier_sales_rep: Transfer the call using the 'transfer_to_carrier_sales_rep' tool
+    CLARA_PROMPT_use_tentative_pass: Use the 'tentative_pass' tool
+    CLARA_PROMPT_invalid_order: Confirm the order ID/number again with the carrier & call this tool again
+
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''

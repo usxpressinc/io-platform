@@ -175,7 +175,7 @@ cython_debug/
 **/.logs
 **/.DS_Store
 .project
-.env
+*.env
 
 .logs
 .evfevent

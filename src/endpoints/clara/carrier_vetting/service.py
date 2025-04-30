@@ -4,12 +4,14 @@ import pydash
 from fastapi import HTTPException, status
 from glom import Match, glom
 
+from src.prompts import ClaraPrompts
 from src.settings import Settings
 
 from . import constants, helpers, models
 
 settings = Settings()
 errors = constants.Errors()
+prompts = ClaraPrompts()
 logger = logging.getLogger(__name__)
 
 
@@ -508,8 +510,7 @@ def get_mcleod_carrier(highway_json):
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="multiple_mcleod_carrier",
-                        description="""Too many Active carriers found in Mcleod for the same carrier ID.
-Transfer the call using the transfer_to_carrier_sales_rep tool""",
+                        description=prompts.MultipleMcleodCarrier,
                     ),
                     failedBy=[x["id"] for x in mcleod_carrier_json],
                     statusCode=status.HTTP_400_BAD_REQUEST,
@@ -522,7 +523,7 @@ Transfer the call using the transfer_to_carrier_sales_rep tool""",
                     isValid=False,
                     error=models.CarrierValidityError(
                         code="no_mcleod_active_carrier",
-                        description="Use the 'compliance_check' tool to proceed.",
+                        description=prompts.UseComplianceCheck,
                     ),
                     statusCode=status.HTTP_404_NOT_FOUND,
                 ),
@@ -534,7 +535,7 @@ Transfer the call using the transfer_to_carrier_sales_rep tool""",
                 isValid=False,
                 error=models.CarrierValidityError(
                     code="no_mcleod_carrier",
-                    description="Use the 'compliance_check' tool to proceed.",
+                    description=prompts.UseComplianceCheck,
                 ),
                 statusCode=status.HTTP_404_NOT_FOUND,
             ),
