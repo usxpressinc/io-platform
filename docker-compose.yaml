@@ -16,6 +16,7 @@ services:
       HOST: '*'
     env_file:
       - .env
+      - clara.env
     stop_grace_period: 0s
     volumes:
       - ./outputs:/outputs
