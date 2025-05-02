@@ -1,0 +1,51 @@
+{
+  "load": {
+    "isBrokerage": "{true/false}",
+    "isAsset": "{true/false}",
+    "company": "01",
+    "customerName": "{Extracted Customer Name}",
+    "freightId": "{Extracted Freight ID or Load Number}",
+    "pickup": {
+      "scheduledAppointmentTimestamp": {
+        "early": "{Extracted Pickup Start Time in ISO 8601 Format}",
+        "late": "{Extracted Pickup End Time in ISO 8601 Format}"
+      },
+      "location": {
+        "city": "{Extracted Origin City}",
+        "state": "{Extracted Origin State}",
+        "zip": "{Extracted Origin Zip}"
+      }
+    },
+    "delivery": {
+      "scheduledAppointmentTimestamp": {
+        "early": "{Extracted Delivery Start Time in ISO 8601 Format}",
+        "late": "{Extracted Delivery End Time in ISO 8601 Format}"
+      },
+      "location": {
+        "city": "{Extracted Origin City}",
+        "state": "{Extracted Origin State}",
+        "zip": "{Extracted Origin Zip}"
+      }
+    },
+    "distance": "{Calculated Distance in Miles}",
+    "equipmentType": "{Extracted Equipment Type}",
+    "isHazmat": "{true/false}",
+    "isTeamRequired": "{true/false}",
+    "isTempProtectRequired": "{true/false}",
+    "carrierCode": "{Extracted Carrier Code, if available}"
+  },
+  "meta": {
+    "email": {
+      "receivedTimestamp": "{Timestamp of Email Received in ISO 8601 Format}",
+      "senderAddress": "{Email Address of the Sender}"
+    },
+    "specialInstructions": "{Extracted Special Instructions or Comments}",
+    "assumptions": [
+      {
+        "field": "{Field with Assumption}",
+        "assumption": "{What Was Assumed}",
+        "reason": "{Why the Assumption Was Made}"
+      }
+    ]
+  }
+}
