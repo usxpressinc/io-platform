@@ -16,6 +16,7 @@ class HighwayInsuranceUpdate:
         "has_vin_if_auto_policy_is_scheduled_autos"
     )
 
+    @staticmethod
     def description(item: str):
         desc = ""
         match item:
@@ -47,6 +48,7 @@ class McleodCheckQualification:
     is_bond_surety_on_file = "is_bond_surety_on_file"
     phmsa_is_verified = "phmsa_is_verified"
 
+    @staticmethod
     def description(item: str):
         match item:
             case McleodCheckQualification.is_bond_surety_on_file:
@@ -65,6 +67,8 @@ class McleodCheckQualification:
                 return prompts.CarbAcf
             case McleodCheckQualification.carb_tru:
                 return prompts.CarbTru
+            case _:
+                return ""
 
 
 class Errors:

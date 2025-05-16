@@ -19,12 +19,12 @@ def lookup_jobs(
     item: jobs_models.JobLookupRequest,
     response: Response,
     authenticated: bool = Security(authenticate_token, scopes=["lea"]),
-) -> LLMResponse[jobs_models.JobLookupResponse]:
+) -> LLMResponse[jobs_models.JobLookupResponse | str]:
     try:
         result = jobs_service.lookup_jobs(item=item)
     except HTTPException as e:
         response.status_code = e.status_code
         result = e.detail
-    return LLMResponse[jobs_models.JobLookupResponse](
-        data=result, schema=jobs_models.schema
+    return LLMResponse[jobs_models.JobLookupResponse | str](
+        data=result, response_schema=jobs_models.schema
     )

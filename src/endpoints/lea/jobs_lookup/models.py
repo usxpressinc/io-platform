@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pygeoif.types import LineType, Point2D, Point3D
 
 from src.models.common import BaseCleanModel
 
@@ -21,8 +22,8 @@ class JobLookupRequest(BaseModel):
 
 
 class JobCoords(BaseModel):
-    lat: float
-    lon: float
+    lat: LineType | float | Point2D | Point3D
+    lon: LineType | float | Point2D | Point3D
 
 
 class JobLocation(BaseModel):
@@ -93,8 +94,8 @@ If unsure how to pronounce an unfamiliar string, spell it slowly, then offer to 
 schema = JobLookupResponse(
     jobs=[
         Job(
-            name=Settings().JobLookupResponse_name,
-            description=Settings().JobLookupResponse_desc,
+            name=Settings.model_validate({}).JobLookupResponse_name,
+            description=Settings.model_validate({}).JobLookupResponse_desc,
             milesFromLocation="""This is the distance from the job location. If 0, then it is covered in the region.
             If greater than 0, then it is around the region""",
         )

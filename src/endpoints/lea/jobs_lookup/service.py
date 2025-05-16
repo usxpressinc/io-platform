@@ -1,11 +1,13 @@
 import logging
 
+from fastapi import HTTPException, status
+
 from src.helpers.geoservices import get_location_match
 from src.settings import Settings
 
 from . import helpers, models
 
-settings = Settings()
+settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 
 
@@ -24,3 +26,7 @@ def lookup_jobs(item: models.JobLookupRequest) -> models.JobLookupResponse:
         return models.JobLookupResponse(jobs=jobs)
     except Exception as e:
         logger.error("Error:", repr(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed with error {repr(e)}",
+        )

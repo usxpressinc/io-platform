@@ -34,7 +34,7 @@ from pythonjsonlogger.json import JsonFormatter
 
 from src.settings import Settings
 
-handler: LoggingHandler = None
+handler: LoggingHandler | None = None
 
 
 class OtelProviders:
@@ -96,7 +96,7 @@ def set_logger(resource: Resource) -> LoggerProvider:
     Returns:
         LoggerProvider: Logger Provider
     """
-    settings = Settings()
+    settings = Settings.model_validate({})
     LoggingInstrumentor().instrument(set_logging_format=False)
     # Create and set the logger provider
     logger_provider = LoggerProvider(resource=resource)
@@ -132,7 +132,7 @@ def setting_otlp(app: FastAPI) -> OtelProviders:
         LoggerProvider: Returns LoggerProvider
     """
     global handler
-    settings = Settings()
+    settings = Settings.model_validate({})
     resource = get_aggregated_resources(
         [
             _HostResourceDetector(),

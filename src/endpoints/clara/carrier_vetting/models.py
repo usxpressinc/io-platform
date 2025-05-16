@@ -57,6 +57,7 @@ class CarrierValidityRequest(BaseModel):
 class CarrierValidityError(BaseCleanModel):
     code: str
     description: str
+    classification: str | None = None
 
 
 CARRIER_CONTACTS: list[CarrierContact] = []
@@ -67,8 +68,8 @@ def get_carrier_contacts():
 
 
 class CarrierValidityResponse(BaseCleanModel):
-    isValid: bool | str
-    error: CarrierValidityError | None = None
+    isValid: str
+    errors: list[CarrierValidityError] = []
     failedBy: list[str] = []
     statusCode: int | str = 200
     contacts: list[CarrierContact] = Field(default_factory=get_carrier_contacts)
@@ -79,10 +80,13 @@ schema = CarrierValidityResponse(
 If false, you cannot sell this load to this carrier,
 meaning the carrier is not eligible to move this load and thus you cannot use the "move_on"
 tool under any circumstances, instead when this field is "false" follow the description for next steps.""",
-    error=CarrierValidityError(
-        code="If not valid, then this tells you why the carrier failed the check",
-        description="This gives more information about the code. This is what should be provided to the user",
-    ),
+    errors=[
+        CarrierValidityError(
+            code="If not valid, then this tells you why the carrier failed the check",
+            description="This gives more information about the code. This is what should be provided to the user",
+            classification="If this is not empty or null, then it contains the classification where the rule failed",
+        )
+    ],
     failedBy=[
         "This isn't useful for the user but it helps us understand which check the validity failed"
     ],

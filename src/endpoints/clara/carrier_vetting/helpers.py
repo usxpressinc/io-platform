@@ -12,7 +12,7 @@ from src.settings import Settings
 
 from . import models
 
-settings = Settings()
+settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 prompts = ClaraPrompts()
 
@@ -45,15 +45,17 @@ def get_highway_details(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_dot_mcNumber",
-                        description=prompts.InvalidDotMcNumber,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_dot_mcNumber",
+                            description=prompts.InvalidDotMcNumber,
+                        )
+                    ],
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     c_response = requests.get(
@@ -64,15 +66,17 @@ def get_highway_details(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_carrier",
-                        description=prompts.UseTransferToCarrierSalesRep,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_carrier",
+                            description=prompts.UseTransferToCarrierSalesRep,
+                        )
+                    ],
                     failedBy=["highway"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     carrier_text = c_response.text
@@ -83,15 +87,17 @@ def get_highway_details(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=LLMResponse[models.CarrierValidityResponse](
                     data=models.CarrierValidityResponse(
-                        isValid=False,
-                        error=models.CarrierValidityError(
-                            code="highway_down",
-                            description=prompts.UseTransferToCarrierSalesRep,
-                        ),
+                        isValid="false",
+                        errors=[
+                            models.CarrierValidityError(
+                                code="highway_down",
+                                description=prompts.UseTransferToCarrierSalesRep,
+                            )
+                        ],
                         failedBy=["highway"],
                         statusCode=status.HTTP_502_BAD_GATEWAY,
                     ),
-                    schema=models.schema,
+                    response_schema=models.schema,
                 ).model_dump(),
             )
         else:
@@ -99,15 +105,17 @@ def get_highway_details(
                 status_code=c_response.status_code,
                 detail=LLMResponse[models.CarrierValidityResponse](
                     data=models.CarrierValidityResponse(
-                        isValid=False,
-                        error=models.CarrierValidityError(
-                            code="highway_issue",
-                            description=prompts.UseTransferToCarrierSalesRep,
-                        ),
+                        isValid="false",
+                        errors=[
+                            models.CarrierValidityError(
+                                code="highway_issue",
+                                description=prompts.UseTransferToCarrierSalesRep,
+                            )
+                        ],
                         failedBy=["highway", carrier_text],
                         statusCode=c_response.status_code,
                     ),
-                    schema=models.schema,
+                    response_schema=models.schema,
                 ).model_dump(),
             )
     return json.loads(carrier_text)
@@ -130,17 +138,20 @@ def get_mcleod_carrier_details(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_dot_mc_number",
-                        description=prompts.InvalidDotMcNumber,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_dot_mc_number",
+                            description=prompts.InvalidDotMcNumber,
+                        )
+                    ],
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
+    search = ""
     if dotNumber:
         logger.info("dotNumber is not None")
         search = f"drsPayee.dot_number={dotNumber}"
@@ -160,15 +171,17 @@ def get_mcleod_carrier_details(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=LLMResponse[models.CarrierValidityResponse](
                     data=models.CarrierValidityResponse(
-                        isValid=False,
-                        error=models.CarrierValidityError(
-                            code="invalid_dot_mc_number",
-                            description=prompts.UseTransferToCarrierSalesRep,
-                        ),
+                        isValid="false",
+                        errors=[
+                            models.CarrierValidityError(
+                                code="invalid_dot_mc_number",
+                                description=prompts.UseTransferToCarrierSalesRep,
+                            )
+                        ],
                         failedBy=["Mcleod", c_response.text],
                         statusCode=status.HTTP_502_BAD_GATEWAY,
                     ),
-                    schema=models.schema,
+                    response_schema=models.schema,
                 ).model_dump(),
             )
         else:
@@ -176,38 +189,41 @@ def get_mcleod_carrier_details(
                 status_code=c_response.status_code,
                 detail=LLMResponse[models.CarrierValidityResponse](
                     data=models.CarrierValidityResponse(
-                        isValid=False,
-                        error=models.CarrierValidityError(
-                            code="invalid_dot_mc_number",
-                            description=prompts.UseTransferToCarrierSalesRep,
-                        ),
+                        isValid="false",
+                        errors=[
+                            models.CarrierValidityError(
+                                code="invalid_dot_mc_number",
+                                description=prompts.UseTransferToCarrierSalesRep,
+                            )
+                        ],
                         failedBy=["Mcleod", c_response.text],
                         statusCode=c_response.status_code,
                     ),
-                    schema=models.schema,
+                    response_schema=models.schema,
                 ).model_dump(),
             )
-    if c_response.text is None:
-        logger.error("No Response Text %s", c_response.text)
+    if c_response.text == "":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_carrier",
-                        description=prompts.InvalidDotMcNumber,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_carrier",
+                            description=prompts.InvalidDotMcNumber,
+                        )
+                    ],
                     failedBy=["Mcleod"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     return c_response.json()
 
 
-def get_mcleod_order(order_id: str):
+def get_mcleod_order(order_id: str | None):
     """
     ## Check whether a carrier is valid using Mcleod API
     """
@@ -217,15 +233,17 @@ def get_mcleod_order(order_id: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_order",
-                        description=prompts.UseTentativePass,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_order",
+                            description=prompts.UseTentativePass,
+                        )
+                    ],
                     failedBy=["Mcleod", "brokerageOrderId_empty"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     headers = {
@@ -241,15 +259,17 @@ def get_mcleod_order(order_id: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_order",
-                        description=prompts.InvalidOrder,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_order",
+                            description=prompts.InvalidOrder,
+                        )
+                    ],
                     failedBy=["Mcleod", "brokerageOrderId_invalid"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     c_response = requests.get(
@@ -266,15 +286,17 @@ def get_mcleod_order(order_id: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="invalid_order",
-                        description=prompts.InvalidOrder,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="invalid_order",
+                            description=prompts.InvalidOrder,
+                        )
+                    ],
                     failedBy=["Mcleod", "brokerageOrderId_invalid"],
                     statusCode=status.HTTP_400_BAD_REQUEST,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
 
@@ -284,15 +306,17 @@ def get_mcleod_order(order_id: str):
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="mcleod_down",
-                        description=prompts.UseTransferToCarrierSalesRep,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="mcleod_down",
+                            description=prompts.UseTransferToCarrierSalesRep,
+                        )
+                    ],
                     failedBy=["Mcleod", c_response.text],
                     statusCode=c_response.status_code,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     result = c_response.json()
@@ -316,7 +340,10 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
         ),
         params={"carrier": carrier_id, "movement": movement},
     )
-    c_response = requests.get(url=req.url, headers=headers)
+    request_url = ""
+    if req.url:
+        request_url = req.url
+    c_response = requests.get(url=request_url, headers=headers)
     result = c_response.text
     logger.info("Mcleod Carrier Validity is %s", result)
     if not c_response.ok:
@@ -325,15 +352,17 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=LLMResponse[models.CarrierValidityResponse](
                 data=models.CarrierValidityResponse(
-                    isValid=False,
-                    error=models.CarrierValidityError(
-                        code="mcleod_down",
-                        description=prompts.UseTransferToCarrierSalesRep,
-                    ),
+                    isValid="false",
+                    errors=[
+                        models.CarrierValidityError(
+                            code="mcleod_down",
+                            description=prompts.UseTransferToCarrierSalesRep,
+                        )
+                    ],
                     failedBy=["Mcleod", c_response.text],
                     statusCode=c_response.status_code,
                 ),
-                schema=models.schema,
+                response_schema=models.schema,
             ).model_dump(),
         )
     return result.lower() == "true"

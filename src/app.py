@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     await consumer.kafka_consumer_start()
     yield
     await consumer.kafka_consumer_end()
-    await shutdown_event()
+    shutdown_event()
 
 
 def create_app() -> FastAPI:
@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
     Returns:
         FastAPI: FastAPI App
     """
-    settings = Settings()
+    settings = Settings.model_validate({})
     app = FastAPI(
         title=settings.Project,
         description="Gateway for some QTops Calls",

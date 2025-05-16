@@ -19,7 +19,7 @@ def get_carrier_validity(
     item: carrier_vetting_models.CarrierValidityRequest,
     response: Response,
     authenticated: bool = Security(authenticate_token, scopes=["clara"]),
-) -> carrier_vetting_models.CarrierValidityResponse:
+) -> LLMResponse[carrier_vetting_models.CarrierValidityResponse | str]:
     """
     ## Check whether a carrier is valid using Highway API
     """
@@ -29,12 +29,12 @@ def get_carrier_validity(
             mcNumber=item.mcNumber,
             brokerage_order_id=item.brokerageOrderId,
         )
-        if result.error:
-            result.error.description = result.error.description
         response.status_code = status.HTTP_200_OK
-        return LLMResponse[carrier_vetting_models.CarrierValidityResponse](
-            data=result, schema=carrier_vetting_models.schema
-        )
+        return LLMResponse[
+            carrier_vetting_models.CarrierValidityResponse | str
+        ](data=result, response_schema=carrier_vetting_models.schema)
     except HTTPException as e:
         response.status_code = status.HTTP_200_OK
-        return e.detail
+        return LLMResponse[
+            carrier_vetting_models.CarrierValidityResponse | str
+        ](data=e.detail, response_schema=carrier_vetting_models.schema)

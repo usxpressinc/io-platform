@@ -1,4 +1,5 @@
 import logging
+from typing import cast
 
 import requests
 from fastkml import Placemark, kml
@@ -63,17 +64,19 @@ def extract_polygons_from_kml(kml_bytes):
     k = kml.KML.from_string(kml_bytes)
     polygons: list[models.JobLocation] = []
 
-    placemarks: list[Placemark] = list(find_all(k, of_type=Placemark))
+    raw: list[object] = list(find_all(k, of_type=Placemark))
+    placemarks: list[Placemark] = cast(list[Placemark], raw)
     for p in placemarks:
-        if "closed" in p.name.lower():
-            continue
-        coords = parse_geometries(p)
+        if p.name is not None:
+            if "closed" in p.name.lower():
+                continue
+            coords = parse_geometries(p)
 
-        polygons.append(
-            models.JobLocation(
-                name=p.name, description=p.description, coords=coords
+            polygons.append(
+                models.JobLocation(
+                    name=p.name, description=p.description, coords=coords
+                )
             )
-        )
     return polygons
 
 
@@ -81,7 +84,7 @@ def get_jobs_point_against_polygons(
     polygons: list[models.JobLocation],
     latitude: float,
     longitude: float,
-    distanceFromJob: int,
+    distanceFromJob: float,
 ) -> list[models.Job]:
     transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
     x, y = transformer.transform(longitude, latitude)
