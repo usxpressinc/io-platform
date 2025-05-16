@@ -14,6 +14,7 @@ router = APIRouter(prefix="/api/clara", include_in_schema=True, tags=["clara"])
     response_description="Return HTTP Status Code 200 (OK)",
     status_code=status.HTTP_202_ACCEPTED,
     response_model=LLMResponse[carrier_vetting_models.CarrierValidityResponse],
+    response_model_exclude_none=True,
 )
 def get_carrier_validity(
     item: carrier_vetting_models.CarrierValidityRequest,

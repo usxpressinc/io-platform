@@ -49,7 +49,7 @@ def get_highway_details(
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_dot_mcNumber",
-                            description=prompts.InvalidDotMcNumber,
+                            description=prompts.invalid_dot_mcNumber,
                         )
                     ],
                     failedBy=["highway"],
@@ -70,7 +70,7 @@ def get_highway_details(
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_carrier",
-                            description=prompts.UseTransferToCarrierSalesRep,
+                            description=prompts.use_transfer_to_carrier_sales_rep,
                         )
                     ],
                     failedBy=["highway"],
@@ -91,7 +91,7 @@ def get_highway_details(
                         errors=[
                             models.CarrierValidityError(
                                 code="highway_down",
-                                description=prompts.UseTransferToCarrierSalesRep,
+                                description=prompts.use_transfer_to_carrier_sales_rep,
                             )
                         ],
                         failedBy=["highway"],
@@ -109,7 +109,7 @@ def get_highway_details(
                         errors=[
                             models.CarrierValidityError(
                                 code="highway_issue",
-                                description=prompts.UseTransferToCarrierSalesRep,
+                                description=prompts.use_transfer_to_carrier_sales_rep,
                             )
                         ],
                         failedBy=["highway", carrier_text],
@@ -142,7 +142,7 @@ def get_mcleod_carrier_details(
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_dot_mc_number",
-                            description=prompts.InvalidDotMcNumber,
+                            description=prompts.invalid_dot_mcNumber,
                         )
                     ],
                     failedBy=["Mcleod"],
@@ -175,7 +175,7 @@ def get_mcleod_carrier_details(
                         errors=[
                             models.CarrierValidityError(
                                 code="invalid_dot_mc_number",
-                                description=prompts.UseTransferToCarrierSalesRep,
+                                description=prompts.use_transfer_to_carrier_sales_rep,
                             )
                         ],
                         failedBy=["Mcleod", c_response.text],
@@ -193,7 +193,7 @@ def get_mcleod_carrier_details(
                         errors=[
                             models.CarrierValidityError(
                                 code="invalid_dot_mc_number",
-                                description=prompts.UseTransferToCarrierSalesRep,
+                                description=prompts.use_transfer_to_carrier_sales_rep,
                             )
                         ],
                         failedBy=["Mcleod", c_response.text],
@@ -211,7 +211,7 @@ def get_mcleod_carrier_details(
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_carrier",
-                            description=prompts.InvalidDotMcNumber,
+                            description=prompts.invalid_dot_mcNumber,
                         )
                     ],
                     failedBy=["Mcleod"],
@@ -237,7 +237,7 @@ def get_mcleod_order(order_id: str | None):
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_order",
-                            description=prompts.UseTentativePass,
+                            description=prompts.use_tentative_pass,
                         )
                     ],
                     failedBy=["Mcleod", "brokerageOrderId_empty"],
@@ -263,7 +263,7 @@ def get_mcleod_order(order_id: str | None):
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_order",
-                            description=prompts.InvalidOrder,
+                            description=prompts.invalid_order,
                         )
                     ],
                     failedBy=["Mcleod", "brokerageOrderId_invalid"],
@@ -290,7 +290,7 @@ def get_mcleod_order(order_id: str | None):
                     errors=[
                         models.CarrierValidityError(
                             code="invalid_order",
-                            description=prompts.InvalidOrder,
+                            description=prompts.invalid_order,
                         )
                     ],
                     failedBy=["Mcleod", "brokerageOrderId_invalid"],
@@ -310,7 +310,7 @@ def get_mcleod_order(order_id: str | None):
                     errors=[
                         models.CarrierValidityError(
                             code="mcleod_down",
-                            description=prompts.UseTransferToCarrierSalesRep,
+                            description=prompts.use_transfer_to_carrier_sales_rep,
                         )
                     ],
                     failedBy=["Mcleod", c_response.text],
@@ -356,7 +356,7 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
                     errors=[
                         models.CarrierValidityError(
                             code="mcleod_down",
-                            description=prompts.UseTransferToCarrierSalesRep,
+                            description=prompts.use_transfer_to_carrier_sales_rep,
                         )
                     ],
                     failedBy=["Mcleod", c_response.text],

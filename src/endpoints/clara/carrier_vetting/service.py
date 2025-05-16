@@ -333,7 +333,7 @@ def get_mcleod_carrier(highway_json):
                     errors=[
                         models.CarrierValidityError(
                             code="multiple_mcleod_carrier",
-                            description=prompts.MultipleMcleodCarrier,
+                            description=prompts.multiple_mcleod_carrier,
                         )
                     ],
                     failedBy=[x["id"] for x in mcleod_carrier_json],
@@ -348,7 +348,7 @@ def get_mcleod_carrier(highway_json):
                     errors=[
                         models.CarrierValidityError(
                             code="no_mcleod_active_carrier",
-                            description=prompts.UseComplianceCheck,
+                            description=prompts.use_compliance_check,
                         )
                     ],
                     statusCode=status.HTTP_404_NOT_FOUND,
@@ -362,7 +362,7 @@ def get_mcleod_carrier(highway_json):
                 errors=[
                     models.CarrierValidityError(
                         code="no_mcleod_carrier",
-                        description=prompts.UseComplianceCheck,
+                        description=prompts.use_compliance_check,
                     )
                 ],
                 statusCode=status.HTTP_404_NOT_FOUND,
@@ -572,12 +572,12 @@ def failed_classifications(
             if c.get("name") == "Interstate"
         ]
     )
+    failed_errors: list[models.CarrierValidityError] = []
     for classification in highway_json["rules_assessment"]["classifications"]:
         name = classification.get("name")
         # Todo: Needs to be fixed
-        if name != "Interstate":
+        if name not in ("Interstate", "Intrastate - US"):
             break
-        failed_errors: list[models.CarrierValidityError] = []
         failed_by = ["rules_assessment.overall_result=fail"]
         failed_assessments = []
         for rule, result in classification.get("rules", dict()).items():
@@ -753,8 +753,12 @@ def failed_classifications(
             for x in failed_errors
         ]
         failed_by = ["{}:{}".format(name, x) for x in failed_by]
-        return models.CarrierValidityResponse(
-            isValid="false",
-            errors=failed_errors,
-            failedBy=failed_by,
-        )
+        if name == "Interstate" and len(failed_errors) > 0:
+            break
+    if len(failed_errors) == 0:
+        return None
+    return models.CarrierValidityResponse(
+        isValid="false",
+        errors=failed_errors,
+        failedBy=failed_by,
+    )

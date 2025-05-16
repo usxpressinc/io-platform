@@ -83,7 +83,8 @@ tool under any circumstances, instead when this field is "false" follow the desc
     errors=[
         CarrierValidityError(
             code="If not valid, then this tells you why the carrier failed the check",
-            description="This gives more information about the code. This is what should be provided to the user",
+            description="""This gives more information about the code. This is what should be provided to the user.
+Use both code & description to use for prompt since sometimes the description might not tell everything""",
             classification="If this is not empty or null, then it contains the classification where the rule failed",
         )
     ],
