@@ -11,6 +11,7 @@ from shapely.geometry import Point, Polygon
 from . import models
 
 logger = logging.getLogger(__name__)
+Lea_Polygons: list[models.JobLocation] = []
 
 
 def download_linked_kml(href):

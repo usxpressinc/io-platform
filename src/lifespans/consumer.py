@@ -32,7 +32,7 @@ async def kafka_consumer_start():
         auto_offset_reset="latest",
     )
     # await consumer.start()
-    consumer_task = asyncio.create_task(kafka_consume_messages())
+    # consumer_task = asyncio.create_task(kafka_consume_messages())
 
 
 async def kafka_consume_messages():
