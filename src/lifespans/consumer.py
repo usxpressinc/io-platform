@@ -7,7 +7,7 @@ from aiokafka.helpers import create_ssl_context
 
 from src.settings import Settings
 
-settings = Settings()
+settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 ssl_context = create_ssl_context()
 
@@ -31,8 +31,8 @@ async def kafka_consumer_start():
         ssl_context=ssl_context,
         auto_offset_reset="latest",
     )
-    await consumer.start()
-    consumer_task = asyncio.create_task(kafka_consume_messages())
+    # await consumer.start()
+    # consumer_task = asyncio.create_task(kafka_consume_messages())
 
 
 async def kafka_consume_messages():

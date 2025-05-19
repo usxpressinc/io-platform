@@ -1,26 +1,30 @@
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-import src.consumer as consumer
-import src.events as events
 from src.endpoints.health import router as health_router
 from src.endpoints.router import routers as endpoints_routers
-from src.events import shutdown_event
+from src.lifespans import consumer, events
+from src.lifespans import lea_google_jobs as lea
 from src.monitoring import setting_otlp
 from src.settings import Settings
 
 logger = logging.getLogger(__name__)
+scheduler = BackgroundScheduler()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    scheduler.start()
     await consumer.kafka_consumer_start()
     yield
+    scheduler.shutdown()
     await consumer.kafka_consumer_end()
-    await shutdown_event()
+    events.shutdown_event()
 
 
 def create_app() -> FastAPI:
@@ -32,7 +36,7 @@ def create_app() -> FastAPI:
     Returns:
         FastAPI: FastAPI App
     """
-    settings = Settings()
+    settings = Settings.model_validate({})
     app = FastAPI(
         title=settings.Project,
         description="Gateway for some QTops Calls",
@@ -59,7 +63,18 @@ def create_app() -> FastAPI:
     for r in endpoints_routers:
         app.include_router(r)
     app.include_router(health_router)
+    schedules()
     return app
+
+
+def schedules():
+    scheduler.add_job(
+        lea.get_jobs,
+        "interval",
+        minutes=30,
+        max_instances=1,
+        next_run_time=datetime.now(),
+    )
 
 
 app = create_app()

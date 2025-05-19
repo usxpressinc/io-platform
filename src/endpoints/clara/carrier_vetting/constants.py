@@ -2,7 +2,7 @@ from src.prompts import ClaraPrompts
 
 from .models import CarrierValidityError
 
-prompts = ClaraPrompts()
+prompts = ClaraPrompts.model_validate({})
 
 
 class HighwayInsuranceUpdate:
@@ -16,23 +16,24 @@ class HighwayInsuranceUpdate:
         "has_vin_if_auto_policy_is_scheduled_autos"
     )
 
+    @staticmethod
     def description(item: str):
         desc = ""
         match item:
             case HighwayInsuranceUpdate.multi_currency_bipd_requirement:
-                desc = prompts.MultiCurrencyBipdRequirement
+                desc = prompts.multi_currency_bipd_requirement
             case HighwayInsuranceUpdate.new_jersey_auto_liability:
-                desc = prompts.NewJerseyAutoLiability
+                desc = prompts.new_jersey_auto_liability
             case HighwayInsuranceUpdate.multi_currency_cargo_requirement:
-                desc = prompts.MultiCurrencyCargoRequirement
+                desc = prompts.multi_currency_cargo_requirement
             case (
                 HighwayInsuranceUpdate.multi_currency_general_liability_requirement
             ):
-                desc = prompts.MultiCurrencyGeneralLiabilityRequirement
+                desc = prompts.multi_currency_general_liability_requirement
             case (
                 HighwayInsuranceUpdate.has_vin_if_auto_policy_is_scheduled_autos
             ):
-                desc = prompts.HasVinIfAutoPolicyIsScheduledAutos
+                desc = prompts.has_vin_if_auto_policy_is_scheduled_autos
         return desc
 
 
@@ -47,62 +48,65 @@ class McleodCheckQualification:
     is_bond_surety_on_file = "is_bond_surety_on_file"
     phmsa_is_verified = "phmsa_is_verified"
 
+    @staticmethod
     def description(item: str):
         match item:
             case McleodCheckQualification.is_bond_surety_on_file:
-                return prompts.IsBondSuretyOnFile
+                return prompts.is_bond_surety_on_file
             case McleodCheckQualification.phmsa_is_verified:
-                return prompts.PhmsaIsVerified
+                return prompts.phmsa_is_verified
             case (
                 McleodCheckQualification.interstate_carrier_authority_is_active
             ):
-                return prompts.InterstateCarrierAuthorityIsActive
+                return prompts.interstate_carrier_authority_is_active
             case McleodCheckQualification.is_refrigeration_breakdown_included:
-                return prompts.IsRefrigerationBreakdownIncluded
+                return prompts.is_refrigeration_breakdown_included
             case McleodCheckQualification.trailer_interchange:
-                return prompts.TrailerInterchange
+                return prompts.trailer_interchange
             case McleodCheckQualification.carb_acf:
-                return prompts.CarbAcf
+                return prompts.carb_acf
             case McleodCheckQualification.carb_tru:
-                return prompts.CarbTru
+                return prompts.carb_tru
+            case _:
+                return ""
 
 
 class Errors:
     HighwaySetup = CarrierValidityError(
         code="highway_setup",
-        description=prompts.HighwaySetup,
+        description=prompts.highway_setup,
     )
 
     DoNotUse = CarrierValidityError(
         code="do_not_use",
-        description=prompts.DoNotUse,
+        description=prompts.do_not_use,
     )
 
     HighwayConnect = CarrierValidityError(
         code="highway_connect",
-        description=prompts.HighwayConnect,
+        description=prompts.highway_connect,
     )
 
     ComplianceCheck = CarrierValidityError(
         code="compliance_check",
-        description=prompts.ComplianceCheck,
+        description=prompts.compliance_check,
     )
     DispatchConnection = CarrierValidityError(
         code="dispatch_connection",
-        description=prompts.DispatchConnection,
+        description=prompts.dispatch_connection,
     )
     TransferAgent = CarrierValidityError(
         code="transfer_agent",
-        description=prompts.TransferAgent,
+        description=prompts.transfer_agent,
     )
     FmcsaContactChange = CarrierValidityError(
         code="FMCSA_contact_change",
-        description=prompts.FmcsaContactChange,
+        description=prompts.fmcsa_contact_change,
     )
 
     SellAltLoad = CarrierValidityError(
         code="sell_alt_load",
-        description=prompts.SellAltLoad,
+        description=prompts.sell_alt_load,
     )
 
     def CheckQualificationFailure(self, item: str) -> CarrierValidityError:
@@ -112,6 +116,7 @@ class Errors:
         )
 
     def HighwayInsuranceUpdate(self, item: str) -> CarrierValidityError:
+        print(HighwayInsuranceUpdate.description(item=item))
         return CarrierValidityError(
             code="highway_insurance_update",
             description=HighwayInsuranceUpdate.description(item=item),
