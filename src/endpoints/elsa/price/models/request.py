@@ -55,6 +55,6 @@ class Meta(BaseModel):
     assumptions: list[Assumption]
 
 
-class Request(BaseModel):
-    load: Load
-    meta: Meta
+# class Request(BaseModel):
+#     load: Load
+#     meta: Meta

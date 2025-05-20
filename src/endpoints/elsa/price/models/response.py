@@ -8,5 +8,5 @@ class Response(BaseCleanModel):
 
 schema = Response(
     price="All in Price for the Request",
-    error="If failed with error, what error it is"
+    error="If failed with error, what error it is",
 )

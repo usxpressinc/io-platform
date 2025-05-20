@@ -1,5 +1,5 @@
-from .models import response, request
 from . import service
+from .models import request, response
 
 request_model = request
 response_model = response

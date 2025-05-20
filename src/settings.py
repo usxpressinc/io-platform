@@ -38,3 +38,5 @@ class Settings(BaseSettings):
     KAFKA__client_id: str = Field(alias="KAFKA__client_id")
     KAFKA__consumer_group: str = Field(alias="KAFKA__consumer_group")
     KAFKA__topic_rapid_alert: str = Field(alias="KAFKA__rapid_alert")
+
+    Elsa_pricing_api: str = Field(alias="ELSA_PRICING_API")

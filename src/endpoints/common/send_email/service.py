@@ -17,7 +17,7 @@ from src.settings import Settings
 
 from . import models
 
-settings = Settings()
+settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 
 
