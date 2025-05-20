@@ -157,7 +157,7 @@ def get_mcleod_carrier_details(
         search = f"drsPayee.dot_number={dotNumber}"
     elif mcNumber:
         logger.info("mcNumber is not None")
-        search = f"drsPayee.icc_number=MC{mcNumber}"
+        search = f"drsPayee.icc_number={mcNumber}"
     c_response = requests.get(
         url=urljoin(
             settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"

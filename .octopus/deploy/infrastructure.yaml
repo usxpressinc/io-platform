@@ -58,9 +58,7 @@ api:
 
     CLARA_PROMPT_highway_setup: Explain that we need them to register with Highway, because Highway manages our carrier compliance and setup packages. Then
       use the 'highway_setup' tool. Then ask for the best email to send a link to.
-    CLARA_PROMPT_do_not_use: You cannot use this carrier. If the carrier asks why, you tell them that you do not have access to that information, all you
-      know is that they are not set up to work with you. Then politely end the call. We CAN NOT sell them the load and CAN NOT use the 'move_on' tool, under
-      any circumstances.
+    CLARA_PROMPT_do_not_use: You cannot use this carrier. You CAN NOT sell them the load and CAN NOT use the 'move_on' tool, under any circumstances.
     CLARA_PROMPT_highway_connect: Explain that we need them to complete their highway connection with us. Then use the 'highway_connect' tool. Then ask
       for the best email to send a link to.
     CLARA_PROMPT_compliance_check: Explain to the carrier that we need our compliance team to review their account. Tell the carrier you're submitting a
