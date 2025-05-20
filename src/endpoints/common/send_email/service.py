@@ -32,12 +32,14 @@ def send_email(item: models.SendEmailRequest) -> models.SendEmailResponse:
     email = Mail(from_email=from_email, subject=subject, html_content=content)
 
     personalization = Personalization()
-    for to_email in item.to_emails:
+    for to_email in item.to_emails.split(";"):
         personalization.add_to(To(to_email))
-    for cc_email in item.cc_emails:
-        personalization.add_cc(Cc(cc_email))
-    for bcc_email in item.bcc_emails:
-        personalization.add_bcc(Bcc(bcc_email))
+    if item.cc_emails:
+        for cc_email in item.cc_emails.split(";"):
+            personalization.add_cc(Cc(cc_email))
+    if item.bcc_emails:
+        for bcc_email in item.bcc_emails.split(";"):
+            personalization.add_bcc(Bcc(bcc_email))
     email.add_personalization(personalization=personalization)
 
     try:

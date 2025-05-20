@@ -9,7 +9,7 @@ class SendEmailResponse(BaseModel):
 class SendEmailRequest(BaseModel):
     body: str
     from_email: str
-    to_emails: list[str]
+    to_emails: str
     subject: str
-    cc_emails: list[str] = []
-    bcc_emails: list[str] = []
+    cc_emails: str = ""
+    bcc_emails: str = ""
