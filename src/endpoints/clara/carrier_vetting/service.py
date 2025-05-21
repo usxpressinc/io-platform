@@ -605,36 +605,6 @@ def failed_classifications(
             failed_errors.append(errors.DispatchConnection)
             failed_by.extend(["no_active_dispatcher_connections=fail"])
 
-        if (
-            glom(
-                highway_json,
-                "authority_assessment.carrier_interstate_authority_check",
-                default="",
-            ).lower()
-            != "active"
-            or glom(
-                highway_json,
-                "authority_assessment.latest_safety_rating",
-                default="",
-            ).lower()
-            not in ["satisfactory", "unrated"]
-            or (
-                glom(
-                    highway_json,
-                    "authority_assessment.carrier_interstate_authority_check",
-                    default="",
-                ).lower()
-                != "active"
-            )
-        ):
-            failed_errors.append(errors.DoNotUse)
-            failed_by.extend(
-                [
-                    "authority_assessment.carrier_interstate_authority_check=fail",
-                    "authority_assessment.latest_safety_rating=fail",
-                ]
-            )
-
         if set(
             [
                 "authority_age_requirement",
