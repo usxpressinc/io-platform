@@ -39,7 +39,7 @@ def lookup_price(body: typing.Any) -> response_model.LookupPriceResponse:
     logger.debug("SPAPI PriceItem : %s", price_item)
     result = response_model.LookupPriceResponse(
         allInPrice=typing.cast(float, price_item["price"]["allInPrice"]),
-        distance=typing.cast(float, price_item["price"]["allInPrice"]),
+        distance=typing.cast(float, price_item["price"]["distance"]),
     )
 
     return result

@@ -9,6 +9,6 @@ class LookupPriceResponse(BaseCleanModel):
 
 schema = LookupPriceResponse(
     allInPrice="All in Price for the Request",
-    distance="Total Distance for the order",
+    distance="Total Distance for the order in miles",
     error="If failed with error, what error it is",
 )
