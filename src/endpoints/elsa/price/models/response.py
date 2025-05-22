@@ -1,12 +1,14 @@
 from src.models.common import BaseCleanModel
 
 
-class Response(BaseCleanModel):
-    price: int | str | None
-    error: str | None
+class LookupPriceResponse(BaseCleanModel):
+    allInPrice: float | str
+    distance: float | str
+    error: str | None = None
 
 
-schema = Response(
-    price="All in Price for the Request",
+schema = LookupPriceResponse(
+    allInPrice="All in Price for the Request",
+    distance="Total Distance for the order",
     error="If failed with error, what error it is",
 )

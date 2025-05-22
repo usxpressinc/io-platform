@@ -1,5 +1,3 @@
-import typing
-
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -12,7 +10,7 @@ from fastapi import (
 from src.helpers.auth import authenticate_token
 from src.models.response import LLMResponse
 
-from .price import pricing_service
+from .price import pricing_service, response_model
 
 router = APIRouter(prefix="/api/elsa", include_in_schema=True, tags=["elsa"])
 
@@ -22,19 +20,20 @@ router = APIRouter(prefix="/api/elsa", include_in_schema=True, tags=["elsa"])
     summary="Get Recommended Price for the Load",
     response_description="Return HTTP Status Code 200 (OK)",
     status_code=status.HTTP_200_OK,
-    response_model=LLMResponse[dict],
+    response_model_exclude_none=True,
+    response_model=LLMResponse[response_model.LookupPriceResponse],
 )
 async def lookup_price(
     request: Request,
     response: Response,
     authenticated: bool = Security(authenticate_token, scopes=["elsa"]),
-) -> LLMResponse[dict]:
+) -> LLMResponse[response_model.LookupPriceResponse]:
     try:
-        body = await request.json()
+        body: dict = await request.json()
         result = pricing_service.lookup_price(body=body)
     except HTTPException as e:
         response.status_code = e.status_code
         result = e.detail
-    return LLMResponse[dict](
-        data=typing.cast(dict, result), response_schema=dict()
+    return LLMResponse[response_model.LookupPriceResponse](
+        data=result, response_schema=response_model.schema
     )

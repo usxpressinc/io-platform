@@ -17,4 +17,4 @@ def get_price(body: typing.Any) -> dict:
 
     response.raise_for_status()
 
-    return response.json().get("data", dict())
+    return response.json()
