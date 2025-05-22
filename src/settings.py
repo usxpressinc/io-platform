@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     Nora_GoogleMapsKml: str = Field(alias="NORA_GOOGLE_MAPS_KML")
 
     Email_SendgridKey: str = Field(alias="EMAIL_SendgridKey")
+    Email_SignatureLogoUrl: str = Field(alias="Email_SignatureLogoUrl")
 
     KAFKA__api_key: str = Field(alias="KAFKA__api_key")
     KAFKA__api_secret: str = Field(alias="KAFKA__api_secret")

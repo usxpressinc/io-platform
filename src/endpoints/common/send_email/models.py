@@ -13,3 +13,13 @@ class SendEmailRequest(BaseModel):
     subject: str
     cc_emails: str = ""
     bcc_emails: str = ""
+    title: str | None = None
+    from_name: str | None = None
+
+
+class SendGridBody(BaseModel):
+    name: str
+    title: str | None = None
+    email: str
+    logo_url: str
+    content: str
