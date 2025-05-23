@@ -52,7 +52,6 @@ def send_email(item: models.SendEmailRequest) -> models.SendEmailResponse:
 
     from_email = Email(item.from_email)
     subject = item.subject
-    # content = HtmlContent(item.body)
 
     from_name = item.from_name
     if from_name is None:
