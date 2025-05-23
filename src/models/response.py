@@ -6,5 +6,5 @@ DataType = TypeVar("DataType")
 
 
 class LLMResponse(BaseCleanModel, Generic[DataType]):
-    data: DataType
+    data: DataType | str
     response_schema: DataType

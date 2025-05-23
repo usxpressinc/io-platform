@@ -79,6 +79,7 @@ api:
     CLARA_PROMPT_use_tentative_pass: Use the 'tentative_pass' tool
     CLARA_PROMPT_invalid_order: Confirm the order ID/number again with the carrier & call this tool again
 
+    ELSA_PRICING_API: https://api.pricing.spot.internal.usxpress.io/v4/pricing/price/manual
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
