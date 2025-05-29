@@ -16,6 +16,8 @@ def lookup_price(body: typing.Any) -> response_model.LookupPriceResponse:
         if key.startswith("stops."):
             seq = int(key.split(".", 1)[1])
             stops.append({"seq": seq, **value})
+        else:
+            value = helpers.parse_object(value=value)
     body = {k: v for k, v in body.items() if not k.startswith("stops.")}
 
     # Sort the list by sequence number
