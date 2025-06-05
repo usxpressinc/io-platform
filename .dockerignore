@@ -26,3 +26,5 @@ hack/**
 LICENSE
 README.md
 app/**
+.pytest_cache
+.venv

@@ -1,7 +1,7 @@
 import logging
 import typing
 
-import requests
+import httpx
 
 from src.settings import Settings
 
@@ -10,14 +10,14 @@ logger = logging.getLogger(__name__)
 settings = Settings.model_validate({})
 
 
-def get_price(body: typing.Any) -> dict:
+async def get_price(body: typing.Any) -> dict:
     url = settings.Elsa_pricing_api
 
-    response = requests.post(url, json=body)
-
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=body)
     response.raise_for_status()
-
     return response.json()
+
 
 def parse_object(value: typing.Any) -> typing.Any:
     if isinstance(value, str):

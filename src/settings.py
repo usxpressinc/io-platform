@@ -41,3 +41,6 @@ class Settings(BaseSettings):
     KAFKA__topic_rapid_alert: str = Field(alias="KAFKA__rapid_alert")
 
     Elsa_pricing_api: str = Field(alias="ELSA_PRICING_API")
+    Larry_xpm_api: str = Field(alias="LARRY_XPM_API")
+    Larry_xpm_api_principal: str = Field(alias="LARRY_XPM_API_PRINCIPAL")
+    Larry_xpm_api_password: str = Field(alias="LARRY_XPM_API_PASSWORD")

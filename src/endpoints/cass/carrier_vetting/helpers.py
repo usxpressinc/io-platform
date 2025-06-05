@@ -2,7 +2,7 @@ import json
 import logging
 from urllib.parse import urljoin
 
-import requests
+import httpx
 from fastapi import HTTPException, status
 from requests.models import PreparedRequest
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 prompts = ClaraPrompts()
 
 
-def get_highway_details(
+async def get_highway_details(
     dotNumber: str | None = None,
     mcNumber: str | None = None,
 ):
@@ -58,9 +58,11 @@ def get_highway_details(
                 response_schema=models.schema,
             ).model_dump(),
         )
-    c_response = requests.get(
-        url=urljoin(settings.Clara_HighwayUrl, path), headers=headers
-    )
+    async with httpx.AsyncClient() as client:
+        c_response = await client.get(
+            url=urljoin(settings.Clara_HighwayUrl, path), headers=headers
+        )
+
     if not c_response.text:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -80,7 +82,7 @@ def get_highway_details(
             ).model_dump(),
         )
     carrier_text = c_response.text
-    if not c_response.ok:
+    if c_response.is_error:
         logger.error("Error thrown %s", repr(carrier_text))
         if c_response.status_code >= 500:
             raise HTTPException(
@@ -121,7 +123,7 @@ def get_highway_details(
     return json.loads(carrier_text)
 
 
-def get_mcleod_carrier_details(
+async def get_mcleod_carrier_details(
     dotNumber: int | None = None,
     mcNumber: int | None = None,
 ):
@@ -158,13 +160,15 @@ def get_mcleod_carrier_details(
     elif mcNumber:
         logger.info("mcNumber is not None")
         search = f"drsPayee.icc_number={mcNumber}"
-    c_response = requests.get(
-        url=urljoin(
-            settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
-        ),
-        headers=headers,
-    )
-    if not c_response.ok:
+
+    async with httpx.AsyncClient() as client:
+        c_response = await client.get(
+            url=urljoin(
+                settings.Clara_McleodUrl, f"/ws/api/carriers/search?{search}"
+            ),
+            headers=headers,
+        )
+    if c_response.is_error:
         logger.error("Error thrown %s", c_response.text)
         if c_response.status_code >= 500:
             raise HTTPException(
@@ -202,7 +206,7 @@ def get_mcleod_carrier_details(
                     response_schema=models.schema,
                 ).model_dump(),
             )
-    if c_response.text == "":
+    if c_response.text == "" or c_response.json is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=LLMResponse[models.CarrierValidityResponse](
@@ -223,7 +227,7 @@ def get_mcleod_carrier_details(
     return c_response.json()
 
 
-def get_mcleod_order(order_id: str | None):
+async def get_mcleod_order(order_id: str | None):
     """
     ## Check whether a carrier is valid using Mcleod API
     """
@@ -272,10 +276,12 @@ def get_mcleod_order(order_id: str | None):
                 response_schema=models.schema,
             ).model_dump(),
         )
-    c_response = requests.get(
-        url=urljoin(settings.Clara_McleodUrl, f"/ws/api/orders/{order_id}"),
-        headers=headers,
-    )
+
+    async with httpx.AsyncClient() as client:
+        c_response = await client.get(
+            url=urljoin(settings.Clara_McleodUrl, f"/ws/api/orders/{order_id}"),
+            headers=headers,
+        )
     if not c_response.text:
         logger.error(
             "Mcleod Get Order call failed with %s - %s",
@@ -300,7 +306,7 @@ def get_mcleod_order(order_id: str | None):
             ).model_dump(),
         )
 
-    if not c_response.ok:
+    if c_response.is_error:
         logger.error("Error thrown %s", c_response.text)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -323,7 +329,9 @@ def get_mcleod_order(order_id: str | None):
     return result
 
 
-def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
+async def check_mcleod_carrier_qualification(
+    carrier_id: str, movement: str
+) -> bool:
     """
     ## Check whether a carrier is valid using Mcleod API
     """
@@ -343,10 +351,12 @@ def check_mcleod_carrier_qualification(carrier_id: str, movement: str) -> bool:
     request_url = ""
     if req.url:
         request_url = req.url
-    c_response = requests.get(url=request_url, headers=headers)
+
+    async with httpx.AsyncClient() as client:
+        c_response = await client.get(url=request_url, headers=headers)
     result = c_response.text
     logger.info("Mcleod Carrier Validity is %s", result)
-    if not c_response.ok:
+    if c_response.is_error:
         logger.error("Error thrown %s", repr(result))
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

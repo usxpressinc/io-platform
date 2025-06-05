@@ -1,5 +1,14 @@
 FROM python:3.13-slim AS base
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    libkrb5-dev \
+    krb5-user \
+    python3-dev \
+    gcc \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
 FROM base AS builder
 
 ENV POETRY_HOME=/opt/poetry
@@ -25,6 +34,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 RUN groupadd -g 1000 app \
   && useradd -rm -d /home/app -g 1000 -u 1000 app \
   && usermod -aG app app
+
+COPY config/krb5.conf /etc/krb5.conf
 
 WORKDIR /app
 

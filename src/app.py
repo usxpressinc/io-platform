@@ -2,24 +2,24 @@ import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.endpoints.health import router as health_router
 from src.endpoints.router import routers as endpoints_routers
-from src.lifespans import consumer, events
+from src.lifespans import consumer, events, kinit
 from src.lifespans import lea_google_jobs as lea
 from src.monitoring import setting_otlp
 from src.settings import Settings
 
 logger = logging.getLogger(__name__)
-scheduler = BackgroundScheduler()
+scheduler = AsyncIOScheduler()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    scheduler.start()
+    await schedules()
     await consumer.kafka_consumer_start()
     yield
     scheduler.shutdown()
@@ -63,11 +63,12 @@ def create_app() -> FastAPI:
     for r in endpoints_routers:
         app.include_router(r)
     app.include_router(health_router)
-    schedules()
     return app
 
 
-def schedules():
+async def schedules():
+    scheduler.start(paused=True)
+    await kinit.initial_kinit()
     scheduler.add_job(
         lea.get_jobs,
         "interval",
@@ -75,6 +76,14 @@ def schedules():
         max_instances=1,
         next_run_time=datetime.now(),
     )
+    scheduler.add_job(
+        kinit.renew_ticket,
+        "interval",
+        hours=9,
+        next_run_time=None,
+        max_instances=1,
+    )
+    scheduler.resume()
 
 
 app = create_app()

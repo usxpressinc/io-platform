@@ -15,13 +15,13 @@ router = APIRouter(prefix="/api/lea", include_in_schema=True, tags=["lea"])
     status_code=status.HTTP_200_OK,
     response_model=LLMResponse[jobs_models.JobLookupResponse],
 )
-def lookup_jobs(
+async def lookup_jobs(
     item: jobs_models.JobLookupRequest,
     response: Response,
     authenticated: bool = Security(authenticate_token, scopes=["lea"]),
 ) -> LLMResponse[jobs_models.JobLookupResponse | str]:
     try:
-        result = jobs_service.lookup_jobs(item=item)
+        result = await jobs_service.lookup_jobs(item=item)
     except HTTPException as e:
         response.status_code = e.status_code
         result = e.detail

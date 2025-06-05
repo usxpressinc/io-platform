@@ -81,12 +81,15 @@ api:
 
     ELSA_PRICING_API: https://api.pricing.spot.internal.usxpress.io/v4/pricing/price/manual
     Email_SignatureLogoUrl: https://github.com/usxpressinc/assets/blob/master/logos/usxpress.png?raw=true
+    LARRY_XPM_API: http://xpmdev.usxpress.com:6754
+    LARRY_XPM_API_PRINCIPAL: ''
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
     EMAIL_SendgridKey: ''
     KAFKA__api_key: ''
     KAFKA__api_secret: ''
+    LARRY_XPM_API_PASSWORD: ''
   global:
     upstream:
       perTryTimeout: 10s
