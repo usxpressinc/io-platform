@@ -1,47 +1,87 @@
 import logging
-from urllib.parse import urljoin
+from urllib.parse import urlencode
 
 import httpx
 from fastapi import HTTPException
 from httpx import HTTPStatusError
-from httpx_kerberos import HTTPKerberosAuth, MutualAuthentication
-from httpx_kerberos.exceptions import KerberosExchangeError
+from pydantic import TypeAdapter
 
 from src.settings import Settings
 
+from . import models
+
 logger = logging.getLogger(__name__)
 settings = Settings.model_validate({})
+VendorServiceMap: dict[int, list[str]] = dict()
 
 
-async def vendors_by_location(body: dict) -> list:
-    ex = None
+async def vendors_services() -> list[models.VendorService]:
+    url = "{}{}".format(
+        settings.Larry_xpm_api, "/api/xra/roadsideVendorServices"
+    )
+    logger.info(url)
+    params = {
+        "url": url,
+    }
+    query_string = urlencode(params, doseq=True)
+    proxy = f"{settings.OnPrem_proxy}?{query_string}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(proxy)
+        response.raise_for_status()
+    except HTTPStatusError as e:
+        logger.error(e.response.text)
+        raise HTTPException(
+            status_code=e.response.status_code, detail={"error": str(e)}
+        )
+    adapter = TypeAdapter(list[models.VendorService])
+
+    return adapter.validate_python(response.json())
+
+
+async def vendors_service_codes() -> list[models.VendorServiceCode]:
+    url = "{}{}".format(
+        settings.Larry_xpm_api, "/api/xra/roadsideVendorServiceCodes"
+    )
+    logger.info(url)
+    params = {
+        "url": url,
+    }
+    query_string = urlencode(params, doseq=True)
+    proxy = f"{settings.OnPrem_proxy}?{query_string}"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(proxy)
+        response.raise_for_status()
+    except HTTPStatusError as e:
+        logger.error(e.response.text)
+        raise HTTPException(
+            status_code=e.response.status_code, detail={"error": str(e)}
+        )
+    adapter = TypeAdapter(list[models.VendorServiceCode])
+    return adapter.validate_python(response.json())
+
+
+async def vendors_by_location(body: dict) -> list[models.Vendor]:
     logger.info(body)
-    for u in settings.Larry_xpm_api.split(","):
-        try:
-            url = urljoin(u, "/api/xra/vendorsbylocation")
+    url = "{}{}".format(settings.Larry_xpm_api, "/api/xra/vendorsbylocation")
+    logger.info(url)
+    params = {
+        "url": url,
+    }
+    query_string = urlencode(params, doseq=True)
+    proxy = f"{settings.OnPrem_proxy}?{query_string}"
 
-            try:
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        url,
-                        json=body,
-                        auth=HTTPKerberosAuth(
-                            mutual_authentication=MutualAuthentication.OPTIONAL,
-                            principal=settings.Larry_xpm_api_principal,
-                        ),
-                        timeout=2.0,
-                    )
-            except KerberosExchangeError as e:
-                raise HTTPException(status_code=502, detail={"error": str(e)})
-            try:
-                response.raise_for_status()
-            except HTTPStatusError as e:
-                raise HTTPException(
-                    status_code=e.response.status_code, detail={"error": str(e)}
-                )
-            return response.json()
-        except (HTTPException, TimeoutError) as e:
-            ex = e
-    if ex is not None:
-        raise ex
-    return []
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(proxy, json=body)
+        response.raise_for_status()
+    except HTTPStatusError as e:
+        logger.error(e.response.text)
+        raise HTTPException(
+            status_code=e.response.status_code, detail={"error": str(e)}
+        )
+    adapter = TypeAdapter(list[models.Vendor])
+    return adapter.validate_python(response.json())

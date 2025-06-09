@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 from src.models.common import BaseCleanModel
 
@@ -25,9 +25,10 @@ class QueryRequest(LatLongRequest):
     zip: str | None = None
 
 
-class VendorLookupRequest(BaseCleanModel):
+class VendorLookupRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    requiredService: str = ""
     radiusInMiles: float = 80467
     location: QueryRequest
     type: TypeEnum = TypeEnum.truck
@@ -57,7 +58,7 @@ class Vendor(BaseCleanModel):
     laborRate: Optional[float] = None
     stat: Optional[str] = None
     currencyType: Optional[str] = None
-    supplierGroupParameter: Optional[str] = None
+    supplierGroupParameter: int
     milesFromTruck: Optional[float] = None
     milesFromTruckMessage: Optional[str] = None
     milesFromTrailer: Optional[float] = None
@@ -68,6 +69,21 @@ class Vendor(BaseCleanModel):
 class VendorLookupResponse(BaseCleanModel):
     vendors: list[Vendor | str] = []
     error: str | None = None
+
+
+class VendorServiceMap(BaseModel):
+    code: int
+    services: list[str]
+
+
+class VendorService(BaseModel):
+    label: str
+    serviceKey: int
+
+
+class VendorServiceCode(BaseModel):
+    code: int
+    services: list[int]
 
 
 schema = VendorLookupResponse(

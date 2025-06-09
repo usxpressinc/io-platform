@@ -42,7 +42,6 @@ api:
       the make of the VIN must map to a known power unit, then explain if we are going to work together we need them to get their insurance company send
       Highway their updated COI.
 
-
     CLARA_PROMPT_is_bond_surety_on_file: Explain that we cannot use them because they do not have a surety bond on file with the FMCSA.
     CLARA_PROMPT_phmsa_is_verified: Explain that we cannot use them because this load is hazmat and they do not have a PHMSA certification on file with
       Highway
@@ -54,7 +53,6 @@ api:
       breakdown coverage
     CLARA_PROMPT_carb_acf: Explain we cannot use them on this load because they aren't Advanced Clean Fleets certified.
     CLARA_PROMPT_carb_tru: Explain we cannot use them on this load because they aren't Carb certified.
-
 
     CLARA_PROMPT_highway_setup: Explain that we need them to register with Highway, because Highway manages our carrier compliance and setup packages. Then
       use the 'highway_setup' tool. Then ask for the best email to send a link to.
@@ -81,15 +79,14 @@ api:
 
     ELSA_PRICING_API: https://api.pricing.spot.internal.usxpress.io/v4/pricing/price/manual
     Email_SignatureLogoUrl: https://github.com/usxpressinc/assets/blob/master/logos/usxpress.png?raw=true
-    LARRY_XPM_API: http://xpmdev.usxpress.com:6754
-    LARRY_XPM_API_PRINCIPAL: ''
+    LARRY_XPM_API: https://usxwebapp1p.usxpress.com/MaintenanceApi
+    ONPREM_PROXY: https://usxwebapp1p.usxpress.com/EdiAutoAcceptance/proxy
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
     EMAIL_SendgridKey: ''
     KAFKA__api_key: ''
     KAFKA__api_secret: ''
-    LARRY_XPM_API_PASSWORD: ''
   global:
     upstream:
       perTryTimeout: 10s

@@ -8,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.endpoints.health import router as health_router
 from src.endpoints.router import routers as endpoints_routers
-from src.lifespans import consumer, events, kinit
+from src.lifespans import consumer, events
+from src.lifespans import larry_vendor_codes as larry
 from src.lifespans import lea_google_jobs as lea
 from src.monitoring import setting_otlp
 from src.settings import Settings
@@ -68,7 +69,7 @@ def create_app() -> FastAPI:
 
 async def schedules():
     scheduler.start(paused=True)
-    await kinit.initial_kinit()
+    # await kinit.initial_kinit()
     scheduler.add_job(
         lea.get_jobs,
         "interval",
@@ -77,12 +78,19 @@ async def schedules():
         next_run_time=datetime.now(),
     )
     scheduler.add_job(
-        kinit.renew_ticket,
+        larry.vendor_codes,
         "interval",
-        hours=9,
-        next_run_time=None,
+        minutes=30,
         max_instances=1,
+        next_run_time=datetime.now(),
     )
+    # scheduler.add_job(
+    #     kinit.renew_ticket,
+    #     "interval",
+    #     hours=9,
+    #     next_run_time=None,
+    #     max_instances=1,
+    # )
     scheduler.resume()
 
 

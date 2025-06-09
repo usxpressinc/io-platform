@@ -25,7 +25,7 @@ async def lookup_vendors(
         item.location.latitude = loc["Match"]["Y"]
         item.location.longitude = loc["Match"]["X"]
     data = {
-        "queryLocation": item.location.model_dump(),
+        "queryLocation": item.location.model_dump(exclude_none=True),
         "bufferDistance": math.ceil(item.radiusInMiles * 1609.344),
     }
 
@@ -34,4 +34,18 @@ async def lookup_vendors(
         "longitude": item.location.longitude,
     }
     vendors = await helpers.vendors_by_location(data)
-    return models.VendorLookupResponse(vendors=vendors)
+    result: list[models.Vendor | str] = []
+    for vendor in vendors:
+        print(
+            vendor.supplierGroupParameter,
+            item.requiredService,
+            item.requiredService.lower()
+            in helpers.VendorServiceMap[int(vendor.supplierGroupParameter)],
+        )
+        if (
+            item.requiredService.lower()
+            in helpers.VendorServiceMap[int(vendor.supplierGroupParameter)]
+        ):
+            result.append(vendor)
+    # result = [x for x in vendors]
+    return models.VendorLookupResponse(vendors=result)
