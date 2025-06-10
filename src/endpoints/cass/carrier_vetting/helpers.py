@@ -1,10 +1,9 @@
 import json
 import logging
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin
 
 import httpx
 from fastapi import HTTPException, status
-from requests.models import PreparedRequest
 
 from src.models.response import LLMResponse
 from src.prompts import ClaraPrompts
@@ -341,19 +340,15 @@ async def check_mcleod_carrier_qualification(
         "Accept": "text/plain",
         "X-com.mcleodsoftware.CompanyID": settings.Clara_McleodCompany,
     }
-    req = PreparedRequest()
-    req.prepare_url(
-        url=urljoin(
-            settings.Clara_McleodUrl, "/ws/api/carriers/checkQualification"
-        ),
-        params={"carrier": carrier_id, "movement": movement},
+    url = urljoin(
+        settings.Clara_McleodUrl, "/ws/api/carriers/checkQualification"
     )
-    request_url = ""
-    if req.url:
-        request_url = req.url
+    params = {"carrier": carrier_id, "movement": movement}
+    query_string = urlencode(params, doseq=True)
+    url = f"{url}?{query_string}"
 
     async with httpx.AsyncClient() as client:
-        c_response = await client.get(url=request_url, headers=headers)
+        c_response = await client.get(url=url, headers=headers)
     result = c_response.text
     logger.info("Mcleod Carrier Validity is %s", result)
     if c_response.is_error:

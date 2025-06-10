@@ -10,11 +10,11 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
     OTLPSpanExporter,
 )
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.instrumentation.logging.constants import (
     DEFAULT_LOGGING_FORMAT,
 )
-from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.metrics import MeterProvider
@@ -155,7 +155,7 @@ def setting_otlp(app: FastAPI) -> OtelProviders:
     logger_provider = set_logger(resource=resource)
     metrics_provider = set_metrics(resource=resource)
 
-    RequestsInstrumentor().instrument()
+    HTTPXClientInstrumentor().instrument()
     FastAPIInstrumentor.instrument_app(
         app=app,
         tracer_provider=tracer_provider,
