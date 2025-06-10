@@ -26,7 +26,6 @@ aiokafka = "^0.12.0"
 email-validator = "^2.2.0"
 apscheduler = "^3.11.0"
 httpx = "^0.28.1"
-httpx-kerberos = "^0.1.2"
 pymssql = "^2.3.4"
 opentelemetry-instrumentation-httpx = "^0.55b1"
 
