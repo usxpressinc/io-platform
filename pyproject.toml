@@ -29,6 +29,7 @@ apscheduler = "^3.11.0"
 httpx = "^0.28.1"
 requests-kerberos = "^0.15.0"
 httpx-kerberos = "^0.1.2"
+pymssql = "^2.3.4"
 
 
 [tool.black]

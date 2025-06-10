@@ -36,7 +36,6 @@ async def vendors_services() -> list[models.VendorService]:
             status_code=e.response.status_code, detail={"error": str(e)}
         )
     adapter = TypeAdapter(list[models.VendorService])
-
     return adapter.validate_python(response.json())
 
 

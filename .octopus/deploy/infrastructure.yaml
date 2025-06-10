@@ -81,12 +81,18 @@ api:
     Email_SignatureLogoUrl: https://github.com/usxpressinc/assets/blob/master/logos/usxpress.png?raw=true
     LARRY_XPM_API: https://usxwebapp1p.usxpress.com/MaintenanceApi
     ONPREM_PROXY: https://usxwebapp1p.usxpress.com/EdiAutoAcceptance/proxy
+    OPS_SERVER: USXSQLOPSPRD.usxpress.com
+    OPS_DATABASE: EnterpriseData
+    GET_DRIVER_HOST: https://msapi-nprod.usxpress.com
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
     EMAIL_SendgridKey: ''
     KAFKA__api_key: ''
     KAFKA__api_secret: ''
+    KERBEROS_PRINCIPAL: ''
+    KERBEROS_PASSWORD: ''
+    GET_DRIVER_AUTH: ''
   global:
     upstream:
       perTryTimeout: 10s

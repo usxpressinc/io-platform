@@ -44,3 +44,12 @@ class Settings(BaseSettings):
     OnPrem_proxy: str = Field(alias="ONPREM_PROXY")
 
     Larry_xpm_api: str = Field(alias="LARRY_XPM_API")
+
+    Kerberos_Principal: str = Field(alias="KERBEROS_PRINCIPAL")
+    Kerberos_Password: str = Field(alias="KERBEROS_PASSWORD")
+
+    OpsServer: str = Field(alias="OPS_SERVER")
+    OpsDatabase: str = Field(alias="OPS_DATABASE")
+
+    Get_Driver_Host: str = Field(alias="GET_DRIVER_HOST")
+    Get_Driver_Auth: str = Field(alias="GET_DRIVER_AUTH")
