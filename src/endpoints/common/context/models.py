@@ -26,12 +26,13 @@ class Driver(BaseModel):
     status: str
     jobDesc: str
     persona: str = "driver"
+    truck: Location | None = None
+    trailer: Location | None = None
+    larry_services: list[str] = []
 
 
 class ContextResponse(BaseModel):
-    caller: Driver
-    truck: Location | None
-    trailer: Location | None
+    context: Driver
 
 
 class DriverContext(BaseModel):

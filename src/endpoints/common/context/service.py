@@ -1,5 +1,6 @@
 import logging
 
+from src.endpoints.larry.vendor_lookup import vendor_service
 from src.settings import Settings
 
 from . import helpers, models
@@ -9,26 +10,23 @@ logger = logging.getLogger(__name__)
 
 
 async def get_context(item: models.ContextRequest) -> models.ContextResponse:
-    # print(helpers.get_truck_location())
     driver_response = await helpers.get_driver_context(item.id, item.phone)
+    d_data = driver_response.driverdata
     driver = models.Driver(
-        name=driver_response.driverdata.driverName,
-        sbu=driver_response.driverdata.driverSBU,
-        type=driver_response.driverdata.driverType,
-        status=driver_response.driverdata.driverStatus,
-        jobDesc=driver_response.driverdata.driverJobDesc,
+        name=d_data.driverName,
+        sbu=d_data.driverSBU,
+        type=d_data.driverType,
+        status=d_data.driverStatus,
+        jobDesc=d_data.driverJobDesc,
     )
-    truck = None
-    trailer = None
-    if driver_response.driverdata.truckNumber != "":
-        truck = helpers.get_truck_location(
-            company=driver_response.driverdata.truckCompany,
-            number=driver_response.driverdata.truckNumber,
+    if d_data.truckNumber != "":
+        driver.truck = helpers.get_truck_location(
+            company=d_data.truckCompany,
+            number=d_data.truckNumber,
         )
-        print(truck)
-        trailer = helpers.get_trailer_location(
-            truckCompany=driver_response.driverdata.truckCompany,
-            truckNumber=driver_response.driverdata.truckNumber,
+        driver.trailer = helpers.get_trailer_location(
+            truckCompany=d_data.truckCompany,
+            truckNumber=d_data.truckNumber,
         )
-        print(trailer)
-    return models.ContextResponse(caller=driver, truck=truck, trailer=trailer)
+    driver.larry_services = await vendor_service.get_services()
+    return models.ContextResponse(context=driver)

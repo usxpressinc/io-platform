@@ -10,6 +10,14 @@ settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 
 
+async def get_services() -> list[str]:
+    result: list[str] = []
+    services = await helpers.vendors_services()
+    for s in services:
+        result.append(s.label.lower())
+    return result
+
+
 async def lookup_vendors(
     item: models.VendorLookupRequest,
 ) -> models.VendorLookupResponse:
@@ -47,5 +55,4 @@ async def lookup_vendors(
             in helpers.VendorServiceMap[int(vendor.supplierGroupParameter)]
         ):
             result.append(vendor)
-    # result = [x for x in vendors]
     return models.VendorLookupResponse(vendors=result)
