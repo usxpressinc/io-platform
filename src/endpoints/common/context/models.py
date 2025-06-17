@@ -28,7 +28,7 @@ class Driver(BaseModel):
     persona: str = "driver"
     truck: Location | None = None
     trailer: Location | None = None
-    larry_services: list[str] = []
+    vendor_services: list[str] = []
 
 
 class ContextResponse(BaseModel):

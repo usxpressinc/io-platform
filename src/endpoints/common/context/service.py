@@ -28,5 +28,5 @@ async def get_context(item: models.ContextRequest) -> models.ContextResponse:
             truckCompany=d_data.truckCompany,
             truckNumber=d_data.truckNumber,
         )
-    driver.larry_services = await vendor_service.get_services()
+    driver.vendor_services = await vendor_service.get_services()
     return models.ContextResponse(context=driver)
