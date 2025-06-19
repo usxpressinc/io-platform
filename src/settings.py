@@ -53,3 +53,9 @@ class Settings(BaseSettings):
 
     Get_Driver_Host: str = Field(alias="GET_DRIVER_HOST")
     Get_Driver_Auth: str = Field(alias="GET_DRIVER_AUTH")
+
+    Orders_ClientId: str = Field(alias="AUTH__ClientId")
+    Orders_ClientSecret: str = Field(alias="AUTH__ClientSecret")
+    Orders_TenantId: str = Field(alias="AUTH__TenantId")
+    Orders_Scope: str = Field(alias="AUTH__ApiAppScopes__orders")
+    Orders_Url: str = Field(alias="OrdersApiUrl")

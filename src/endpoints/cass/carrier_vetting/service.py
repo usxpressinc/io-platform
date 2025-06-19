@@ -200,9 +200,6 @@ async def get_carrier_validity(
             ],
         )
 
-    # This also checks if carrier has `do_not_dispatch` rule
-    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
-
     # rules_assessment.overall_result == "pass"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
@@ -228,6 +225,9 @@ async def get_carrier_validity(
                 )
             ],
         )
+
+    # This also checks if carrier has `do_not_dispatch` rule
+    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
 
     # rules_assessment.overall_result == "fail"
     if (

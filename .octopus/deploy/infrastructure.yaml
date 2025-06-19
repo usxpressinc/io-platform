@@ -8,6 +8,15 @@ tags:
   team: Arch
   purpose: DX for POC Apps
 infrastructure:
+  auth:
+    assigned_to_apps:
+      - project: orders-api
+        space: USXpress
+        roles:
+          - order-read
+        env:
+          - name: qa
+            reference: orders
   kafka:
     topics:
       - full_name: stage_usx_order_management_orders_data_change_json
@@ -84,6 +93,8 @@ api:
     OPS_SERVER: USXSQLOPSPRD.usxpress.com
     OPS_DATABASE: EnterpriseData
     GET_DRIVER_HOST: https://msapi-nprod.usxpress.com
+    OrdersApiUrl: https://api.orders.usxpress.io
+    OrdersApiClientId: ''
   secretVars:
     HIGHWAY_API_KEY: ''
     MCLEOD_AUTH: ''
