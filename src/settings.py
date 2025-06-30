@@ -41,3 +41,21 @@ class Settings(BaseSettings):
     KAFKA__topic_rapid_alert: str = Field(alias="KAFKA__rapid_alert")
 
     Elsa_pricing_api: str = Field(alias="ELSA_PRICING_API")
+    OnPrem_proxy: str = Field(alias="ONPREM_PROXY")
+
+    Larry_xpm_api: str = Field(alias="LARRY_XPM_API")
+
+    Kerberos_Principal: str = Field(alias="KERBEROS_PRINCIPAL")
+    Kerberos_Password: str = Field(alias="KERBEROS_PASSWORD")
+
+    OpsServer: str = Field(alias="OPS_SERVER")
+    OpsDatabase: str = Field(alias="OPS_DATABASE")
+
+    Get_Driver_Host: str = Field(alias="GET_DRIVER_HOST")
+    Get_Driver_Auth: str = Field(alias="GET_DRIVER_AUTH")
+
+    Orders_ClientId: str = Field(alias="AUTH__ClientId")
+    Orders_ClientSecret: str = Field(alias="AUTH__ClientSecret")
+    Orders_TenantId: str = Field(alias="AUTH__TenantId")
+    Orders_Scope: str = Field(alias="AUTH__ApiAppScopes__orders")
+    Orders_Url: str = Field(alias="OrdersApiUrl")

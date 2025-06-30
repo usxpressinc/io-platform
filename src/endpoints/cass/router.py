@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/clara", include_in_schema=True, tags=["clara"])
     response_model=LLMResponse[carrier_vetting_models.CarrierValidityResponse],
     response_model_exclude_none=True,
 )
-def get_carrier_validity(
+async def get_carrier_validity(
     item: carrier_vetting_models.CarrierValidityRequest,
     response: Response,
     authenticated: bool = Security(authenticate_token, scopes=["clara"]),
@@ -25,7 +25,7 @@ def get_carrier_validity(
     ## Check whether a carrier is valid using Highway API
     """
     try:
-        result = carrier_vetting_service.get_carrier_validity(
+        result = await carrier_vetting_service.get_carrier_validity(
             dotNumber=item.dotNumber,
             mcNumber=item.mcNumber,
             brokerage_order_id=item.brokerageOrderId,

@@ -139,7 +139,7 @@ def get_highway_contacts(highway_json) -> list[models.CarrierContact]:
     return contacts
 
 
-def get_carrier_validity(
+async def get_carrier_validity(
     dotNumber: str | None = None,
     mcNumber: str | None = None,
     brokerage_order_id: str | None = None,
@@ -147,7 +147,7 @@ def get_carrier_validity(
     """
     ## Check whether a carrier is valid using Highway API
     """
-    highway_json = helpers.get_highway_details(
+    highway_json = await helpers.get_highway_details(
         dotNumber=dotNumber, mcNumber=mcNumber
     )
 
@@ -200,9 +200,6 @@ def get_carrier_validity(
             ],
         )
 
-    # This also checks if carrier has `do_not_dispatch` rule
-    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
-
     # rules_assessment.overall_result == "pass"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
@@ -228,6 +225,9 @@ def get_carrier_validity(
                 )
             ],
         )
+
+    # This also checks if carrier has `do_not_dispatch` rule
+    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
 
     # rules_assessment.overall_result == "fail"
     if (
@@ -285,17 +285,19 @@ def get_carrier_validity(
     return models.CarrierValidityResponse(isValid="true")
 
 
-def get_mcleod_validity(mcleod_carrier, brokerage_order_id: str | None) -> bool:
-    order_details = helpers.get_mcleod_order(order_id=brokerage_order_id)
-    return helpers.check_mcleod_carrier_qualification(
+async def get_mcleod_validity(
+    mcleod_carrier, brokerage_order_id: str | None
+) -> bool:
+    order_details = await helpers.get_mcleod_order(order_id=brokerage_order_id)
+    return await helpers.check_mcleod_carrier_qualification(
         carrier_id=mcleod_carrier["id"],
         movement=order_details["curr_movement_id"],
     )
 
 
-def get_mcleod_carrier(highway_json):
+async def get_mcleod_carrier(highway_json):
     # Mcleod do_not_dispatch == true
-    mcleod_carrier_json = helpers.get_mcleod_carrier_details(
+    mcleod_carrier_json = await helpers.get_mcleod_carrier_details(
         dotNumber=int(pydash.get(highway_json, "dot_number") or 0),
         mcNumber=int(pydash.get(highway_json, "mc_number") or 0),
     )

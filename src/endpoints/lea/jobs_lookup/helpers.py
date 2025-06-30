@@ -1,7 +1,7 @@
 import logging
 from typing import cast
 
-import requests
+import httpx
 from fastkml import Placemark, kml
 from fastkml.utils import find_all
 from pygeoif import geometry
@@ -14,9 +14,10 @@ logger = logging.getLogger(__name__)
 Lea_Polygons: list[models.JobLocation] = []
 
 
-def download_linked_kml(href):
+async def download_linked_kml(href):
     if href.startswith("http"):
-        response = requests.get(href)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(href)
         response.raise_for_status()
         return response.content
     else:

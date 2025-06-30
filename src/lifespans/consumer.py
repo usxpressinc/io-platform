@@ -55,12 +55,12 @@ async def kafka_consume_messages():
 
 async def kafka_consumer_end():
     global consumer, consumer_task
-    if consumer_task:
+    if consumer_task is not None:
         consumer_task.cancel()
         try:
             await consumer_task
         except asyncio.CancelledError:
             logger.info("Successfully cancelled consumer task")
-    if consumer:
+    if consumer is not None:
         await consumer.stop()
     logger.info("Successfully cancelled consumer")

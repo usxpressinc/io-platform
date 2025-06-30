@@ -7,11 +7,11 @@ settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 
 
-def get_jobs():
+async def get_jobs():
     try:
         logger.info("Getting Lea Jobs from KML")
         linked_kml_href = settings.Nora_GoogleMapsKml
-        linked_kml_bytes = helpers.download_linked_kml(linked_kml_href)
+        linked_kml_bytes = await helpers.download_linked_kml(linked_kml_href)
         helpers.Lea_Polygons = helpers.extract_polygons_from_kml(
             linked_kml_bytes
         )

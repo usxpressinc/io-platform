@@ -11,9 +11,11 @@ settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 
 
-def lookup_jobs(item: models.JobLookupRequest) -> models.JobLookupResponse:
+async def lookup_jobs(
+    item: models.JobLookupRequest,
+) -> models.JobLookupResponse:
     try:
-        data = get_location_match(item.city, item.state)
+        data = await get_location_match(item.city, item.state)
         jobs = helpers.get_jobs_point_against_polygons(
             polygons=helpers.Lea_Polygons,
             latitude=data["Match"]["Y"],
