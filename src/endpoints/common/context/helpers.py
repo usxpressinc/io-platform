@@ -1,13 +1,12 @@
 import logging
 import uuid
 from urllib.parse import urlencode, urljoin
-from pydantic import ValidationError
 
 import httpx
 import pymssql
 from fastapi import HTTPException
 from httpx import HTTPStatusError
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from src.settings import Settings
 

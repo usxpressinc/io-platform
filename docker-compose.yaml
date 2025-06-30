@@ -20,4 +20,4 @@ services:
     stop_grace_period: 0s
     volumes:
       - ./outputs:/outputs
-      - ./tls.pen:/tls.pem
+      - ./tls.pem:/tls.pem

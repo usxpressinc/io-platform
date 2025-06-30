@@ -76,3 +76,4 @@ class ContextDb(Document):
     number = StringField(required=True)
     data = DictField()
     date_modified = DateTimeField(default=datetime.datetime.now(datetime.UTC))
+    meta = {"collection": "hrob-context"}

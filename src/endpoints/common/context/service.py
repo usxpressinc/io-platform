@@ -13,10 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 async def get_context(id: str | None = None, number: str | None = None) -> dict:
-    connect(host=settings.MongoDbConnectionString, db="hrob-poc")
-    contexts: list[models.ContextDb] = models.ContextDb.objects(id=id, number=number)  # type: ignore
-    if contexts.count == 1:
-        return json.loads(contexts[0].to_json())
+    connect(
+        host=f"{settings.MongoDbConnectionString}&tlsCertificateKeyFile={settings.MongoDbTlsFile}&tls=true",
+        db="hrob-poc",
+    )
+    context: list[models.ContextDb] = models.ContextDb.objects(number=number).first()  # type: ignore
+    logger.info(context)
+    if context is not None:
+        return context.data  # type: ignore
 
     driver_response = await helpers.get_driver_context(id=id, number=number)
     d_data = driver_response.driverdata
@@ -43,7 +47,14 @@ async def get_context(id: str | None = None, number: str | None = None) -> dict:
 async def post_context(
     number: str, corelation_id: str, data: dict | None = None
 ) -> dict:
-    connect(host=settings.MongoDbConnectionString, db="hrob-poc")
+    logger.info(
+        f"{settings.MongoDbConnectionString}&tlsCertificateKeyFile={settings.MongoDbTlsFile}"
+    )
+    connect(
+        host=f"{settings.MongoDbConnectionString}&tlsCertificateKeyFile={settings.MongoDbTlsFile}&tls=true",
+        db="hrob-poc",
+    )
+    logger.info("connected")
     context = models.ContextDb(number=number, id=corelation_id)
     context.data = data
     context.save()

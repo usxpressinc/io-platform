@@ -63,3 +63,5 @@ class Settings(BaseSettings):
     MongoDbConnectionString: str = Field(
         alias="MONGODB__CLUSTER__CONNECTION_STRING"
     )
+
+    MongoDbTlsFile: str = Field(alias="MONGODB__CLUSTER__TLS_CRT_KEY_FILE")

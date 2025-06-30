@@ -43,7 +43,7 @@ async def get_user_context(
 
 @router.post(
     "/context",
-    summary="Get User Context",
+    summary="Add User Context",
     response_description="Return HTTP Status Code 200 (OK)",
     status_code=status.HTTP_200_OK,
     response_model=dict(),
