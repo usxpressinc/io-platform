@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from mongoengine import Document, StringField, DateTimeField, DictField
 import datetime
 import uuid
+
+from mongoengine import DateTimeField, DictField, Document, StringField
+from pydantic import BaseModel
 
 
 class ContextRequest(BaseModel):
@@ -67,7 +68,7 @@ class DriverContext(BaseModel):
 
 
 class DriverData(BaseModel):
-    driverData: DriverContext
+    driverdata: DriverContext
 
 
 class ContextDb(Document):

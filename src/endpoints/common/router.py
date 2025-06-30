@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, status, Response
+from fastapi import APIRouter, Response, Security, status
 from fastapi.responses import JSONResponse
 
 from src.helpers.auth import authenticate_token

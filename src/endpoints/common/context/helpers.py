@@ -1,6 +1,7 @@
 import logging
 import uuid
 from urllib.parse import urlencode, urljoin
+from pydantic import ValidationError
 
 import httpx
 import pymssql
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 async def get_driver_context(
-    id: str | None, number: str | None
+    id: str | None = None, number: str | None = None
 ) -> models.DriverData:
     url = urljoin(
         settings.Get_Driver_Host,
@@ -27,7 +28,8 @@ async def get_driver_context(
         "DriverNumber": id,
         "DriverPhoneNumber": number,
     }
-    query_string = urlencode(params, doseq=True)
+    filtered_params = {k: v for k, v in params.items() if v is not None}
+    query_string = urlencode(filtered_params, doseq=True)
     url = f"{url}?{query_string}"
 
     try:
@@ -45,8 +47,13 @@ async def get_driver_context(
         raise HTTPException(
             status_code=e.response.status_code, detail={"error": str(e)}
         )
-    adapter = TypeAdapter(models.DriverData)
-    return adapter.validate_python(response.json())
+    try:
+        adapter = TypeAdapter(models.DriverData)
+        return adapter.validate_python(response.json())
+    except ValidationError as e:
+        print("Formatted error:")
+        print(e.json(indent=2))
+        raise e
 
 
 def get_truck_location(company: str, number: str) -> models.Location:
