@@ -59,3 +59,7 @@ class Settings(BaseSettings):
     Orders_TenantId: str = Field(alias="AUTH__TenantId")
     Orders_Scope: str = Field(alias="AUTH__ApiAppScopes__orders")
     Orders_Url: str = Field(alias="OrdersApiUrl")
+
+    MongoDbConnectionString: str = Field(
+        alias="MONGODB__CLUSTER__CONNECTION_STRING"
+    )

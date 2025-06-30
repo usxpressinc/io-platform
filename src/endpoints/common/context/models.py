@@ -1,9 +1,13 @@
 from pydantic import BaseModel
+from mongoengine import Document, StringField, DateTimeField, DictField
+import datetime
+import uuid
 
 
 class ContextRequest(BaseModel):
-    id: str | None = None
-    phone: str | None = None
+    corelationId: str
+    number: str
+    data: dict
 
 
 class Location(BaseModel):
@@ -63,4 +67,11 @@ class DriverContext(BaseModel):
 
 
 class DriverData(BaseModel):
-    driverdata: DriverContext
+    driverData: DriverContext
+
+
+class ContextDb(Document):
+    id = StringField(required=True, default=uuid.uuid4(), primary_key=True)
+    number = StringField(required=True)
+    data = DictField()
+    date_modified = DateTimeField(default=datetime.datetime.now(datetime.UTC))

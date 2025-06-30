@@ -17,6 +17,17 @@ infrastructure:
         env:
           - name: qa
             reference: orders
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: mongodb
+          group: enterprise
+          env: dev
+        roles:
+          - name: readWrite
+            database: hrob-poc
+            collection: hrob-context
   kafka:
     topics:
       - full_name: stage_usx_order_management_orders_data_change_json
