@@ -12,10 +12,11 @@ class ContextRequest(BaseModel):
 
 
 class Location(BaseModel):
-    company: str
-    number: str
-    latitude: float
-    longitude: float
+    company: str | None = None
+    number: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    weight: float | None = None
 
 
 class Fleet(BaseModel):

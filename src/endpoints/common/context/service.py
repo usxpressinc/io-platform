@@ -4,6 +4,7 @@ import logging
 from mongoengine import connect
 
 from src.endpoints.larry.vendor_lookup import vendor_service
+from src.helpers import orders
 from src.settings import Settings
 
 from . import helpers, models
@@ -40,6 +41,16 @@ async def get_context(id: str | None = None, number: str | None = None) -> dict:
             truckCompany=d_data.truckCompany,
             truckNumber=d_data.truckNumber,
         )
+        if d_data.orderNumber is not None:
+            order = await orders.search_order_by_number(
+                number=d_data.orderNumber
+            )
+            logger.info(order)
+            weightsArray: list[list[int]] = order["data"]["items"][0]["weights"]
+            weights = 0
+            for w in weightsArray:
+                weights += sum(w)
+            driver.trailer.weight = weights
     driver.vendor_services = await vendor_service.get_services()
     return models.ContextResponse(context=driver).model_dump()
 

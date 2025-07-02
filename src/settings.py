@@ -54,11 +54,12 @@ class Settings(BaseSettings):
     Get_Driver_Host: str = Field(alias="GET_DRIVER_HOST")
     Get_Driver_Auth: str = Field(alias="GET_DRIVER_AUTH")
 
-    Orders_ClientId: str = Field(alias="AUTH__ClientId")
-    Orders_ClientSecret: str = Field(alias="AUTH__ClientSecret")
-    Orders_TenantId: str = Field(alias="AUTH__TenantId")
-    Orders_Scope: str = Field(alias="AUTH__ApiAppScopes__orders")
+    Auth_ClientId: str = Field(alias="AUTH__ClientId")
+    Auth_ClientSecret: str = Field(alias="AUTH__ClientSecret")
+    Auth_TenantId: str = Field(alias="AUTH__TenantId")
+    # Orders_Scope: str = Field(alias="AUTH__ApiAppScopes__orders")
     Orders_Url: str = Field(alias="OrdersApiUrl")
+    Orders_Scope: str = Field(alias="OrdersScope")
 
     MongoDbConnectionString: str = Field(
         alias="MONGODB__CLUSTER__CONNECTION_STRING"

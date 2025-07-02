@@ -94,7 +94,7 @@ def get_truck_location(company: str, number: str) -> models.Location:
 
 def get_trailer_location(
     truckCompany: str, truckNumber: str
-) -> models.Location | None:
+) -> models.Location:
     user = settings.Kerberos_Principal.split("@")
     with pymssql.connect(
         host=settings.OpsServer,
@@ -129,4 +129,4 @@ def get_trailer_location(
                     longitude=row[3],
                 )
                 return trailer
-    return None
+    return models.Location()

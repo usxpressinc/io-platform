@@ -29,6 +29,7 @@ httpx = "^0.28.1"
 pymssql = "^2.3.4"
 opentelemetry-instrumentation-httpx = "^0.55b1"
 mongoengine = "^0.29.1"
+msal = "^1.32.3"
 
 
 [tool.black]

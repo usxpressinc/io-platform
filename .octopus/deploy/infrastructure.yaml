@@ -105,6 +105,7 @@ api:
     OPS_DATABASE: EnterpriseData
     GET_DRIVER_HOST: https://msapi-nprod.usxpress.com
     OrdersApiUrl: https://api.orders.usxpress.io
+    OrdersScope: ''
     OrdersApiClientId: ''
   secretVars:
     HIGHWAY_API_KEY: ''
