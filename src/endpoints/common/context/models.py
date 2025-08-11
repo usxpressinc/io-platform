@@ -69,7 +69,7 @@ class DriverContext(BaseModel):
 
 
 class DriverData(BaseModel):
-    driverdata: DriverContext
+    driverdata: DriverContext | None = None
 
 
 class ContextDb(Document):

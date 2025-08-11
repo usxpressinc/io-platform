@@ -2,6 +2,7 @@ import json
 import logging
 import re
 
+from fastapi import HTTPException
 from mongoengine import connect
 
 from src.endpoints.larry.vendor_lookup import vendor_service
@@ -33,6 +34,8 @@ async def get_context(id: str | None = None, number: str | None = None) -> dict:
         )
     driver_response = await helpers.get_driver_context(id=id, number=number)
     d_data = driver_response.driverdata
+    if d_data is None:
+        raise HTTPException(status_code=404, detail="Driver data not found")
     driver = models.Driver(
         name=d_data.driverName,
         sbu=d_data.driverSBU,
