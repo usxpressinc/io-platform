@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 from mongoengine import connect
 
@@ -23,6 +24,13 @@ async def get_context(id: str | None = None, number: str | None = None) -> dict:
     if context is not None:
         return context.data  # type: ignore
 
+    if number is not None:
+        digits = re.sub(r"[^0-9]", "", number)
+        number = (
+            digits[1:]
+            if len(digits) == 11 and digits.startswith("1")
+            else digits
+        )
     driver_response = await helpers.get_driver_context(id=id, number=number)
     d_data = driver_response.driverdata
     driver = models.Driver(
