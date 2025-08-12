@@ -37,20 +37,20 @@ async def get_context(id: str | None = None, number: str | None = None) -> dict:
     if d_data is None:
         raise HTTPException(status_code=404, detail="Driver data not found")
     driver = models.Driver(
-        name=d_data.driverName,
-        sbu=d_data.driverSBU,
-        type=d_data.driverType,
-        status=d_data.driverStatus,
-        jobDesc=d_data.driverJobDesc,
+        name=d_data.driverName or "",
+        sbu=d_data.driverSBU or "",
+        type=d_data.driverType or "",
+        status=d_data.driverStatus or "",
+        jobDesc=d_data.driverJobDesc or "",
     )
     if d_data.truckNumber != "":
         driver.truck = helpers.get_truck_location(
-            company=d_data.truckCompany,
-            number=d_data.truckNumber,
+            company=d_data.truckCompany or "",
+            number=d_data.truckNumber or "",
         )
         driver.trailer = helpers.get_trailer_location(
-            truckCompany=d_data.truckCompany,
-            truckNumber=d_data.truckNumber,
+            truckCompany=d_data.truckCompany or "",
+            truckNumber=d_data.truckNumber or "",
         )
         if d_data.orderNumber is not None:
             order = await orders.search_order_by_number(
