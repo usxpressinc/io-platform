@@ -182,3 +182,4 @@ cython_debug/
 id_rsa*
 /cluster.conf
 *.kml
+*.pem

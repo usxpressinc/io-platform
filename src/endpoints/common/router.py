@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Security, status
+from fastapi import APIRouter, Response, Security, status
+from fastapi.responses import JSONResponse
 
 from src.helpers.auth import authenticate_token
 
@@ -24,7 +25,7 @@ async def send_email(
     return email_service.send_email(item=item)
 
 
-@router.post(
+@router.get(
     "/context",
     summary="Get User Context",
     response_description="Return HTTP Status Code 200 (OK)",
@@ -32,7 +33,26 @@ async def send_email(
     response_model=context_models.ContextResponse,
 )
 async def get_user_context(
+    authenticated: bool = Security(authenticate_token, scopes=["common"]),
+    id: str | None = None,
+    number: str | None = None,
+) -> Response:
+    content = await context_service.get_context(id=id, number=number)
+    return JSONResponse(content=content, status_code=200)
+
+
+@router.post(
+    "/context",
+    summary="Add User Context",
+    response_description="Return HTTP Status Code 200 (OK)",
+    status_code=status.HTTP_200_OK,
+    response_model=dict(),
+)
+async def post_user_context(
     item: context_models.ContextRequest,
     authenticated: bool = Security(authenticate_token, scopes=["common"]),
-) -> context_models.ContextResponse:
-    return await context_service.get_context(item=item)
+) -> Response:
+    content = await context_service.post_context(
+        corelation_id=item.corelationId, number=item.number, data=item.data
+    )
+    return JSONResponse(content=content, status_code=200)

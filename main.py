@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    settings = Settings()
+    settings = Settings.model_validate({})
     os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = settings.OtlpExporterEndpoint
     logger.info("Starting Uvicorn")
     uvicorn.run(

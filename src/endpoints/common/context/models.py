@@ -1,16 +1,22 @@
+import datetime
+import uuid
+
+from mongoengine import DateTimeField, DictField, Document, StringField
 from pydantic import BaseModel
 
 
 class ContextRequest(BaseModel):
-    id: str | None = None
-    phone: str | None = None
+    corelationId: str
+    number: str
+    data: dict
 
 
 class Location(BaseModel):
-    company: str
-    number: str
-    latitude: float
-    longitude: float
+    company: str | None = None
+    number: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    weight: float | None = None
 
 
 class Fleet(BaseModel):
@@ -36,31 +42,39 @@ class ContextResponse(BaseModel):
 
 
 class DriverContext(BaseModel):
-    driverID: str
-    driverCompany: str
-    driverName: str
-    truckCompany: str
-    truckNumber: str
-    employerCode: str
-    fleetManager: str
-    fleetServiceCenter: str
-    fleetOwner: str
-    trainingCoordinator: str
-    trainingCoordinatorSupervisor: str
-    driverJobDesc: str
-    stateZone: str
-    orderNumber: int
-    primaryCoverage: str
-    driverSBU: str
-    driverType: str
-    orderSBU: str
-    orderTerminal: str
-    domicileTerminal: str
-    driverStatus: str
-    currentPTA: str
-    truckLocation: str
-    preferredLanguage: str
+    driverID: str | None = None
+    driverCompany: str | None = None
+    driverName: str | None = None
+    truckCompany: str | None = None
+    truckNumber: str | None = None
+    employerCode: str | None = None
+    fleetManager: str | None = None
+    fleetServiceCenter: str | None = None
+    fleetOwner: str | None = None
+    trainingCoordinator: str | None = None
+    trainingCoordinatorSupervisor: str | None = None
+    driverJobDesc: str | None = None
+    stateZone: str | None = None
+    orderNumber: int | None = None
+    primaryCoverage: str | None = None
+    driverSBU: str | None = None
+    driverType: str | None = None
+    orderSBU: str | None = None
+    orderTerminal: str | None = None
+    domicileTerminal: str | None = None
+    driverStatus: str | None = None
+    currentPTA: str | None = None
+    truckLocation: str | None = None
+    preferredLanguage: str | None = None
 
 
 class DriverData(BaseModel):
-    driverdata: DriverContext
+    driverdata: DriverContext | None = None
+
+
+class ContextDb(Document):
+    id = StringField(required=True, default=uuid.uuid4(), primary_key=True)
+    number = StringField(required=True)
+    data = DictField()
+    date_modified = DateTimeField(default=datetime.datetime.now(datetime.UTC))
+    meta = {"collection": "hrob-context"}
