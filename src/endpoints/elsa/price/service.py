@@ -10,7 +10,7 @@ settings = Settings.model_validate({})
 logger = logging.getLogger(__name__)
 
 
-def lookup_price(body: typing.Any) -> response_model.LookupPriceResponse:
+async def lookup_price(body: typing.Any) -> response_model.LookupPriceResponse:
     stops = []
     for key, value in body.items():
         if key.startswith("stops."):
@@ -25,15 +25,14 @@ def lookup_price(body: typing.Any) -> response_model.LookupPriceResponse:
     body["stops"] = stops
     logger.debug("SPAPI Request Body : %s", body)
 
-    response = (
-        helpers.get_price(body=body).get("data", dict()).get("pricing", [])
-    )
-    logger.debug("SPAPI Response Body : %s", response)
+    response = await helpers.get_price(body=body)
+    pricing_data = response.get("data", dict()).get("pricing", [])
+    logger.debug("SPAPI Response Body : %s", pricing_data)
 
     price_item = next(
         (
             x
-            for x in response
+            for x in pricing_data
             if x["company"] == "01" and x["priceType"] == "ASSET"
         ),
         dict(),

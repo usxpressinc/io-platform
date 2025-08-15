@@ -30,7 +30,7 @@ async def lookup_price(
 ) -> LLMResponse[response_model.LookupPriceResponse]:
     try:
         body: dict = await request.json()
-        result = pricing_service.lookup_price(body=body)
+        result = await pricing_service.lookup_price(body=body)
     except HTTPException as e:
         response.status_code = e.status_code
         result = e.detail
