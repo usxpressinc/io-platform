@@ -30,17 +30,14 @@ async def lookup_price(body: typing.Any) -> response_model.LookupPriceResponse:
     logger.debug("SPAPI Response Body : %s", pricing_data)
 
     price_item = next(
-        (
-            x
-            for x in pricing_data
-            if x["company"] == "01" and x["priceType"] == "ASSET"
-        ),
+        (x for x in pricing_data if x["name"] == "01-BROKERAGE"),
         dict(),
     )
     logger.debug("SPAPI PriceItem : %s", price_item)
     result = response_model.LookupPriceResponse(
         allInPrice=typing.cast(float, price_item["price"]["allInPrice"]),
         distance=typing.cast(float, price_item["price"]["distance"]),
+        basePrice=typing.cast(float, price_item["price"]["cost"]),
     )
 
     return result
