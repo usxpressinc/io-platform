@@ -57,7 +57,7 @@ async def get_highway_details(
                 response_schema=models.schema,
             ).model_dump(),
         )
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         c_response = await client.get(
             url=urljoin(settings.Clara_HighwayUrl, path), headers=headers
         )
