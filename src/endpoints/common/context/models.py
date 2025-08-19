@@ -38,7 +38,8 @@ class Driver(BaseModel):
 
 
 class ContextResponse(BaseModel):
-    context: Driver
+    driver: Driver
+    call: dict | None = None
 
 
 class DriverContext(BaseModel):
