@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class ContextRequest(BaseModel):
-    corelationId: str
+    id: str
     number: str
     data: dict
 
@@ -38,7 +38,7 @@ class Driver(BaseModel):
 
 
 class ContextResponse(BaseModel):
-    driver: Driver
+    driver: Driver | None = None
     call: dict | None = None
 
 

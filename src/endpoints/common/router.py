@@ -36,8 +36,11 @@ async def get_user_context(
     authenticated: bool = Security(authenticate_token, scopes=["common"]),
     id: str | None = None,
     number: str | None = None,
+    callContext: bool = False,
 ) -> Response:
-    content = await context_service.get_context(id=id, number=number)
+    content = await context_service.get_context(
+        id=id, number=number, callContext=callContext
+    )
     return JSONResponse(content=content, status_code=200)
 
 
@@ -53,6 +56,6 @@ async def post_user_context(
     authenticated: bool = Security(authenticate_token, scopes=["common"]),
 ) -> Response:
     content = await context_service.post_context(
-        corelation_id=item.corelationId, number=item.number, data=item.data
+        id=item.id, number=item.number, data=item.data
     )
     return JSONResponse(content=content, status_code=200)
