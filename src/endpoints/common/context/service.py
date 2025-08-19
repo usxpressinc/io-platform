@@ -85,7 +85,7 @@ async def get_context(
         five_minutes_ago = current_time - datetime.timedelta(minutes=5)
         context: models.ContextDb | None = models.ContextDb.objects(  # type: ignore
             (Q(id=id) | Q(number=number))
-            & Q(date_modified__gte=five_minutes_ago)
+            & Q(date_modified__gte=five_minutes_ago.isoformat() + "Z")
         ).first()
         logger.info(context)
         if context:

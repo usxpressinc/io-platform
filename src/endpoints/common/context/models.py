@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from mongoengine import DateTimeField, DictField, Document, StringField
+from mongoengine import DictField, Document, StringField
 from pydantic import BaseModel
 
 
@@ -77,5 +77,7 @@ class ContextDb(Document):
     id = StringField(required=True, default=uuid.uuid4(), primary_key=True)
     number = StringField(required=True)
     data = DictField()
-    date_modified = DateTimeField(default=datetime.datetime.now(datetime.UTC))
+    date_modified = StringField(
+        default=datetime.datetime.now(datetime.UTC).isoformat() + "Z"
+    )
     meta = {"collection": "hrob-context"}
