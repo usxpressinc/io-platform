@@ -227,7 +227,7 @@ async def get_carrier_validity(
         )
 
     # This also checks if carrier has `do_not_dispatch` rule
-    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
+    mcleod_carrier = await get_mcleod_carrier(highway_json=highway_json)
 
     # rules_assessment.overall_result == "fail"
     if (
@@ -272,7 +272,7 @@ async def get_carrier_validity(
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "partial_pass"
     ):
-        mcleod_carrier_validity = get_mcleod_validity(
+        mcleod_carrier_validity = await get_mcleod_validity(
             mcleod_carrier=mcleod_carrier, brokerage_order_id=brokerage_order_id
         )
         if not mcleod_carrier_validity:
