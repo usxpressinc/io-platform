@@ -34,6 +34,27 @@ async def _create_driver_with_vehicle_info(d_data) -> models.Driver:
         type=d_data.driverType or "",
         status=d_data.driverStatus or "",
         jobDesc=d_data.driverJobDesc or "",
+        id=d_data.driverID or "",
+        company=d_data.driverCompany or "",
+        fleet=models.Fleet(
+            manager=d_data.fleetManager or "",
+            serviceCenter=d_data.fleetServiceCenter or "",
+            owner=d_data.fleetOwner or "",
+        ),
+        training=models.Training(
+            coordinator=d_data.trainingCoordinator or "",
+            coordinatorSupervisor=d_data.trainingCoordinatorSupervisor or "",
+        ),
+        stateZone=d_data.stateZone or None,
+        order=models.Order(
+            number=d_data.orderNumber or None,
+            sbu=d_data.orderSBU or None,
+            terminal=d_data.orderTerminal or None,
+        ),
+        primaryCoverage=d_data.primaryCoverage or None,
+        domicileTerminal=d_data.domicileTerminal or None,
+        currentPTA=d_data.currentPTA or None,
+        preferredLanguage=d_data.preferredLanguage or None,
     )
 
     if d_data.truckNumber:
@@ -90,6 +111,9 @@ async def get_context(
         logger.info(context)
         if context:
             response.call = context.data  # type: ignore
+            id = context.id  # type: ignore
+            number = ""
+            logger.info(f"Found context for {id} or {number}")
 
     driver_response = await helpers.get_driver_context(id=id, number=number)
     d_data = driver_response.driverdata

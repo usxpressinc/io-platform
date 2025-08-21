@@ -2,7 +2,7 @@ import datetime
 import uuid
 
 from mongoengine import DictField, Document, StringField
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ContextRequest(BaseModel):
@@ -25,7 +25,22 @@ class Fleet(BaseModel):
     serviceCenter: str
 
 
+class Training(BaseModel):
+    coordinator: str
+    coordinatorSupervisor: str
+
+
+class Order(BaseModel):
+    number: int | None = None
+    sbu: str | None = None
+    terminal: str | None = None
+
+
 class Driver(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    id: str | None = None
+    company: str | None = None
     name: str
     sbu: str
     type: str
@@ -35,6 +50,14 @@ class Driver(BaseModel):
     truck: Location | None = None
     trailer: Location | None = None
     vendor_services: list[str] = []
+    fleet: Fleet | None = None
+    training: Training | None = None
+    stateZone: str | None = None
+    order: Order | None = None
+    primaryCoverage: str | None = None
+    domicileTerminal: str | None = None
+    currentPTA: str | None = None
+    preferredLanguage: str | None = None
 
 
 class ContextResponse(BaseModel):
