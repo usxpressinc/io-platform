@@ -37,7 +37,7 @@ async def get_highway_details(
         )
     if mcNumber:
         logger.info("mcNumber is not None")
-        path = f"/core/connect/external_api/v1/carriers//MC/{mcNumber}/by_identifier"
+        path = f"/core/connect/external_api/v1/carriers/MC/{mcNumber}/by_identifier"
 
     if not path:
         raise HTTPException(

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.endpoints.health import router as health_router
 from src.endpoints.router import routers as endpoints_routers
+from src.exception_handler import setup_exception_handlers
 from src.lifespans import consumer, events
 from src.lifespans import larry_vendor_codes as larry
 from src.lifespans import lea_google_jobs as lea
@@ -24,7 +25,7 @@ async def lifespan(app: FastAPI):
     await consumer.kafka_consumer_start()
     yield
     scheduler.shutdown()
-    await consumer.kafka_consumer_end()
+    await consumer.kafka_consumer_end()  # type: ignore
     events.shutdown_event()
 
 
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
     for r in endpoints_routers:
         app.include_router(r)
     app.include_router(health_router)
+    setup_exception_handlers(app)
     return app
 
 
