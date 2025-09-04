@@ -227,14 +227,25 @@ async def get_carrier_validity(
         )
 
     # This also checks if carrier has `do_not_dispatch` rule
-    mcleod_carrier = get_mcleod_carrier(highway_json=highway_json)
+    mcleod_carrier = await get_mcleod_carrier(highway_json=highway_json)
 
     # rules_assessment.overall_result == "fail"
     if (
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "fail"
     ):
+        logger.info(
+            "Carrier {} failed rules assessment".format(
+                highway_json.get("dot_number", "unknown")
+            )
+        )
         failed_data = failed_classifications(highway_json=highway_json)
+        logger.info(
+            "Carrier {} failed classifications: {}".format(
+                highway_json.get("dot_number", "unknown"),
+                failed_data,
+            )
+        )
         if failed_data is not None:
             return failed_data
 
@@ -261,7 +272,7 @@ async def get_carrier_validity(
         glom(highway_json, "rules_assessment.overall_result", default="")
         == "partial_pass"
     ):
-        mcleod_carrier_validity = get_mcleod_validity(
+        mcleod_carrier_validity = await get_mcleod_validity(
             mcleod_carrier=mcleod_carrier, brokerage_order_id=brokerage_order_id
         )
         if not mcleod_carrier_validity:
@@ -567,7 +578,7 @@ def failed_classifications(
     highway_json,
 ) -> models.CarrierValidityResponse | None:
     failed_by = []
-    print(
+    logger.info(
         [
             c
             for c in highway_json["rules_assessment"]["classifications"]
@@ -579,7 +590,7 @@ def failed_classifications(
         name = classification.get("name")
         # Todo: Needs to be fixed
         if name not in ("Interstate", "Intrastate - US"):
-            break
+            continue
         failed_by = ["rules_assessment.overall_result=fail"]
         failed_assessments = []
         for rule, result in classification.get("rules", dict()).items():
