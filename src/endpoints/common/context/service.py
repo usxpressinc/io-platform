@@ -76,16 +76,13 @@ async def _create_driver_with_vehicle_info(d_data) -> models.Driver:
     return driver
 
 
-async def get_context(
-    id: str | None = None, number: str | None = None, callContext: bool = False
-) -> dict:
+async def get_context(id: str | None = None, number: str | None = None) -> dict:
     """
     Retrieve driver context information including driver details, truck/trailer data, and recent call history.
 
     Args:
         id: Optional driver ID for lookup
         number: Optional phone number for driver lookup (will be normalized)
-        callContext: Whether to include recent call context from MongoDB
 
     Returns:
         dict: Context response containing driver information, truck/trailer details, and call data
@@ -97,32 +94,63 @@ async def get_context(
 
     if number:
         number = clean_number(number)
-    if callContext:
-        connect(
-            host=f"{settings.MongoDbConnectionString}&tlsCertificateKeyFile={settings.MongoDbTlsFile}&tls=true",
-            db="hrob-poc",
-        )
-        current_time = datetime.datetime.now()
-        five_minutes_ago = current_time - datetime.timedelta(minutes=5)
-        context: models.ContextDb | None = models.ContextDb.objects(  # type: ignore
-            (Q(id=id) | Q(number=number))
-            & Q(date_modified__gte=five_minutes_ago.isoformat() + "Z")
-        ).first()
-        logger.info(context)
-        if context:
-            response.call = context.data  # type: ignore
-            id = context.id  # type: ignore
-            number = ""
-            logger.info(f"Found context for {id} or {number}")
 
     driver_response = await helpers.get_driver_context(id=id, number=number)
     d_data = driver_response.driverdata
 
-    if not callContext and not d_data:
+    if not d_data:
         raise HTTPException(status_code=404, detail="Driver data not found")
 
     if d_data:
         response.driver = await _create_driver_with_vehicle_info(d_data)
+
+    return response.model_dump()
+
+
+async def get_genesys_driver_context(
+    id: str | None = None, number: str | None = None
+) -> dict:
+    """
+    Retrieve driver context information including driver details, truck/trailer data, and recent call history.
+
+    Args:
+        id: Optional driver ID for lookup
+        number: Optional phone number for driver lookup (will be normalized)
+
+    Returns:
+        dict: Context response containing driver information, truck/trailer details, and call data
+
+    Raises:
+        HTTPException: If driver data is not found (404)
+    """
+    response = models.GenesysDriverResponse()
+
+    if number:
+        number = clean_number(number)
+    connect(
+        host=f"{settings.MongoDbConnectionString}&tlsCertificateKeyFile={settings.MongoDbTlsFile}&tls=true",
+        db="hrob-poc",
+    )
+    current_time = datetime.datetime.now()
+    five_minutes_ago = current_time - datetime.timedelta(minutes=5)
+    context: models.ContextDb | None = models.ContextDb.objects(  # type: ignore
+        (Q(id=id) | Q(number=number))
+        & Q(date_modified__gte=five_minutes_ago.isoformat() + "Z")
+    ).first()
+    logger.info(context)
+    if context:
+        response.call = context.data  # type: ignore
+        id = context.id  # type: ignore
+        number = ""
+        logger.info(f"Found context for {id} or {number}")
+
+    driver_response = await helpers.get_driver_context(id=id, number=number)
+    d_data = driver_response.driverdata
+
+    if not d_data:
+        raise HTTPException(status_code=404, detail="Driver data not found")
+
+    response.driver = d_data.model_dump()
 
     return response.model_dump()
 

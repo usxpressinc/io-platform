@@ -62,6 +62,10 @@ class Driver(BaseModel):
 
 class ContextResponse(BaseModel):
     driver: Driver | None = None
+
+
+class GenesysDriverResponse(BaseModel):
+    driver: dict | None = None
     call: dict | None = None
 
 
