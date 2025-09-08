@@ -179,7 +179,11 @@ async def post_context(number: str, id: str, data: dict | None = None) -> dict:
     )
     logger.info("connected")
     # Create, save, and reload context document
-    context = models.ContextDb(number=number, id=id)
+    context = models.ContextDb(
+        number=number,
+        id=id,
+        date_modified=datetime.datetime.now(datetime.UTC).isoformat() + "Z",
+    )
     context.data = data
     context.save()
     context.reload()
