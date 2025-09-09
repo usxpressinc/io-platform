@@ -131,11 +131,8 @@ async def get_genesys_driver_context(
         host=f"{settings.MongoDbConnectionString}&tlsCertificateKeyFile={settings.MongoDbTlsFile}&tls=true",
         db="hrob-poc",
     )
-    current_time = datetime.datetime.now()
-    five_minutes_ago = current_time - datetime.timedelta(minutes=5)
     context: models.ContextDb | None = models.ContextDb.objects(  # type: ignore
         (Q(id=id) | Q(number=number))
-        & Q(date_modified__gte=five_minutes_ago.isoformat() + "Z")
     ).first()
     logger.info(context)
     if context:
