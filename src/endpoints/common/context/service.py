@@ -140,7 +140,7 @@ async def get_genesys_driver_context(
     logger.info(context)
     if context:
         response.call = context.data  # type: ignore
-        id = context.id  # type: ignore
+        id = context.data.get("driver", {}).get("id", "")  # type: ignore
         number = ""
         logger.info(f"Found context for {id} or {number}")
 
