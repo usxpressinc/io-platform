@@ -36,10 +36,25 @@ async def get_user_context(
     authenticated: bool = Security(authenticate_token, scopes=["common"]),
     id: str | None = None,
     number: str | None = None,
-    callContext: bool = False,
 ) -> Response:
-    content = await context_service.get_context(
-        id=id, number=number, callContext=callContext
+    content = await context_service.get_context(id=id, number=number)
+    return JSONResponse(content=content, status_code=200)
+
+
+@router.get(
+    "/genesys/driver",
+    summary="Get Driver Context for Genesys",
+    response_description="Return HTTP Status Code 200 (OK)",
+    status_code=status.HTTP_200_OK,
+    response_model=context_models.GenesysDriverResponse,
+)
+async def get_genesys_driver_context(
+    authenticated: bool = Security(authenticate_token, scopes=["common"]),
+    id: str | None = None,
+    number: str | None = None,
+) -> Response:
+    content = await context_service.get_genesys_driver_context(
+        id=id, number=number
     )
     return JSONResponse(content=content, status_code=200)
 

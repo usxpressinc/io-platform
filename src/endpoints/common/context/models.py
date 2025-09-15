@@ -1,4 +1,3 @@
-import datetime
 import uuid
 
 from mongoengine import DictField, Document, StringField
@@ -62,6 +61,10 @@ class Driver(BaseModel):
 
 class ContextResponse(BaseModel):
     driver: Driver | None = None
+
+
+class GenesysDriverResponse(BaseModel):
+    driver: dict | None = None
     call: dict | None = None
 
 
@@ -100,7 +103,5 @@ class ContextDb(Document):
     id = StringField(required=True, default=uuid.uuid4(), primary_key=True)
     number = StringField(required=True)
     data = DictField()
-    date_modified = StringField(
-        default=datetime.datetime.now(datetime.UTC).isoformat() + "Z"
-    )
+    date_modified = StringField(required=True)
     meta = {"collection": "hrob-context"}
