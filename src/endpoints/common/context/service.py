@@ -182,7 +182,7 @@ async def post_context(number: str, id: str, data: dict | None = None) -> dict:
         date_modified=datetime.datetime.now(datetime.UTC).isoformat() + "Z",
     )
     context.data = data
-    context.save()
+    context.save(write_concern={"w": "majority", "j": True, "wtimeout": 10000})
     context.reload()
     return json.loads(context.to_json())
 
