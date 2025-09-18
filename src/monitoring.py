@@ -29,9 +29,10 @@ from opentelemetry.sdk.resources import (
 )
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.semconv.resource import ResourceAttributes
+from opentelemetry.semconv.attributes import service_attributes
 from pythonjsonlogger.json import JsonFormatter
 
+from src.middleware.logging_middleware import RequestResponseLoggingMiddleware
 from src.settings import Settings
 
 handler: LoggingHandler | None = None
@@ -142,8 +143,8 @@ def setting_otlp(app: FastAPI) -> OtelProviders:
         ],
         Resource.create(
             {
-                ResourceAttributes.SERVICE_NAME: f"{settings.Environment}/{settings.Group}/{settings.Project}",
-                ResourceAttributes.SERVICE_VERSION: settings.Revision,
+                service_attributes.SERVICE_NAME: f"{settings.Environment}/{settings.Group}/{settings.Project}",
+                service_attributes.SERVICE_VERSION: settings.Revision,
                 "project": settings.Project,
                 "group": settings.Group,
                 "environment": settings.Environment,
@@ -162,6 +163,8 @@ def setting_otlp(app: FastAPI) -> OtelProviders:
         excluded_urls="/swagger.*,/openapi.*",
         meter_provider=metrics_provider,
     )
+
+    app.add_middleware(RequestResponseLoggingMiddleware)
 
     return OtelProviders(
         tracer_provider=tracer_provider,
