@@ -151,7 +151,7 @@ async def get_carrier_validity(
         dotNumber=dotNumber, mcNumber=mcNumber
     )
 
-    models.CARRIER_CONTACTS = get_highway_contacts(highway_json=highway_json)
+    models.set_carrier_contacts(get_highway_contacts(highway_json=highway_json))
 
     if highway_json["connection"] is None:
         return models.CarrierValidityResponse(

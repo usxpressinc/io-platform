@@ -1,3 +1,5 @@
+from contextvars import ContextVar
+
 from pydantic import BaseModel, EmailStr, Field
 
 from src.models.common import BaseCleanModel
@@ -60,11 +62,19 @@ class CarrierValidityError(BaseCleanModel):
     classification: str | None = None
 
 
-CARRIER_CONTACTS: list[CarrierContact] = []
+_carrier_contacts: ContextVar[list[CarrierContact]] = ContextVar(
+    "carrier_contacts", default=[]
+)
 
 
-def get_carrier_contacts():
-    return CARRIER_CONTACTS
+def set_carrier_contacts(contacts: list[CarrierContact]):
+    """Call this early in your request to set contacts"""
+    _carrier_contacts.set(contacts)
+
+
+def get_carrier_contacts() -> list[CarrierContact]:
+    contacts = _carrier_contacts.get()
+    return contacts if contacts is not None else []
 
 
 class CarrierValidityResponse(BaseCleanModel):
