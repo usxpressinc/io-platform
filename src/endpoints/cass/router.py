@@ -35,6 +35,14 @@ async def get_carrier_validity(
         )
     except HTTPException as e:
         response.status_code = status.HTTP_200_OK
+        # If detail is already a model instance, convert to dict to avoid double nesting
+        detail_data = (
+            e.detail.model_dump()
+            if isinstance(
+                e.detail, carrier_vetting_models.CarrierValidityResponse
+            )
+            else e.detail
+        )
         return LLMResponse[carrier_vetting_models.CarrierValidityResponse](
-            data=e.detail, response_schema=carrier_vetting_models.schema
+            data=detail_data, response_schema=carrier_vetting_models.schema
         )
