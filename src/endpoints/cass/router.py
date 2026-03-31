@@ -14,7 +14,6 @@ router = APIRouter(prefix="/api/clara", include_in_schema=True, tags=["clara"])
     response_description="Return HTTP Status Code 200 (OK)",
     status_code=status.HTTP_202_ACCEPTED,
     response_model=LLMResponse[carrier_vetting_models.CarrierValidityResponse],
-    response_model_exclude_none=True,
 )
 async def get_carrier_validity(
     item: carrier_vetting_models.CarrierValidityRequest,
@@ -36,6 +35,14 @@ async def get_carrier_validity(
         )
     except HTTPException as e:
         response.status_code = status.HTTP_200_OK
+        # If detail is already a model instance, convert to dict to avoid double nesting
+        detail_data = (
+            e.detail.model_dump()
+            if isinstance(
+                e.detail, carrier_vetting_models.CarrierValidityResponse
+            )
+            else e.detail
+        )
         return LLMResponse[carrier_vetting_models.CarrierValidityResponse](
-            data=e.detail, response_schema=carrier_vetting_models.schema
+            data=detail_data, response_schema=carrier_vetting_models.schema
         )
