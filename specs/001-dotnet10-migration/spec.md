@@ -113,10 +113,12 @@ As a system administrator, I want vendor lookup and job search background jobs m
 - **FR-008**: System MUST use MongoDB Atlas for data persistence with TLS authentication and proper connection pooling
 - **FR-009**: System MUST implement Kafka message consumption for background processing with proper consumer groups
 - **FR-010**: System MUST include structured logging, OpenTelemetry tracing, and Grafana metrics for observability
-- **FR-011**: System MUST authenticate requests via Azure AD with proper scope validation and token management
-- **FR-012**: System MUST support graceful shutdown and health endpoints for all services
-- **FR-013**: System MUST deploy using Docker containers with multi-stage builds and environment-specific configuration
-- **FR-014**: System MUST organize all .NET migration artifacts under dotnet/ folder structure with proper separation
+- **FR-011**: System MUST authenticate requests via X-Auth token middleware with scope-based validation following Python pattern
+- **FR-012**: System MUST implement TokenFactory for zero-trust runtime token generation using environment-based master token
+- **FR-013**: System MUST support graceful shutdown and health endpoints for all services
+- **FR-014**: System MUST deploy using Docker containers with multi-stage builds and environment-specific configuration
+- **FR-015**: System MUST organize all .NET migration artifacts under dotnet/ folder structure with proper separation
+- **FR-016**: System MUST provide subdomain routing via api.io.{service} pattern with public access only on proxy
 
 ### Key Entities
 
@@ -127,6 +129,8 @@ As a system administrator, I want vendor lookup and job search background jobs m
 - **Vendor**: Represents service provider with location, contact information, and availability
 - **JobPosting**: Represents employment opportunity with location, requirements, and posting details
 - **ServiceHealth**: Represents microservice health status with dependencies and performance metrics
+- **XAuthToken**: Represents authentication token with scope validation for API access control
+- **TokenFactory**: Represents zero-trust token generation system with master token and scoped token lifecycle
 
 ## Success Criteria *(mandatory)*
 
@@ -145,6 +149,9 @@ As a system administrator, I want vendor lookup and job search background jobs m
 - **SC-005**: Background processing achieves <5 minute message processing lag for Kafka events
 - **SC-006**: System completes full migration from Python to .NET 10 with zero data loss
 - **SC-007**: All services pass security and compliance audits with proper authentication and data protection
+- **SC-008**: X-Auth token middleware validates 100% of requests with <10ms overhead per request
+- **SC-009**: TokenFactory generates scoped tokens in <50ms with 99.9% availability
+- **SC-010**: Master token cannot access API endpoints (security validation required)
 
 ### Observability Requirements (Per Constitution Principle IV)
 

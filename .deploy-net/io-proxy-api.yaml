@@ -1,0 +1,92 @@
+---
+name: io-proxy-api
+octopus:
+  space: USXpress
+  group: io
+tags:
+  owner: USXpress
+  team: Platform
+  purpose: External API Gateway for IO services
+infrastructure:
+  auth:
+    roles:
+      - io-proxy-reader
+      - io-proxy-writer
+    group_roles_assignment:
+      - name: Everybody
+        roles:
+          - io-proxy-reader
+          - io-proxy-writer
+    redirect_uri_paths:
+      - path: /signin-oidc
+        type: api
+      - path: /swagger/oauth2-redirect.html
+        type: spa
+  assigned_to_apps:
+      - project: io-common-api
+        space: USXpress
+        roles:
+          - io-common-reader
+          - io-common-writer
+        env:
+          - name: dev
+            reference: io-common
+      - project: io-cass-api
+        space: USXpress
+        roles:
+          - io-cass-reader
+          - io-cass-writer
+        env:
+          - name: dev
+            reference: io-cass
+      - project: io-elsa-api
+        space: USXpress
+        roles:
+          - io-elsa-reader
+          - io-elsa-writer
+        env:
+          - name: dev
+            reference: io-elsa
+      - project: io-larry-api
+        space: USXpress
+        roles:
+          - io-larry-reader
+          - io-larry-writer
+        env:
+          - name: dev
+            reference: io-larry
+      - project: io-lea-api
+        space: USXpress
+        roles:
+          - io-lea-reader
+          - io-lea-writer
+        env:
+          - name: dev
+            reference: io-lea
+api:
+  routes:
+    subdomains:
+      - product: io
+        app: proxy
+        type: api
+  public:
+    enabled: true
+  global:
+    upstream:
+      perTryTimeout: 15s
+  service:
+    targetPort: 8080
+  configVars:
+    APPLICATION_ENTRYPOINT: IO.Proxy.dll
+    Serilog__MinimumLevel__Default: Information
+    Services__Common__BaseUrl: '#{Services__Common__BaseUrl}'
+    Services__Cass__BaseUrl: '#{Services__Cass__BaseUrl}'
+    Services__Elsa__BaseUrl: '#{Services__Elsa__BaseUrl}'
+    Services__Larry__BaseUrl: '#{Services__Larry__BaseUrl}'
+    Services__Lea__BaseUrl: '#{Services__Lea__BaseUrl}'
+    TOKEN_FACTORY__DEFAULT_LIFETIME_HOURS: '#{TOKEN_FACTORY__DEFAULT_LIFETIME_HOURS}'
+  secretVars:
+    AUTH__CLIENT_SECRET: '#{AUTH__CLIENT_SECRET}'
+    AUTH__API_TOKEN: '#{AUTH__API_TOKEN}'
+    TOKEN_FACTORY__SECRET: '#{TOKEN_FACTORY__SECRET}'
+    TOKEN_FACTORY__MASTER_TOKEN: '#{TOKEN_FACTORY__MASTER_TOKEN}'

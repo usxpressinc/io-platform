@@ -1,0 +1,419 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Apps\\RestAPI\\IO.Lea\\IO.Lea.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Apps\\RestAPI\\IO.Lea\\IO.Lea.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Apps\\RestAPI\\IO.Lea\\IO.Lea.csproj",
+        "projectName": "IO.Lea",
+        "projectPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Apps\\RestAPI\\IO.Lea\\IO.Lea.csproj",
+        "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Apps\\RestAPI\\IO.Lea\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\gmackay\\repos\\python-demo-poc\\NuGet.Config",
+          "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj": {
+                "projectPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Ardalis.Result": {
+              "target": "Package",
+              "version": "[10.1.0, )",
+              "versionCentrallyManaged": true
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.11.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.AspNetCore.Cors": {
+              "target": "Package",
+              "version": "[2.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Caching.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Caching.Memory": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Identity.Client": {
+              "target": "Package",
+              "version": "[4.79.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Identity.Web": {
+              "target": "Package",
+              "version": "[4.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.2.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.AspNetCore": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.Result": "10.1.0",
+            "coverlet.collector": "6.0.2",
+            "FluentValidation": "11.11.0",
+            "Mapster": "7.4.0",
+            "Microsoft.AspNetCore.Cors": "2.1.1",
+            "Microsoft.AspNetCore.OpenApi": "8.0.11",
+            "Microsoft.Extensions.Caching.Abstractions": "9.0.11",
+            "Microsoft.Extensions.Caching.Memory": "9.0.11",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.11",
+            "Microsoft.Extensions.DependencyInjection": "9.0.11",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.1",
+            "Microsoft.Extensions.Hosting": "9.0.11",
+            "Microsoft.Extensions.Hosting.Abstractions": "9.0.11",
+            "Microsoft.Extensions.Http": "9.0.11",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.11",
+            "Microsoft.Extensions.Options": "9.0.11",
+            "Microsoft.Identity.Client": "4.79.2",
+            "Microsoft.Identity.Web": "4.1.1",
+            "Microsoft.IdentityModel.JsonWebTokens": "7.5.1",
+            "Microsoft.IdentityModel.Tokens": "7.5.1",
+            "Microsoft.NET.Test.Sdk": "17.11.1",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.3",
+            "Polly": "7.2.4",
+            "Serilog": "4.2.0",
+            "Serilog.AspNetCore": "9.0.0",
+            "Serilog.Sinks.Console": "6.0.0",
+            "StyleCop.Analyzers": "1.2.0-beta.556",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "xunit": "2.9.2",
+            "xunit.runner.visualstudio": "2.8.2"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj",
+        "projectName": "Core",
+        "projectPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj",
+        "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\gmackay\\repos\\python-demo-poc\\NuGet.Config",
+          "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Ardalis.Result": {
+              "target": "Package",
+              "version": "[10.1.0, )",
+              "versionCentrallyManaged": true
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.11.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Mapster": {
+              "target": "Package",
+              "version": "[7.4.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.AspNetCore.Cors": {
+              "target": "Package",
+              "version": "[2.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Caching.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Caching.Memory": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[9.0.11, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Identity.Client": {
+              "target": "Package",
+              "version": "[4.79.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.IdentityModel.JsonWebTokens": {
+              "target": "Package",
+              "version": "[7.5.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[7.5.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )",
+              "versionCentrallyManaged": true
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[7.2.4, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog": {
+              "target": "Package",
+              "version": "[4.2.0, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.Result": "10.1.0",
+            "coverlet.collector": "6.0.2",
+            "FluentValidation": "11.11.0",
+            "Mapster": "7.4.0",
+            "Microsoft.AspNetCore.Cors": "2.1.1",
+            "Microsoft.AspNetCore.OpenApi": "8.0.11",
+            "Microsoft.Extensions.Caching.Abstractions": "9.0.11",
+            "Microsoft.Extensions.Caching.Memory": "9.0.11",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.11",
+            "Microsoft.Extensions.DependencyInjection": "9.0.11",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.1",
+            "Microsoft.Extensions.Hosting": "9.0.11",
+            "Microsoft.Extensions.Hosting.Abstractions": "9.0.11",
+            "Microsoft.Extensions.Http": "9.0.11",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.11",
+            "Microsoft.Extensions.Options": "9.0.11",
+            "Microsoft.Identity.Client": "4.79.2",
+            "Microsoft.Identity.Web": "4.1.1",
+            "Microsoft.IdentityModel.JsonWebTokens": "7.5.1",
+            "Microsoft.IdentityModel.Tokens": "7.5.1",
+            "Microsoft.NET.Test.Sdk": "17.11.1",
+            "Moq": "4.20.72",
+            "Newtonsoft.Json": "13.0.3",
+            "Polly": "7.2.4",
+            "Serilog": "4.2.0",
+            "Serilog.AspNetCore": "9.0.0",
+            "Serilog.Sinks.Console": "6.0.0",
+            "StyleCop.Analyzers": "1.2.0-beta.556",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "xunit": "2.9.2",
+            "xunit.runner.visualstudio": "2.8.2"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

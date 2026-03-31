@@ -1,0 +1,62 @@
+---
+name: io-larry-api
+octopus:
+  space: USXpress
+  group: io
+tags:
+  owner: USXpress
+  team: Platform
+  purpose: Vendor lookup service (internal)
+infrastructure:
+  auth:
+    roles:
+      - io-larry-reader
+      - io-larry-writer
+    group_roles_assignment:
+      - name: Everybody
+        roles:
+          - io-larry-reader
+          - io-larry-writer
+    redirect_uri_paths:
+      - path: /signin-oidc
+        type: api
+      - path: /swagger/oauth2-redirect.html
+        type: spa
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: mongodb
+          group: enterprise
+          env: '#{Mongo__Env}'
+        roles:
+          - name: readWrite
+            database: '#{Database__MainDatabaseName}'
+            collection: '#{Database__VendorCollection}'
+  kafka:
+    topics:
+      - name: io:vendor_lookup_evt
+        bounded_context: io
+        schema_type: json
+        reference: vendor-processing
+    service_account: io
+api:
+  routes:
+    subdomains:
+      - product: io
+        app: larry
+        type: api
+  global:
+    upstream:
+      perTryTimeout: 15s
+  service:
+    targetPort: 8080
+  configVars:
+    APPLICATION_ENTRYPOINT: IO.Larry.dll
+    Serilog__MinimumLevel__Default: Information
+    Database__MainDatabaseName: '#{Database__MainDatabaseName}'
+    Database__VendorCollection: '#{Database__VendorCollection}'
+    Database__MaxConnectionPoolSize: '#{Database__MaxConnectionPoolSize}'
+    LARRY_XPM_API: '#{LARRY_XPM_API}'
+  secretVars:
+    AUTH__CLIENT_SECRET: '#{AUTH__CLIENT_SECRET}'

@@ -321,6 +321,81 @@ public class MongoDbClusterOptions
     public const string TlsCrtKeyFile = $"{Prefix}:TLS_CRT_KEY_FILE";
     private const string Prefix = "MONGODB:CLUSTER";
 }
+
+// src/Common/Core/Constants/
+// Constants Pattern
+namespace IO.Core.Constants;
+
+public class MongoDbCollections
+{
+    public const string VendorCollection = $"{Prefix}:VendorCollection";
+    public const string ContextCollection = $"{Prefix}:ContextCollection";
+    public const string CarrierCollection = $"{Prefix}:CarrierCollection";
+    public const string PricingCollection = $"{Prefix}:PricingCollection";
+    public const string JobCollection = $"{Prefix}:JobCollection";
+    private const string Prefix = "Database";
+}
+
+public class MongoDbDatabases
+{
+    public const string MainDatabaseName = $"{Prefix}:MainDatabaseName";
+    private const string Prefix = "Database";
+}
+
+public class MongoDbClusterOptions
+{
+    public const string ConnectionString = $"{Prefix}:CONNECTION_STRING";
+    public const string TlsCrtKeyFile = $"{Prefix}:TLS_CRT_KEY_FILE";
+    private const string Prefix = "MONGODB:CLUSTER";
+}
+
+public class KafkaTopics
+{
+    public const string VendorLookupEvent = $"{Prefix}:vendor_lookup_evt";
+    public const string JobSearchEvent = $"{Prefix}:job_search_evt";
+    public const string EmailNotificationEvent = $"{Prefix}:email_notification_evt";
+    private const string Prefix = "IO";
+}
+
+public class KafkaGroups
+{
+    public const string VendorProcessorGroup = $"{Prefix}:vendor-processor";
+    public const string JobProcessorGroup = $"{Prefix}:job-processor";
+    private const string Prefix = "io-platform";
+}
+
+public class EnvironmentVariables
+{
+    public const string MongoConnectionString = "MONGODB__CLUSTER__CONNECTION_STRING";
+    public const string MongoTlsFile = "MONGODB__CLUSTER__TLS_CRT_KEY_FILE";
+    public const string KafkaBootstrapServer = "KAFKA__bootstrap_server";
+    public const string KafkaApiKey = "KAFKA__api_key";
+    public const string KafkaApiSecret = "KAFKA__api_secret";
+    public const string SendGridApiKey = "EMAIL_SendgridKey";
+    public const string HighwayApiKey = "HIGHWAY_API_KEY";
+    public const string McleodUrl = "MCLEOD_BASE_URL";
+    public const string ApplicationProject = "APPLICATION__PROJECT";
+    public const string ApplicationGroup = "APPLICATION__GROUP";
+    public const string ApplicationEnvironment = "APPLICATION__ENVIRONMENT";
+}
+
+public class ServiceEndpoints
+{
+    public const string CommonService = "io-common";
+    public const string CassService = "io-cass";
+    public const string ElsaService = "io-elsa";
+    public const string LarryService = "io-larry";
+    public const string LeaService = "io-lea";
+}
+
+public class AuthenticationScopes
+{
+    public const string CommonScope = "common";
+    public const string CassScope = "clara";
+    public const string ElsaScope = "elsa";
+    public const string LarryScope = "larry";
+    public const string LeaScope = "lea";
+}
 ```
 
 ### **2.3 Infrastructure Library - External Integrations**
@@ -375,18 +450,104 @@ public static class MongoExtensions
     {
         var config = new MongoDbConfig
         {
-            ConnectionString = builder.Configuration[MongoDbClusterOptions.ConnectionString]!,
+            ConnectionString = builder.Configuration[EnvironmentVariables.MongoConnectionString]!,
             DatabaseName = builder.Configuration[MongoDbDatabases.MainDatabaseName]!,
             CollectionName = builder.Configuration[MongoDbCollections.VendorCollection]!,
             MaxConnectionPoolSize = builder.Configuration["Database:MaxConnectionPoolSize"],
-            TlsCertFile = builder.Configuration[MongoDbClusterOptions.TlsCrtKeyFile]
+            TlsCertFile = builder.Configuration[EnvironmentVariables.MongoTlsFile]
         };
 
         builder.Services.AddMongoRepository<Vendor>(config);
         return builder;
     }
 
-    // ... additional repository methods
+    // ... additional repository methods using constants
+}
+
+// src/Common/Infrastructure/Kafka/
+// KafkaExtensions.cs
+using IO.Core.Constants;
+using USXpress.Kafka;
+
+namespace IO.Infrastructure.Kafka;
+
+public static class KafkaExtensions
+{
+    public static IHostApplicationBuilder AddKafkaConsumers(
+        this IHostApplicationBuilder builder)
+    {
+        builder.Services.AddUSXpressKafkaConsumer(builder.Configuration);
+        
+        // Register consumer services
+        builder.Services.AddHostedService<VendorLookupConsumer>();
+        builder.Services.AddHostedService<JobSearchConsumer>();
+        
+        return builder;
+    }
+}
+
+// src/Apps/Handlers/IO.Larry/VendorHandler/VendorLookupConsumer.cs
+using IO.Core.Constants;
+
+namespace IO.Larry.VendorHandler;
+
+public class VendorLookupConsumer : BackgroundService
+{
+    private readonly IKafkaConsumer _kafkaConsumer;
+    private readonly IVendorService _vendorService;
+
+    public VendorLookupConsumer(
+        IKafkaConsumer kafkaConsumer,
+        IVendorService vendorService)
+    {
+        _kafkaConsumer = kafkaConsumer;
+        _vendorService = vendorService;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await _kafkaConsumer.ConsumeAsync(
+            KafkaTopics.VendorLookupEvent, 
+            async (message, token) =>
+            {
+                await _vendorService.ProcessVendorLookupAsync(message, token);
+            }, 
+            stoppingToken);
+    }
+}
+
+// src/Apps/RestAPI/IO.Proxy/Controllers/ProxyController.cs
+using IO.Core.Constants;
+
+namespace IO.Proxy.Controllers;
+
+[ApiController]
+[Route("api")]
+public class ProxyController : ControllerBase
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public ProxyController(IHttpClientFactory httpClientFactory)
+    {
+        _httpClientFactory = httpClientFactory;
+    }
+
+    [HttpPost("common/email")]
+    public async Task<IActionResult> SendEmail([FromBody] Email.SendEmailRequest request)
+    {
+        var client = _httpClientFactory.CreateClient(ServiceEndpoints.CommonService);
+        var response = await client.PostAsJsonAsync("/api/email", request);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<Email.SendEmailResponse>();
+            return Ok(result);
+        }
+        
+        return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+    }
+
+    // ... additional endpoints using ServiceEndpoints constants
 }
 ```
 

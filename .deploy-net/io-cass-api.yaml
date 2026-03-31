@@ -1,0 +1,59 @@
+---
+name: io-cass-api
+octopus:
+  space: USXpress
+  group: io
+tags:
+  owner: USXpress
+  team: Platform
+  purpose: Carrier vetting and validation service (internal)
+infrastructure:
+  auth:
+    roles:
+      - io-cass-reader
+      - io-cass-writer
+    group_roles_assignment:
+      - name: Everybody
+        roles:
+          - io-cass-reader
+          - io-cass-writer
+    redirect_uri_paths:
+      - path: /signin-oidc
+        type: api
+      - path: /swagger/oauth2-redirect.html
+        type: spa
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: mongodb
+          group: enterprise
+          env: '#{Mongo__Env}'
+        roles:
+          - name: readWrite
+            database: '#{Database__MainDatabaseName}'
+            collection: '#{Database__CarrierCollection}'
+api:
+  routes:
+    subdomains:
+      - product: io
+        app: cass
+        type: api
+  global:
+    upstream:
+      perTryTimeout: 15s
+  service:
+    targetPort: 8080
+  configVars:
+    APPLICATION_ENTRYPOINT: IO.Cass.dll
+    Serilog__MinimumLevel__Default: Information
+    Database__MainDatabaseName: '#{Database__MainDatabaseName}'
+    Database__CarrierCollection: '#{Database__CarrierCollection}'
+    Database__MaxConnectionPoolSize: '#{Database__MaxConnectionPoolSize}'
+    HIGHWAY_URL: '#{HIGHWAY_URL}'
+    MCLEOD_BASE_URL: '#{MCLEOD_BASE_URL}'
+    MCLEOD_COMPANY: '#{MCLEOD_COMPANY}'
+  secretVars:
+    AUTH__CLIENT_SECRET: '#{AUTH__CLIENT_SECRET}'
+    HIGHWAY_API_KEY: '#{HIGHWAY_API_KEY}'
+    MCLEOD_AUTH: '#{MCLEOD_AUTH}'
