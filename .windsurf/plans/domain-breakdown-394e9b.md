@@ -192,3 +192,400 @@ This plan breaks down the current monolithic FastAPI application into logical do
 - Separate CI/CD pipelines
 - Domain-specific resource allocation
 - Isolated failure domains
+
+---
+
+## .NET 10 Migration Strategy with CLEAN Architecture
+
+### **Architecture Pattern: Following edi-platform**
+
+Based on the edi-platform monorepo structure, we'll implement CLEAN architecture with:
+
+```
+src/
+├── Common/
+│   ├── Core/                    # Domain interfaces, entities, business logic
+│   ├── Infrastructure/          # External integrations, data access
+│   └── Models/                  # Standard type definitions
+├── Apps/
+│   ├── RestAPI/
+│   │   ├── IO.Proxy/           # API Gateway
+│   │   ├── IO.Common/          # Email + Context API
+│   │   ├── IO.Cass/            # Carrier vetting API
+│   │   ├── IO.Elsa/            # Pricing API
+│   │   ├── IO.Larry/           # Vendor lookup API
+│   │   └── IO.Lea/             # Job search API
+│   ├── Handlers/               # Background processors
+│   └── Jobs/                   # Scheduled tasks
+└── Libraries/                  # Shared utilities
+```
+
+### **Technology Stack**
+
+#### **Core Framework**
+- **.NET 10** (latest LTS)
+- **ASP.NET Core 10** for REST APIs
+- **Worker Services** for background processing
+- **Minimal APIs** for streamlined endpoints
+
+#### **USXpress Standard Packages**
+- `USXpress.Monitoring` v3.1.10+ for Grafana/OTEL
+- `USXpress.Configuration.Mongo` v0.2.8+ for MongoDB
+- `USXpress.Kafka` v0.0.5+ for messaging
+- `USXpress.Api.Common` v0.1.13+ for shared patterns
+
+#### **Infrastructure Integration**
+- **MongoDB Atlas** for data persistence
+- **Kafka** for event streaming
+- **Azure AD** for authentication
+- **OpenTelemetry** for observability
+
+### **Deployment YAML Patterns (edi-platform style)**
+
+#### **API Services Pattern**
+```yaml
+---
+name: io-proxy-api
+octopus:
+  space: USXpress
+  group: gateway
+tags:
+  owner: USXpress
+  team: Platform
+  purpose: API Gateway for IO services
+infrastructure:
+  auth:
+    roles:
+      - io-proxy-reader
+      - io-proxy-writer
+    group_roles_assignment:
+      - name: Everybody
+        roles:
+          - io-proxy-reader
+          - io-proxy-writer
+    redirect_uri_paths:
+      - path: /signin-oidc
+        type: api
+      - path: /swagger/oauth2-redirect.html
+        type: spa
+api:
+  routes:
+    subdomains:
+      - product: io
+        type: api
+  global:
+    upstream:
+      perTryTimeout: 15s
+  enabled: true
+  service:
+    targetPort: 8080
+  configVars:
+    APPLICATION_ENTRYPOINT: IO.Proxy.dll
+    Serilog__MinimumLevel__Default: Information
+  secretVars:
+    AUTH__CLIENT_SECRET: '#{AUTH__CLIENT_SECRET}'
+```
+
+#### **Handler Services Pattern**
+```yaml
+---
+name: io-larry-vendor-handler
+octopus:
+  space: USXpress
+  group: vendor
+tags:
+  owner: USXpress
+  team: Platform
+  purpose: Vendor lookup background processing
+infrastructure:
+  kafka:
+    topics:
+      - name: vendor_lookup_evt
+        bounded_context: io
+        schema_type: json
+        reference: vendor-processing
+    service_account: io
+    consumer_group:
+      enabled: true
+      suffix: "#{consumer_group_suffix}"
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: mongodb
+          group: enterprise
+          env: '#{Mongo__Env}'
+        roles:
+          - name: readWrite
+            database: '#{Database__VendorDatabaseName}'
+            collection: '#{Database__VendorCollection}'
+handler:
+  enabled: true
+  service:
+    targetPort: 8080
+  configVars:
+    APPLICATION_ENTRYPOINT: IO.Larry.VendorHandler.dll
+    Database__VendorDatabaseName: '#{Database__VendorDatabaseName}'
+    Database__VendorCollection: '#{Database__VendorCollection}'
+```
+
+### **Common Libraries Structure**
+
+#### **Core Library (`src/Common/Core/Core.csproj`)**
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="USXpress.Configuration.Mongo" />
+    <PackageReference Include="USXpress.Monitoring" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="../Models/IO.Standard.Types/IO.Standard.Types.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+#### **Models Library (`src/Common/Models/IO.Standard.Types/IO.Standard.Types.csproj`)**
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="USXpress.Standard.Types" />
+    <PackageReference Include="USXpress.Standard.Types.Common" />
+  </ItemGroup>
+</Project>
+```
+
+### **Dockerfile Multi-Stage Build (edi-platform pattern)**
+
+```dockerfile
+# Stage 1: Restore
+FROM mcr.microsoft.com/dotnet/sdk:10.0-bookworm-slim AS restore
+ARG GITHUB_TOKEN
+ARG GITHUB_USER
+
+WORKDIR /app
+COPY nuget.config .
+COPY ["Directory.Packages.props", "."]
+COPY ["Directory.Build.props", "."]
+COPY ["io-platform.sln", "."]
+
+# Copy ALL project files for restore
+COPY ["src/Common/Models/IO.Standard.Types/IO.Standard.Types.csproj", "src/Common/Models/IO.Standard.Types/"]
+COPY ["src/Common/Core/Core.csproj", "src/Common/Core/"]
+COPY ["src/Common/Infrastructure/Infrastructure.csproj", "src/Common/Infrastructure/"]
+COPY ["src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj", "src/Apps/RestAPI/IO.Proxy/"]
+# ... additional projects
+
+# Restore all dependencies
+ENV NUGET_XMLDOC_MODE=none
+RUN dotnet restore io-platform.sln /p:WarningLevel=0
+
+# Stage 2: Build Common/Shared projects
+FROM restore AS build-common
+COPY src/Common/ src/Common/
+RUN dotnet build "src/Common/Models/IO.Standard.Types/IO.Standard.Types.csproj" -c Release --no-restore
+
+# Stage 3: Build and Publish Apps
+FROM build-common AS publish
+COPY src/Apps/ src/Apps/
+RUN dotnet publish "src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj" -c Release -o /app/publish --no-restore
+
+# Stage 4: Final runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "IO.Proxy.dll"]
+```
+
+### **GitHub Actions Workflow (edi-platform pattern)**
+
+```yaml
+---
+name: Build & Deploy
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MASTER_BRANCH: main
+
+on:
+  push:
+    paths:
+      - '.octopus/deploy/**'
+      - '.github/workflows/build.yaml'
+      - 'src/**'
+
+jobs:
+  build:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+      contents: write
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Artifact 📦
+        uses: variant-inc/actions-dotnet@v2
+        with:
+          dotnet-version: 10.0.x
+          ecr_repository: usxpress/io-platform
+          
+      - name: Release 🛸
+        uses: variant-inc/actions-octopus@v3
+        with:
+          deploy_yaml_dir: .octopus/deploy
+```
+
+### **Monitoring Configuration (USXpress.Monitoring)**
+
+#### **Program.cs Pattern**
+```csharp
+using USXpress.Monitoring;
+using USXpress.Monitoring.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Application metadata from configuration
+var configuration = builder.Configuration;
+var environment = Enum.Parse<MonitoringEnvironment>(
+    configuration.GetValue<string>("APPLICATION:ENVIRONMENT") ?? "development",
+    ignoreCase: true);
+var project = configuration.GetValue<string>("APPLICATION:PROJECT") ?? "io-platform";
+var group = configuration.GetValue<string>("APPLICATION:GROUP") ?? "gateway";
+
+// Configure Serilog with console output
+var loggingConfiguration = new LoggerConfiguration()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+
+// Add monitoring (Grafana/OTEL)
+builder.AddMonitoring(new MonitoringOptions
+{
+    ProjectGroup = group,
+    ProjectName = project,
+    Environment = environment,
+    ReleaseVersion = configuration.GetValue<string>("REVISION") ?? "1.0.0",
+    EnableOtel = true,
+    SerilogLoggerConfiguration = loggingConfiguration,
+});
+```
+
+### **MongoDB Integration (USXpress.Configuration.Mongo)**
+
+#### **Constants Pattern**
+```csharp
+namespace IO.Common.Constants;
+
+public class MongoDbCollections
+{
+    public const string VendorCollection = $"{Prefix}:VendorCollection";
+    public const string ContextCollection = $"{Prefix}:ContextCollection";
+    private const string Prefix = "Database";
+}
+
+public class MongoDbDatabases
+{
+    public const string MainDatabaseName = $"{Prefix}:MainDatabaseName";
+    private const string Prefix = "Database";
+}
+
+public class MongoDbClusterOptions
+{
+    public const string ConnectionString = $"{Prefix}:CONNECTION_STRING";
+    public const string TlsCrtKeyFile = $"{Prefix}:TLS_CRT_KEY_FILE";
+    private const string Prefix = "MONGODB:CLUSTER";
+}
+```
+
+#### **Repository Extension**
+```csharp
+public static class MongoExtensions
+{
+    public static IHostApplicationBuilder AddMongoRepositories(
+        this IHostApplicationBuilder builder)
+    {
+        builder.UseDefaultMongoConventions();
+        return builder.AddVendorRepository().AddContextRepository();
+    }
+
+    public static IHostApplicationBuilder AddVendorRepository(
+        this IHostApplicationBuilder builder)
+    {
+        var config = new MongoDbConfig
+        {
+            ConnectionString = builder.Configuration[MongoDbClusterOptions.ConnectionString]!,
+            DatabaseName = builder.Configuration[MongoDbDatabases.MainDatabaseName]!,
+            CollectionName = builder.Configuration[MongoDbCollections.VendorCollection]!,
+            MaxConnectionPoolSize = builder.Configuration["Database:MaxConnectionPoolSize"],
+            TlsCertFile = builder.Configuration[MongoDbClusterOptions.TlsCrtKeyFile]
+        };
+
+        builder.Services.AddMongoRepository<Vendor>(config);
+        return builder;
+    }
+}
+```
+
+### **Migration Phases**
+
+#### **Phase 1: Foundation (Week 1-2)**
+1. Create monorepo structure with .NET 10
+2. Set up Common libraries (Core, Infrastructure, Models)
+3. Configure GitHub Actions and Dockerfile
+4. Set up USXpress.Monitoring and USXpress.Configuration.Mongo
+5. Create deployment YAML templates
+
+#### **Phase 2: Proxy API (Week 3)**
+1. Implement IO.Proxy API gateway
+2. Configure routing and authentication
+3. Set up service discovery patterns
+4. Deploy and test proxy functionality
+
+#### **Phase 3: Domain APIs (Week 4-8)**
+1. **IO.Common**: Migrate email and context services
+2. **IO.Cass**: Migrate carrier vetting with Highway/Mcleod APIs
+3. **IO.Elsa**: Migrate pricing calculations
+4. **IO.Larry**: Migrate vendor lookup + background jobs
+5. **IO.Lea**: Migrate job search + background jobs
+
+#### **Phase 4: Background Processing (Week 9-10)**
+1. Convert scheduled jobs to .NET Worker Services
+2. Implement Kafka consumers/producers
+3. Set up MongoDB repositories for each domain
+4. Configure monitoring and logging
+
+#### **Phase 5: Testing & Migration (Week 11-12)**
+1. Comprehensive integration testing
+2. Performance testing and optimization
+3. Gradual traffic migration
+4. Decommission Python monolith
+
+### **Benefits of .NET 10 Migration**
+
+1. **Performance**: .NET 10 offers significant performance improvements
+2. **Ecosystem**: Full access to USXpress NuGet packages and tooling
+3. **Observability**: Native integration with USXpress monitoring stack
+4. **Maintainability**: Strong typing and compile-time safety
+5. **Scalability**: Better containerization and orchestration support
+6. **Security**: Built-in security features and Azure AD integration
+7. **Developer Experience**: Superior IDE support and debugging capabilities

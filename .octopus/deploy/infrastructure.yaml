@@ -1,8 +1,8 @@
 ---
-name: python-demo-poc
+name: io-platform
 octopus:
   space: USXpress
-  group: demo
+  group: io
 tags:
   owner: Vibin Daniel
   team: Arch
