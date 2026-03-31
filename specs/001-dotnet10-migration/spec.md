@@ -1,9 +1,9 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: .NET 10 Migration with CLEAN Architecture
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
+**Feature Branch**: `001-dotnet10-migration`  
+**Created**: 2026-03-31  
 **Status**: Draft  
-**Input**: User description: "$ARGUMENTS"
+**Input**: User description: "Migrate Python monolith to .NET 10 with CLEAN architecture following edi-platform patterns, creating microservices for IO.Proxy, IO.Common, IO.Cass, IO.Elsa, IO.Larry, and IO.Lea domains with USXpress infrastructure integration. Include Dockerfile, docker-compose, and deployment YAMLs organized under dotnet/ folder structure."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -23,60 +23,76 @@
   - Demonstrated to users independently
 -->
 
-### User Story 1 - [Brief Title] (Priority: P1)
+### User Story 1 - API Gateway Implementation (Priority: P1)
 
-[Describe this user journey in plain language]
+As a system architect, I want to implement the IO.Proxy API gateway that routes requests to appropriate domain services, so that clients have a single entry point for all IO platform functionality.
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Why this priority**: The API gateway is foundational for all other services and enables independent deployment of domain microservices while maintaining a unified external interface.
 
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-### User Story 2 - [Brief Title] (Priority: P2)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Can be fully tested by configuring routing rules and verifying requests are properly forwarded to mock downstream services with correct authentication and monitoring.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** the IO.Proxy service is running, **When** a client requests `/api/common/email`, **Then** the request is routed to IO.Common service with proper authentication headers
+2. **Given** downstream service is unavailable, **When** a request is made, **Then** the gateway returns appropriate error response with monitoring metrics
+3. **Given** multiple requests are made, **When** load testing is performed, **Then** the gateway handles 1000+ concurrent requests without degradation
 
 ---
 
-### User Story 3 - [Brief Title] (Priority: P3)
+### User Story 2 - Common Services Migration (Priority: P1)
 
-[Describe this user journey in plain language]
+As a user, I want the email and context services to be migrated to .NET 10, so that I can send emails and manage user context through the new platform with the same functionality as the Python version.
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Why this priority**: Common services are used by multiple domains and must be available before other domain services can be migrated.
 
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Can be fully tested by sending email requests and context operations, verifying SendGrid integration and MongoDB data persistence work correctly.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** IO.Common service is deployed, **When** an email request is submitted, **Then** the email is sent via SendGrid and response status is returned
+2. **Given** user context data exists, **When** context is requested, **Then** the correct context is retrieved from MongoDB
+3. **Given** invalid email data, **When** send request is made, **Then** appropriate error response is returned with validation details
 
 ---
 
-[Add more user stories as needed, each with an assigned priority]
+### User Story 3 - Carrier Vetting Service Migration (Priority: P2)
+
+As a carrier compliance officer, I want the carrier vetting service migrated to .NET 10, so that I can validate carrier eligibility using Highway and Mcleod APIs with the same business rules as the current system.
+
+**Why this priority**: Carrier vetting is critical for business operations and has complex integration requirements that need validation.
+
+**Independent Test**: Can be fully tested by submitting carrier validation requests and verifying the integration with Highway and Mcleod APIs produces correct validity responses.
+
+**Acceptance Scenarios**:
+
+1. **Given** valid carrier DOT/MC numbers, **When** validation is requested, **Then** the service returns valid status with carrier contacts
+2. **Given** carrier fails compliance rules, **When** validation is requested, **Then** appropriate error codes and failure reasons are returned
+3. **Given** external API is unavailable, **When** validation is requested, **Then** graceful degradation with proper error handling occurs
+
+---
+
+### User Story 4 - Background Processing Migration (Priority: P2)
+
+As a system administrator, I want vendor lookup and job search background jobs migrated to .NET 10 Worker Services, so that scheduled tasks continue to function with proper Kafka integration and monitoring.
+
+**Why this priority**: Background processing is essential for data synchronization and must work reliably before full migration.
+
+**Independent Test**: Can be fully tested by running the worker services and verifying Kafka message consumption and data updates occur as expected.
+
+**Acceptance Scenarios**:
+
+1. **Given** Kafka messages are published, **When** worker services are running, **Then** messages are consumed and processed correctly
+2. **Given** scheduled job triggers, **When** execution time is reached, **Then** jobs run and update data as expected
+3. **Given** processing errors occur, **When** exceptions happen, **Then** errors are logged and monitoring alerts are triggered
+
+---
 
 ### Edge Cases
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
-
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+- What happens when external APIs (Highway, Mcleod, SendGrid) are rate limited or unavailable?
+- How does system handle MongoDB connection failures or TLS certificate issues?
+- What occurs when Kafka consumer groups are lagging or topics are not available?
+- How does the system handle authentication token expiration or invalid tokens?
 
 ## Requirements *(mandatory)*
 
@@ -87,21 +103,30 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST provide API gateway that routes requests to appropriate domain microservices with load balancing
+- **FR-002**: System MUST implement email service using SendGrid with HTML template rendering and signature support  
+- **FR-003**: System MUST provide user context management with MongoDB persistence and Genesys driver integration
+- **FR-004**: System MUST implement carrier vetting service with Highway and Mcleod API integration following existing business rules
+- **FR-005**: System MUST provide pricing calculation service with external API integration and cost breakdown
+- **FR-006**: System MUST implement vendor lookup service with geographic search and scheduled data synchronization
+- **FR-007**: System MUST provide job search service with geographic polygon matching and Google Jobs integration
+- **FR-008**: System MUST use MongoDB Atlas for data persistence with TLS authentication and proper connection pooling
+- **FR-009**: System MUST implement Kafka message consumption for background processing with proper consumer groups
+- **FR-010**: System MUST include structured logging, OpenTelemetry tracing, and Grafana metrics for observability
+- **FR-011**: System MUST authenticate requests via Azure AD with proper scope validation and token management
+- **FR-012**: System MUST support graceful shutdown and health endpoints for all services
+- **FR-013**: System MUST deploy using Docker containers with multi-stage builds and environment-specific configuration
+- **FR-014**: System MUST organize all .NET migration artifacts under dotnet/ folder structure with proper separation
 
-*Example of marking unclear requirements:*
+### Key Entities
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
-
-### Key Entities *(include if feature involves data)*
-
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **EmailRequest**: Represents email sending request with recipients, content, and formatting options
+- **UserContext**: Represents user profile and preference data stored in MongoDB for personalization
+- **CarrierValidation**: Represents carrier eligibility assessment with contacts and compliance status
+- **PricingCalculation**: Represents load pricing breakdown with distance, base cost, and surcharges
+- **Vendor**: Represents service provider with location, contact information, and availability
+- **JobPosting**: Represents employment opportunity with location, requirements, and posting details
+- **ServiceHealth**: Represents microservice health status with dependencies and performance metrics
 
 ## Success Criteria *(mandatory)*
 
@@ -113,27 +138,27 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-001**: API gateway routes 1000+ concurrent requests with <100ms average response time
+- **SC-002**: Email service achieves 99.9% delivery success rate with SendGrid integration
+- **SC-003**: Carrier vetting service processes validations in <2 seconds with 95% accuracy
+- **SC-004**: All services maintain 99.9% uptime with proper health monitoring and alerting
+- **SC-005**: Background processing achieves <5 minute message processing lag for Kafka events
+- **SC-006**: System completes full migration from Python to .NET 10 with zero data loss
+- **SC-007**: All services pass security and compliance audits with proper authentication and data protection
 
 ### Observability Requirements (Per Constitution Principle IV)
 
-- **[ ] Performance Baselines**: Metrics established before feature rollout
-- **[ ] Health Endpoints**: Service health must be observable
-- **[ ] Error Tracking**: Structured logging for all failures
-- **[ ] User Journey Metrics**: End-to-end timing and success rates
+- **[ ] Performance Baselines**: Metrics established before each service rollout with response time, error rate, and throughput targets
+- **[ ] Health Endpoints**: All services expose /health and /ready endpoints with dependency status
+- **[ ] Error Tracking**: Structured logging for all failures with correlation IDs and error categorization
+- **[ ] User Journey Metrics**: End-to-end request tracing across all microservices with timing data
 
 ## Assumptions
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- Existing Python service APIs and business rules will be preserved exactly during migration
+- MongoDB Atlas clusters and Kafka topics are already provisioned and accessible
+- SendGrid API keys and external service credentials are available in target environment
+- Azure AD authentication configuration is already established for the organization
+- Development team has .NET 10 development environment and USXpress NuGet package access
+- Docker container registry and Kubernetes deployment infrastructure are available
+- External APIs (Highway, Mcleod, pricing services) will maintain current contracts during migration
