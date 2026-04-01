@@ -78,9 +78,9 @@ public class XAuthTokenMiddleware
     {
         // Try Authorization header first (Bearer token)
         var authHeader = request.Headers.Authorization.FirstOrDefault();
-        if (authHeader != null && authHeader.Scheme?.Equals("Bearer", StringComparison.OrdinalIgnoreCase) == true)
+        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
-            return authHeader.Parameter;
+            return authHeader.Substring("Bearer ".Length).Trim();
         }
 
         // Try X-Auth-Token header

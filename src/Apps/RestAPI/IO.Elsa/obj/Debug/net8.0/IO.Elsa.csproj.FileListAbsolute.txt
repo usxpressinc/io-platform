@@ -1,0 +1,9 @@
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.csproj.AssemblyReference.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.AssemblyInfoInputs.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.AssemblyInfo.cs
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.csproj.CoreCompileInputs.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Elsa\obj\Debug\net8.0\IO.Elsa.sourcelink.json

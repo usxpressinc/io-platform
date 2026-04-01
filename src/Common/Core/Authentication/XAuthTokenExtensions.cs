@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using System.Security.Cryptography.X509Certificates;
 
@@ -92,7 +93,7 @@ public static class XAuthTokenExtensions
         
         // Create a temporary service provider to get the logger and HTTP client factory
         using var scope = builder.ApplicationServices.CreateScope();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<XAuthTokenMiddleware>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<object>>();
         var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
         return builder.UseMiddleware<XAuthTokenMiddleware>(logger, httpClientFactory, options);

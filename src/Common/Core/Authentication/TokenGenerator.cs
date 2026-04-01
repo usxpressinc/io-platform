@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using IO.Core.Constants;
 
@@ -25,7 +25,7 @@ public static class TokenGenerator
         var tokenData = new
         {
             scopes = scopes,
-            expires_at = expiry.ToUnixTimeSeconds(),
+            expires_at = ((DateTimeOffset)expiry).ToUnixTimeSeconds(),
             type = "simple"
         };
         
@@ -34,19 +34,12 @@ public static class TokenGenerator
     }
 
     /// <summary>
-    /// Generates a JWT token with specified scopes using MSAL-like format
+    /// Generates a JWT token with specified scopes
     /// </summary>
-    /// <param name="scopes">The scopes to include in the token</param>
-    /// <param name="clientId">The client ID</param>
-    /// <param name="userId">The user ID</param>
-    /// <param name="validFor">How long the token is valid for</param>
-    /// <param name="issuer">Optional issuer override</param>
-    /// <param name="audience">Optional audience override</param>
-    /// <returns>A JWT token string</returns>
-    public static string GenerateJWTToken(
-        string[] scopes, 
-        string clientId, 
-        string userId, 
+    public static string GenerateToken(
+        string userId,
+        string clientId,
+        string[] scopes,
         TimeSpan validFor,
         string? issuer = null,
         string? audience = null)
@@ -58,7 +51,7 @@ public static class TokenGenerator
         {
             new Claim(JwtRegisteredClaimNames.Sub, userId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
             new Claim("client_id", clientId),
             new Claim("scopes", string.Join(" ", scopes)),
             new Claim("token_type", "jwt")
@@ -76,12 +69,11 @@ public static class TokenGenerator
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = userId,
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.Add(validFor),
             Issuer = issuer ?? "io-platform",
             Audience = audience ?? "io-proxy",
-            SigningCredentials = creds,
-            Claims = claims
+            SigningCredentials = creds
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -114,10 +106,10 @@ public static class TokenGenerator
 
         return tokenType.ToLower() switch
         {
-            "jwt" => GenerateJWTToken(
-                allScopes, 
+            "jwt" => GenerateToken(
+                "happy-robot-user",
                 "happy-robot-client", 
-                "happy-robot-user", 
+                allScopes, 
                 TimeSpan.FromHours(1)),
             _ => GenerateSimpleToken(allScopes)
         };
@@ -144,10 +136,10 @@ public static class TokenGenerator
 
         return tokenType.ToLower() switch
         {
-            "jwt" => GenerateJWTToken(
-                scopes, 
+            "jwt" => GenerateToken(
+                "test-user",
                 "test-client", 
-                "test-user", 
+                scopes, 
                 TimeSpan.FromHours(1)),
             _ => GenerateSimpleToken(scopes)
         };

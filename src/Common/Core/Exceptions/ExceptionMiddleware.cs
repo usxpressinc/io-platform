@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Builder;
 using System.Text.Json;
 using System.Net;
 
@@ -88,18 +89,6 @@ public class ExceptionMiddleware
                 Timestamp = timestamp,
                 IncludeStackTrace = _options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
             },
-            BusinessException businessEx => new ErrorResponse
-            {
-                ErrorId = errorId,
-                ErrorCode = businessEx.ErrorCode ?? "business_error",
-                Message = businessEx.Message,
-                Details = businessEx.Details?.Select(d => new ErrorDetail
-                {
-                    Message = d
-                }).ToList(),
-                Timestamp = timestamp,
-                IncludeStackTrace = _options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
-            },
             NotFoundException notFoundEx => new ErrorResponse
             {
                 ErrorId = errorId,
@@ -124,13 +113,25 @@ public class ExceptionMiddleware
                 Timestamp = timestamp,
                 IncludeStackTrace = false
             },
-            TimeoutException timeoutEx => new ErrorResponse
+            IO.Platform.Common.Core.Exceptions.TimeoutException timeoutEx => new ErrorResponse
             {
                 ErrorId = errorId,
                 ErrorCode = "timeout",
                 Message = "Request timed out",
                 Timestamp = timestamp,
                 IncludeStackTrace = false
+            },
+            BusinessException businessEx => new ErrorResponse
+            {
+                ErrorId = errorId,
+                ErrorCode = businessEx.ErrorCode ?? "business_error",
+                Message = businessEx.Message,
+                Details = businessEx.Details?.Select(d => new ErrorDetail
+                {
+                    Message = d
+                }).ToList(),
+                Timestamp = timestamp,
+                IncludeStackTrace = _options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
             },
             _ => new ErrorResponse
             {
@@ -151,7 +152,7 @@ public class ExceptionMiddleware
             NotFoundException => (int)HttpStatusCode.NotFound,
             UnauthorizedException => (int)HttpStatusCode.Unauthorized,
             ForbiddenException => (int)HttpStatusCode.Forbidden,
-            TimeoutException => (int)HttpStatusCode.RequestTimeout,
+            IO.Platform.Common.Core.Exceptions.TimeoutException => (int)HttpStatusCode.RequestTimeout,
             BusinessException businessEx when businessEx.StatusCode.HasValue => businessEx.StatusCode.Value,
             _ => (int)HttpStatusCode.InternalServerError
         };
@@ -189,8 +190,8 @@ public class ExceptionMiddleware
             NotFoundException => LogLevel.Information,
             UnauthorizedException => LogLevel.Warning,
             ForbiddenException => LogLevel.Warning,
+            IO.Platform.Common.Core.Exceptions.TimeoutException => LogLevel.Warning,
             BusinessException => LogLevel.Warning,
-            TimeoutException => LogLevel.Warning,
             _ => LogLevel.Error
         };
     }

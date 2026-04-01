@@ -54,8 +54,8 @@ public class TokenFactory
             {
                 token_id = tokenId,
                 scopes = scopes,
-                expires_at = expiry.ToUnixTimeSeconds(),
-                generated_at = DateTime.UtcNow.ToUnixTimeSeconds(),
+                expires_at = ((DateTimeOffset)expiry).ToUnixTimeSeconds(),
+                generated_at = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 generated_by = "token-factory",
                 requester_id = requesterId ?? "unknown",
                 type = "scoped"
@@ -203,8 +203,8 @@ public class TokenFactory
         var tokenData = new MasterTokenData
         {
             type = "master",
-            expires_at = expiry.ToUnixTimeSeconds(),
-            generated_at = DateTime.UtcNow.ToUnixTimeSeconds(),
+            expires_at = ((DateTimeOffset)expiry).ToUnixTimeSeconds(),
+            generated_at = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             purpose = "token-generation"
         };
 
@@ -259,6 +259,8 @@ public class TokenFactoryOptions
     public string FactorySecret { get; set; } = "default-factory-secret-change-in-production";
     public string? MasterToken { get; set; } // Read from environment variable
     public TimeSpan DefaultTokenLifetime { get; set; } = TimeSpan.FromHours(1);
+    public string? MasterTokenSignature { get; set; }
+    public string? MasterTokenSecret { get; set; }
 }
 
 /// <summary>

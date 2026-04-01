@@ -33,7 +33,7 @@ COPY src/Common/ src/Common/
 
 # Build the shared libraries
 RUN echo ">>> Building Common/Core..." && \
-    dotnet build "src/Common/Core/Core.csproj" -c Release --no-restore
+    dotnet build "src/Common/Core/Core.csproj" -c Release --property:WarningLevel=0
 
 # Stage 3: Build and Publish Apps
 FROM build-common AS publish

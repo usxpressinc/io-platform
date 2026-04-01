@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -25,6 +26,8 @@ public static IServiceCollection AddTokenFactory(
     {
         options.FactorySecret = configuration["TOKEN_FACTORY__SECRET"] ?? "default-factory-secret-change-in-production";
         options.MasterToken = configuration["TOKEN_FACTORY__MASTER_TOKEN"]; // Master token from env var
+        options.MasterTokenSignature = configuration["TOKEN_FACTORY__MASTER_TOKEN_SIGNATURE"];
+        options.MasterTokenSecret = configuration["TOKEN_FACTORY__MASTER_TOKEN_SECRET"];
         
         if (int.TryParse(configuration["TOKEN_FACTORY__DEFAULT_LIFETIME_HOURS"], out var hours))
         {
@@ -64,7 +67,7 @@ public static IServiceCollection AddTokenFactory(
         this IApplicationBuilder builder,
         string path = "/api/token-factory")
     {
-        return builder.Map(path, async context =>
+        return builder.Map(path, app => app.Run(async (HttpContext context) =>
         {
             if (context.Request.Method != "POST")
             {
@@ -114,7 +117,7 @@ public static IServiceCollection AddTokenFactory(
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsync($"Error generating token: {ex.Message}");
             }
-        });
+        }));
     }
 
     /// <summary>
@@ -127,7 +130,7 @@ public static IServiceCollection AddTokenFactory(
         this IApplicationBuilder builder,
         string path = "/api/token-validate")
     {
-        return builder.Map(path, async context =>
+        return builder.Map(path, app => app.Run(async (HttpContext context) =>
         {
             if (context.Request.Method != "POST")
             {
@@ -181,7 +184,7 @@ public static IServiceCollection AddTokenFactory(
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsync($"Error validating token: {ex.Message}");
             }
-        });
+        }));
     }
 }
 

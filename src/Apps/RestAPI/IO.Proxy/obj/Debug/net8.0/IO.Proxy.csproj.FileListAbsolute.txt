@@ -1,0 +1,9 @@
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.csproj.AssemblyReference.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.AssemblyInfoInputs.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.AssemblyInfo.cs
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.csproj.CoreCompileInputs.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Proxy\obj\Debug\net8.0\IO.Proxy.sourcelink.json
