@@ -1,16 +1,16 @@
 <Project>
   <PropertyGroup>
-    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup Label="USXpress">
     <!-- USXpress packages are from private feed - add USXpress nuget source to use these -->
-    <PackageVersion Include="USXpress.Monitoring" Version="3.0.0" />
-    <PackageVersion Include="USXpress.Configuration.Mongo" Version="2.1.0" />
-    <PackageVersion Include="USXpress.Kafka" Version="2.5.0" />
+    <PackageVersion Include="USXpress.Monitoring" Version="3.1.10" />
+    <PackageVersion Include="USXpress.Configuration.Mongo" Version="0.2.8" />
+    <PackageVersion Include="USXpress.Kafka" Version="0.0.5" />
   </ItemGroup>
   <ItemGroup Label="Database">
     <PackageVersion Include="MongoDB.Driver" Version="2.28.0" />
-    <PackageVersion Include="MongoDB.Bson" Version="2.28.0" />
+    <PackageVersion Include="MongoDB.Bson" Version="2.30.0" />
   </ItemGroup>
   <ItemGroup Label="Messaging">
     <PackageVersion Include="Confluent.Kafka" Version="2.3.0" />
@@ -21,6 +21,8 @@
   <ItemGroup Label="Microsoft">
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.79.2" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.1.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.11" />
     <PackageVersion Include="Microsoft.AspNetCore.Cors" Version="2.1.1" />
@@ -31,22 +33,28 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.11" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.11" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="7.5.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-  <ItemGroup Label="ThirdParty">
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="9.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.11" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.11" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.3.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.11" />
+  </ItemGroup>
+  <ItemGroup Label="ThirdParty">
     <PackageVersion Include="Polly" Version="7.2.4" />
     <PackageVersion Include="Ardalis.Result" Version="10.1.0" />
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
     <PackageVersion Include="Mapster" Version="7.4.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta-556" />
     <PackageVersion Include="Serilog" Version="4.2.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="8.0.3" />
   </ItemGroup>
   <ItemGroup Label="Test Libraries">
     <PackageVersion Include="Moq" Version="4.20.72" />

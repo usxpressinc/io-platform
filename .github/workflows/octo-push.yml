@@ -26,10 +26,10 @@ jobs:
 
     steps:
       - name: Artifact 📦
-        uses: variant-inc/actions-python@v2
+        uses: variant-inc/actions-dotnet@v2
         with:
-          python-version: 3.13
-          ecr_repository: demo/python-demo-poc
+          ecr_repository: usxpress/usxpress-edi-platform
+          dotnet-version: 9.x
 
       - name: Release 🛸
         uses: variant-inc/actions-octopus@v3

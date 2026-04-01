@@ -3,17 +3,17 @@
 
 name: io-cass-api
 octopus:
-  space: io-platform
-  group: carrier-vetting
+  space: USXpress
+  group: io
 
 infrastructure:
   mongodb:
     atlas:
       user:
         cluster:
-          project: io-cass-api
-          group: carrier-vetting
-          env: dev
+          project: mongodb
+          group: enterprise
+          env: "#{Mongo__Env}"
         roles:
           - name: readWrite
             database: io_cass

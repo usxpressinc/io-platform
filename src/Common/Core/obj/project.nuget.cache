@@ -1,26 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "G2lwr1ATwf4=",
+  "dgSpecHash": "CmDGB43iZd4=",
   "success": false,
   "projectFilePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
   "expectedPackageFiles": [],
   "logs": [
     {
-      "code": "NU1301",
+      "code": "NU1008",
       "level": "Error",
-      "message": "Failed to retrieve information about 'USXpress.Kafka' from remote source 'https://nuget.pkg.github.com/usxpressinc/download/usxpress.kafka/index.json'.\r\n  Response status code does not indicate success: 401 (Unauthorized).",
+      "message": "Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: Microsoft.IdentityModel.JsonWebTokens;Microsoft.IdentityModel.Tokens.",
       "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
       "filePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
-      "libraryId": "USXpress.Kafka",
-      "targetGraphs": []
-    },
-    {
-      "code": "NU1301",
-      "level": "Error",
-      "message": "Failed to retrieve information about 'USXpress.Monitoring' from remote source 'https://nuget.pkg.github.com/usxpressinc/download/usxpress.monitoring/index.json'.\r\n  Response status code does not indicate success: 401 (Unauthorized).",
-      "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
-      "filePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
-      "libraryId": "USXpress.Monitoring",
       "targetGraphs": []
     }
   ]

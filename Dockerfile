@@ -1,5 +1,5 @@
 # Stage 1: Restore
-FROM mcr.microsoft.com/dotnet/sdk:10.0-bookworm-slim AS restore
+FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS restore
 ARG GITHUB_TOKEN
 ARG GITHUB_USER
 
@@ -9,12 +9,12 @@ WORKDIR /app
 COPY nuget.config .
 COPY ["Directory.Packages.props", "."]
 COPY ["Directory.Build.props", "."]
+
+# Copy solution file
 COPY ["io-platform.sln", "."]
 
 # Copy ONLY the project files for services we actually use
-COPY ["src/Common/Models/IO.Standard.Types/IO.Standard.Types.csproj", "src/Common/Models/IO.Standard.Types/"]
 COPY ["src/Common/Core/Core.csproj", "src/Common/Core/"]
-COPY ["src/Common/Infrastructure/Infrastructure.csproj", "src/Common/Infrastructure/"]
 COPY ["src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj", "src/Apps/RestAPI/IO.Proxy/"]
 COPY ["src/Apps/RestAPI/IO.Common/IO.Common.csproj", "src/Apps/RestAPI/IO.Common/"]
 COPY ["src/Apps/RestAPI/IO.Cass/IO.Cass.csproj", "src/Apps/RestAPI/IO.Cass/"]
@@ -23,24 +23,17 @@ COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
 # Restore all dependencies in one command
 ENV NUGET_XMLDOC_MODE=none
 RUN echo ">>> Restoring NuGet packages..." && \
-    dotnet restore io-platform.sln /p:WarningLevel=0
+    dotnet restore io-platform.sln
 
 # Stage 2: Build Common/Shared projects
 FROM restore AS build-common
 
-# Copy style folder for StyleCop analyzers
-COPY style/ style/
-
-# Copy ONLY the Common source code
+# Copy Common source code
 COPY src/Common/ src/Common/
 
 # Build the shared libraries
-RUN echo ">>> Building Common/Models..." && \
-    dotnet build "src/Common/Models/IO.Standard.Types/IO.Standard.Types.csproj" -c Release --no-restore && \
-    echo ">>> Building Common/Core..." && \
-    dotnet build "src/Common/Core/Core.csproj" -c Release --no-restore && \
-    echo ">>> Building Common/Infrastructure..." && \
-    dotnet build "src/Common/Infrastructure/Infrastructure.csproj" -c Release --no-restore
+RUN echo ">>> Building Common/Core..." && \
+    dotnet build "src/Common/Core/Core.csproj" -c Release --no-restore
 
 # Stage 3: Build and Publish Apps
 FROM build-common AS publish
@@ -60,7 +53,7 @@ RUN echo ">>> Publishing IO.Proxy..." && \
     dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
 
 # Stage 4: Final runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS final
 
 # Runtime dependencies
 RUN apt-get update -y \
