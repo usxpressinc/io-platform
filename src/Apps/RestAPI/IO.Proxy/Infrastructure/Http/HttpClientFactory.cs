@@ -57,24 +57,6 @@ public static class HttpClientFactory
         .AddPolicyHandler(GetCircuitBreakerPolicy())
         .AddPolicyHandler(GetTimeoutPolicy());
 
-        services.AddHttpClient("io-larry", client =>
-        {
-            client.BaseAddress = new Uri("http://io-larry:8084");
-            client.Timeout = TimeSpan.FromSeconds(30);
-        })
-        .AddPolicyHandler(GetRetryPolicy())
-        .AddPolicyHandler(GetCircuitBreakerPolicy())
-        .AddPolicyHandler(GetTimeoutPolicy());
-
-        services.AddHttpClient("io-lea", client =>
-        {
-            client.BaseAddress = new Uri("http://io-lea:8085");
-            client.Timeout = TimeSpan.FromSeconds(30);
-        })
-        .AddPolicyHandler(GetRetryPolicy())
-        .AddPolicyHandler(GetCircuitBreakerPolicy())
-        .AddPolicyHandler(GetTimeoutPolicy());
-
         return services;
     }
 
@@ -211,8 +193,6 @@ public class HttpClientFactoryService : IHttpClientFactoryService
             "io.common" or "common" => "io-common",
             "io.cass" or "cass" => "io-cass",
             "io.elsa" or "elsa" => "io-elsa",
-            "io.larry" or "larry" => "io-larry",
-            "io.lea" or "lea" => "io-lea",
             _ => serviceName
         };
     }

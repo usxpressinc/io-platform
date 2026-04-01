@@ -1,6 +1,0 @@
-@IO.Proxy_HostAddress = http://localhost:5273
-
-GET {{IO.Proxy_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

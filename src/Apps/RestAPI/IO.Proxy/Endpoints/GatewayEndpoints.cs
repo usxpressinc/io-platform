@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net.Mime;
+using IO.Proxy.Infrastructure.Http;
 
 namespace IO.Proxy.Endpoints;
 
@@ -13,15 +14,18 @@ public class GatewayController : ControllerBase
 {
     private readonly IHealthAggregationService _healthService;
     private readonly IGatewayMonitoringService _monitoringService;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<GatewayController> _logger;
 
     public GatewayController(
         IHealthAggregationService healthService,
         IGatewayMonitoringService monitoringService,
+        IHttpClientFactory httpClientFactory,
         ILogger<GatewayController> logger)
     {
         _healthService = healthService;
         _monitoringService = monitoringService;
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
 
@@ -270,6 +274,87 @@ public class GatewayController : ControllerBase
         {
             _logger.LogError(ex, "Error getting service registry");
             return StatusCode(500, new { status = "error", message = "Service registry retrieval failed" });
+        }
+    }
+
+    /// <summary>
+    /// Proxy endpoint for Email API - forwards to IO.Common service
+    /// </summary>
+    [HttpPost("email/send")]
+    public async Task<IActionResult> ProxyEmailSend([FromBody] object request)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("io-common");
+            var response = await client.PostAsJsonAsync("/api/email/send", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<object>();
+                return Ok(result);
+            }
+            
+            var error = await response.Content.ReadAsStringAsync();
+            return StatusCode((int)response.StatusCode, new { error });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error proxying email send request");
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+
+    /// <summary>
+    /// Proxy endpoint for Carrier Validation API - forwards to IO.Cass service
+    /// </summary>
+    [HttpPost("carriers/valid")]
+    public async Task<IActionResult> ProxyCarrierValid([FromBody] object request)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("io-cass");
+            var response = await client.PostAsJsonAsync("/api/carrier/valid", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<object>();
+                return Ok(result);
+            }
+            
+            var error = await response.Content.ReadAsStringAsync();
+            return StatusCode((int)response.StatusCode, new { error });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error proxying carrier validation request");
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+
+    /// <summary>
+    /// Proxy endpoint for Price Lookup API - forwards to IO.Elsa service
+    /// </summary>
+    [HttpPost("price/lookup")]
+    public async Task<IActionResult> ProxyPriceLookup([FromBody] object request)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("io-elsa");
+            var response = await client.PostAsJsonAsync("/api/pricing/spapi/lookup", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<object>();
+                return Ok(result);
+            }
+            
+            var error = await response.Content.ReadAsStringAsync();
+            return StatusCode((int)response.StatusCode, new { error });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error proxying price lookup request");
+            return StatusCode(500, new { error = "Internal server error" });
         }
     }
 }

@@ -1,23 +1,22 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj": {}
+    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {}
   },
   "projects": {
-    "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj": {
+    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj",
+        "projectUniqueName": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\Core.csproj",
+        "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gmackay\\repos\\python-demo-poc\\src\\Common\\Core\\obj\\",
+        "outputPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\gmackay\\repos\\python-demo-poc\\NuGet.Config",
           "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -26,7 +25,9 @@
           "net8.0"
         ],
         "sources": {
-          "https://api.nuget.org/v3/index.json": {}
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.pkg.github.com/usxpressinc/index.json": {}
         },
         "frameworks": {
           "net8.0": {

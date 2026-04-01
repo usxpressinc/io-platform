@@ -11,7 +11,7 @@ COPY ["Directory.Packages.props", "."]
 COPY ["Directory.Build.props", "."]
 COPY ["io-platform.sln", "."]
 
-# Copy ALL project files for restore
+# Copy ONLY the project files for services we actually use
 COPY ["src/Common/Models/IO.Standard.Types/IO.Standard.Types.csproj", "src/Common/Models/IO.Standard.Types/"]
 COPY ["src/Common/Core/Core.csproj", "src/Common/Core/"]
 COPY ["src/Common/Infrastructure/Infrastructure.csproj", "src/Common/Infrastructure/"]
@@ -19,12 +19,6 @@ COPY ["src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj", "src/Apps/RestAPI/IO.Proxy/"]
 COPY ["src/Apps/RestAPI/IO.Common/IO.Common.csproj", "src/Apps/RestAPI/IO.Common/"]
 COPY ["src/Apps/RestAPI/IO.Cass/IO.Cass.csproj", "src/Apps/RestAPI/IO.Cass/"]
 COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
-COPY ["src/Apps/RestAPI/IO.Larry/IO.Larry.csproj", "src/Apps/RestAPI/IO.Larry/"]
-COPY ["src/Apps/RestAPI/IO.Lea/IO.Lea.csproj", "src/Apps/RestAPI/IO.Lea/"]
-COPY ["src/Apps/Handlers/IO.Larry/VendorHandler/IO.Larry.VendorHandler.csproj", "src/Apps/Handlers/IO.Larry/VendorHandler/"]
-COPY ["src/Apps/Handlers/IO.Lea/JobsHandler/IO.Lea.JobsHandler.csproj", "src/Apps/Handlers/IO.Lea/JobsHandler/"]
-COPY ["src/Apps/Jobs/IO.Larry/VendorSync/IO.Larry.VendorSync.csproj", "src/Apps/Jobs/IO.Larry/VendorSync/"]
-COPY ["src/Apps/Jobs/IO.Lea/GoogleJobs/IO.Lea.GoogleJobs.csproj", "src/Apps/Jobs/IO.Lea/GoogleJobs/"]
 
 # Restore all dependencies in one command
 ENV NUGET_XMLDOC_MODE=none
@@ -54,7 +48,7 @@ FROM build-common AS publish
 # Copy all App source code
 COPY src/Apps/ src/Apps/
 
-# Build and publish all applications
+# Build and publish only the services we actually use
 WORKDIR /app
 RUN echo ">>> Publishing IO.Proxy..." && \
     dotnet publish "src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
@@ -63,19 +57,7 @@ RUN echo ">>> Publishing IO.Proxy..." && \
     echo ">>> Publishing IO.Cass..." && \
     dotnet publish "src/Apps/RestAPI/IO.Cass/IO.Cass.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Elsa..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Larry..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Larry/IO.Larry.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Lea..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Lea/IO.Lea.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Larry.VendorHandler..." && \
-    dotnet publish "src/Apps/Handlers/IO.Larry/VendorHandler/IO.Larry.VendorHandler.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Lea.JobsHandler..." && \
-    dotnet publish "src/Apps/Handlers/IO.Lea/JobsHandler/IO.Lea.JobsHandler.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Larry.VendorSync..." && \
-    dotnet publish "src/Apps/Jobs/IO.Larry/VendorSync/IO.Larry.VendorSync.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Lea.GoogleJobs..." && \
-    dotnet publish "src/Apps/Jobs/IO.Lea/GoogleJobs/IO.Lea.GoogleJobs.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
+    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
 
 # Stage 4: Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim AS final
@@ -93,21 +75,15 @@ RUN apt-get update -y \
     && printf "\n\n[ssl_default_sect]\nMinProtocol = TLSv1\nCipherString = DEFAULT@SECLEVEL=0\n" >> /etc/ssl/openssl.cnf
 
 # Copy startup script
-COPY scripts/startup.sh /startup.sh
+COPY docker/scripts/startup.sh /startup.sh
 RUN chmod 755 /startup.sh
 
-# Copy all appsettings for various entrypoints
+# Copy appsettings for services we actually use
 RUN mkdir -p /appSettings && chown 1000:1000 /appSettings
 COPY src/Apps/RestAPI/IO.Proxy/appsettings.json /appSettings/IO.Proxy.dll.json
 COPY src/Apps/RestAPI/IO.Common/appsettings.json /appSettings/IO.Common.dll.json
 COPY src/Apps/RestAPI/IO.Cass/appsettings.json /appSettings/IO.Cass.dll.json
 COPY src/Apps/RestAPI/IO.Elsa/appsettings.json /appSettings/IO.Elsa.dll.json
-COPY src/Apps/RestAPI/IO.Larry/appsettings.json /appSettings/IO.Larry.dll.json
-COPY src/Apps/RestAPI/IO.Lea/appsettings.json /appSettings/IO.Lea.dll.json
-COPY src/Apps/Handlers/IO.Larry/VendorHandler/appsettings.json /appSettings/IO.Larry.VendorHandler.dll.json
-COPY src/Apps/Handlers/IO.Lea/JobsHandler/appsettings.json /appSettings/IO.Lea.JobsHandler.dll.json
-COPY src/Apps/Jobs/IO.Larry/VendorSync/appsettings.json /appSettings/IO.Larry.VendorSync.dll.json
-COPY src/Apps/Jobs/IO.Lea/GoogleJobs/appsettings.json /appSettings/IO.Lea.GoogleJobs.dll.json
 RUN chown 1000:1000 /appSettings/*.json
 
 # Set user permissions and working directory

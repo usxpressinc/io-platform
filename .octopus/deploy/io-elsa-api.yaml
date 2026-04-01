@@ -21,8 +21,8 @@ infrastructure:
 api:
   service:
     targetPort: 8083
-    subdomain: api.io.elsa
-    publicAccess: true
+    subdomain: io-elsa
+    publicAccess: false
   replicas: 2
   resources:
     requests:
@@ -49,19 +49,7 @@ api:
     XAUTH_MASTER_TOKEN: '#{Octopus.Variable["XAuth.MasterToken"]}'
   
 ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  tls:
-    enabled: true
-    secretName: io-elsa-tls
-  host: api.io.elsa
-  paths:
-    - path: /
-      pathType: Prefix
+  enabled: false
 
 autoscaling:
   enabled: true
