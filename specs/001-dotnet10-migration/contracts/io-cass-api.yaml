@@ -1,0 +1,242 @@
+# IO.Cass API Contract
+# Carrier Vetting Service
+
+openapi: 3.0.3
+info:
+  title: IO.Cass API
+  version: 1.0.0
+  description: |
+    Carrier vetting service for IO Platform. Validates carrier eligibility
+    using Highway and Mcleod APIs with compliance rule enforcement.
+
+servers:
+  - url: https://api.io.cass
+    description: Production
+  - url: http://localhost:8082
+    description: Local Development
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+
+  /ready:
+    get:
+      summary: Readiness probe
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+
+  /api/carriers/validate:
+    post:
+      summary: Validate carrier
+      description: |
+        Validate carrier eligibility using Highway and Mcleod APIs.
+        Returns carrier status, contacts, and compliance information.
+      operationId: validateCarrier
+      tags:
+        - Carriers
+      security:
+        - bearerAuth: [io:cass:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateCarrierRequest'
+      responses:
+        '200':
+          description: Validation complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierValidation'
+        '400':
+          description: Invalid request - missing DOT/MC number
+        '422':
+          description: Validation failed - carrier not found or non-compliant
+        '503':
+          description: External API unavailable - graceful degradation
+
+  /api/carriers/{id}:
+    get:
+      summary: Get carrier validation by ID
+      operationId: getCarrierValidation
+      tags:
+        - Carriers
+      security:
+        - bearerAuth: [io:cass:read]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierValidation'
+        '404':
+          description: Validation not found
+
+  /api/carriers/search:
+    get:
+      summary: Search carriers
+      operationId: searchCarriers
+      tags:
+        - Carriers
+      security:
+        - bearerAuth: [io:cass:read]
+      parameters:
+        - name: dotNumber
+          in: query
+          schema:
+            type: string
+        - name: mcNumber
+          in: query
+          schema:
+            type: string
+        - name: carrierName
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [valid, invalid, pending, error]
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarrierValidation'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ValidateCarrierRequest:
+      type: object
+      required:
+        - dotNumber
+      properties:
+        dotNumber:
+          type: string
+          description: DOT registration number
+        mcNumber:
+          type: string
+          description: MC number (optional)
+        forceRefresh:
+          type: boolean
+          default: false
+          description: Force re-validation even if cached
+
+    CarrierValidation:
+      type: object
+      required:
+        - id
+        - dotNumber
+        - carrierName
+        - status
+      properties:
+        id:
+          type: string
+        dotNumber:
+          type: string
+        mcNumber:
+          type: string
+        carrierName:
+          type: string
+        status:
+          type: string
+          enum: [valid, invalid, pending, error]
+        highwayData:
+          $ref: '#/components/schemas/HighwayData'
+        mcleodData:
+          $ref: '#/components/schemas/McleodData'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/CarrierContact'
+        validationErrors:
+          type: array
+          items:
+            type: string
+        validatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    HighwayData:
+      type: object
+      properties:
+        legalName:
+          type: string
+        dbaName:
+          type: string
+        entityType:
+          type: string
+        operatingStatus:
+          type: string
+        safetyRating:
+          type: string
+        insuranceStatus:
+          type: string
+        authorityStatus:
+          type: string
+
+    McleodData:
+      type: object
+      properties:
+        vendorId:
+          type: string
+        vendorStatus:
+          type: string
+        creditStatus:
+          type: string
+        complianceFlags:
+          type: array
+          items:
+            type: string
+
+    CarrierContact:
+      type: object
+      required:
+        - type
+        - name
+      properties:
+        type:
+          type: string
+          enum: [dispatch, safety, accounting, operations, other]
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        isPrimary:
+          type: boolean
+

@@ -183,3 +183,48 @@ id_rsa*
 /cluster.conf
 *.kml
 *.pem
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+packages/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+Directory.Build.props
+Directory.Packages.props
+
+# .NET specific
+*.csproj.user
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# .NET IDE files
+.vs/
+.idea/
+*.swp
+*.swo
+
+# Docker
+.dockerignore
+*.dockerfile
+docker-compose.override.yml
+
+# Environment and secrets
+.env*
+mongopem/
+*.pem
+*.key
+*.crt
+*.pfx
+
+# USXpress specific
+.cluster.conf
+id_rsa*

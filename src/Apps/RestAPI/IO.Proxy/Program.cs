@@ -1,4 +1,16 @@
 using IO.Core.Authentication;
+using IO.Platform.Common.Core.Configuration;
+using IO.Platform.Common.Core.Exceptions;
+using IO.Platform.Common.Core.Lifecycle;
+using IO.Platform.Common.Core.Monitoring;
+using IO.Platform.Common.Core.Health;
+using IO.Proxy.Core.Routing;
+using IO.Proxy.Core.LoadBalancing;
+using IO.Proxy.Core.Authentication;
+using IO.Proxy.Infrastructure.Http;
+using IO.Proxy.Middleware;
+using IO.Proxy.Core.Health;
+using IO.Proxy.Core.Monitoring;
 using USXpress.Monitoring;
 using USXpress.Monitoring.Models;
 using IO.Core.Constants;
@@ -13,9 +25,12 @@ var environment = Enum.Parse<MonitoringEnvironment>(
 var project = configuration.GetValue<string>(EnvironmentVariables.ApplicationProject) ?? "io-platform";
 var group = configuration.GetValue<string>(EnvironmentVariables.ApplicationGroup) ?? "gateway";
 
-// Configure Serilog with console output
-var loggingConfiguration = new LoggerConfiguration()
-    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+// Configure structured logging and OpenTelemetry
+builder.Services.AddStructuredLogging(configuration, "IO.Proxy");
+builder.Services.AddOpenTelemetryInstrumentation(configuration, "IO.Proxy");
+
+// Add environment configuration management
+builder.Services.AddEnvironmentConfiguration(configuration, "IO.Proxy");
 
 // Add monitoring (Grafana/OTEL)
 builder.AddMonitoring(new MonitoringOptions
@@ -25,8 +40,30 @@ builder.AddMonitoring(new MonitoringOptions
     Environment = environment,
     ReleaseVersion = configuration.GetValue<string>("REVISION") ?? "1.0.0",
     EnableOtel = true,
-    SerilogLoggerConfiguration = loggingConfiguration,
 });
+
+// Add gateway monitoring
+builder.Services.AddGatewayMonitoring();
+
+// Add health aggregation
+builder.Services.AddSingleton<IHealthAggregationService, HealthAggregationService>();
+builder.Services.Configure<HealthAggregationSettings>(settings =>
+{
+    settings.StartedAt = DateTime.UtcNow;
+});
+
+// Add authentication forwarding
+builder.Services.AddAuthenticationForwarding(configuration);
+
+// Add gateway routing and load balancing
+builder.Services.AddGatewayRouting(configuration);
+
+// Add HTTP clients for downstream services
+builder.Services.AddGatewayHttpClients(configuration);
+
+// Add graceful shutdown
+builder.Services.AddSingleton<IGracefulShutdownComponent, HttpServerGracefulShutdown>();
+builder.Services.AddHostedService<GracefulShutdownService>();
 
 // Add services
 builder.Services.AddControllers();
@@ -50,37 +87,6 @@ builder.Services.AddSwaggerGen(c =>
 
 // Add X-Auth token authentication
 builder.Services.AddXAuthTokenAuthentication(configuration);
-
-// Add HTTP clients for downstream services
-builder.Services.AddHttpClient(ServiceEndpoints.CommonService, client =>
-{
-    client.BaseAddress = new Uri(configuration["Services:Common:BaseUrl"]!);
-    client.DefaultRequestHeaders.Add("User-Agent", "IO-Proxy/1.0");
-});
-
-builder.Services.AddHttpClient(ServiceEndpoints.CassService, client =>
-{
-    client.BaseAddress = new Uri(configuration["Services:Cass:BaseUrl"]!);
-    client.DefaultRequestHeaders.Add("User-Agent", "IO-Proxy/1.0");
-});
-
-builder.Services.AddHttpClient(ServiceEndpoints.ElsaService, client =>
-{
-    client.BaseAddress = new Uri(configuration["Services:Elsa:BaseUrl"]!);
-    client.DefaultRequestHeaders.Add("User-Agent", "IO-Proxy/1.0");
-});
-
-builder.Services.AddHttpClient(ServiceEndpoints.LarryService, client =>
-{
-    client.BaseAddress = new Uri(configuration["Services:Larry:BaseUrl"]!);
-    client.DefaultRequestHeaders.Add("User-Agent", "IO-Proxy/1.0");
-});
-
-builder.Services.AddHttpClient(ServiceEndpoints.LeaService, client =>
-{
-    client.BaseAddress = new Uri(configuration["Services:Lea:BaseUrl"]!);
-    client.DefaultRequestHeaders.Add("User-Agent", "IO-Proxy/1.0");
-});
 
 // Add cross-origin resource sharing
 builder.Services.AddCors(options =>
@@ -108,8 +114,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Add exception handling middleware
+app.UseExceptionHandling();
+
+// Add request tracking middleware
+app.UseRequestTracking();
+
 // Add CORS
 app.UseCors("AllowAll");
+
+// Add request/response transformation middleware
+app.UseRequestTransformation();
+
+// Add authentication forwarding
+app.UseAuthenticationForwarding();
 
 // Add X-Auth token authentication
 app.UseXAuthTokenAuthentication();

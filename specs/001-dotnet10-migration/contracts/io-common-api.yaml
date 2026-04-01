@@ -1,0 +1,336 @@
+# IO.Common API Contract
+# Email and Context Services
+
+openapi: 3.0.3
+info:
+  title: IO.Common API
+  version: 1.0.0
+  description: |
+    Common services for IO Platform - email sending via SendGrid and
+    user context management with MongoDB persistence.
+
+servers:
+  - url: https://api.io.common
+    description: Production
+  - url: http://localhost:8081
+    description: Local Development
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+
+  /ready:
+    get:
+      summary: Readiness probe
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+
+  # Email Endpoints
+  /api/email/send:
+    post:
+      summary: Send email
+      description: Send email via SendGrid with template or body
+      operationId: sendEmail
+      tags:
+        - Email
+      security:
+        - bearerAuth: [io:common:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+      responses:
+        '202':
+          description: Email accepted for sending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailResponse'
+        '400':
+          description: Invalid request
+        '429':
+          description: Rate limited
+
+  /api/email/{id}/status:
+    get:
+      summary: Get email status
+      operationId: getEmailStatus
+      tags:
+        - Email
+      security:
+        - bearerAuth: [io:common:read]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailStatusResponse'
+
+  # Context Endpoints
+  /api/context/{userId}:
+    get:
+      summary: Get user context
+      operationId: getUserContext
+      tags:
+        - Context
+      security:
+        - bearerAuth: [io:common:read]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User context retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserContext'
+        '404':
+          description: User not found
+
+    put:
+      summary: Update user context
+      operationId: updateUserContext
+      tags:
+        - Context
+      security:
+        - bearerAuth: [io:common:write]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserContextRequest'
+      responses:
+        '200':
+          description: Context updated
+        '400':
+          description: Invalid request
+
+    delete:
+      summary: Delete user context
+      operationId: deleteUserContext
+      tags:
+        - Context
+      security:
+        - bearerAuth: [io:common:admin]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Context deleted
+
+  /api/context:
+    post:
+      summary: Create user context
+      operationId: createUserContext
+      tags:
+        - Context
+      security:
+        - bearerAuth: [io:common:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserContextRequest'
+      responses:
+        '201':
+          description: Context created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserContext'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SendEmailRequest:
+      type: object
+      required:
+        - toAddresses
+        - subject
+      properties:
+        toAddresses:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        ccAddresses:
+          type: array
+          items:
+            type: string
+        bccAddresses:
+          type: array
+          items:
+            type: string
+        fromAddress:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        isHtml:
+          type: boolean
+          default: true
+        templateId:
+          type: string
+        templateData:
+          type: object
+          additionalProperties: true
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+              content:
+                type: string
+              contentType:
+                type: string
+
+    SendEmailResponse:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed]
+        messageId:
+          type: string
+
+    EmailStatusResponse:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, sent, failed]
+        sentAt:
+          type: string
+          format: date-time
+        errorMessage:
+          type: string
+
+    UserContext:
+      type: object
+      required:
+        - id
+        - userId
+        - email
+        - displayName
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+        roles:
+          type: array
+          items:
+            type: string
+        lastLoginAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserPreferences:
+      type: object
+      properties:
+        timeZone:
+          type: string
+        locale:
+          type: string
+        notificationSettings:
+          type: object
+          additionalProperties: true
+        dashboardLayout:
+          type: object
+
+    CreateUserContextRequest:
+      type: object
+      required:
+        - userId
+        - email
+        - displayName
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+        roles:
+          type: array
+          items:
+            type: string
+
+    UpdateUserContextRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+        roles:
+          type: array
+          items:
+            type: string
+

@@ -1,0 +1,155 @@
+# Implementation Plan: .NET 10 Migration with CLEAN Architecture
+
+**Branch**: `001-dotnet10-migration` | **Date**: 2026-03-31 | **Spec**: [spec.md](./spec.md)
+**Input**: Migrate Python monolith to .NET 10 with CLEAN architecture following edi-platform patterns
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+
+## Summary
+
+Migrate the IO Platform Python monolith to .NET 10 microservices with CLEAN architecture. Create 6 independently deployable domain services (IO.Proxy, IO.Common, IO.Cass, IO.Elsa, IO.Larry, IO.Lea) using USXpress infrastructure standards. Maintain existing API contracts and business logic while improving observability, scalability, and maintainability.
+
+## Technical Context
+
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: .NET 10 (MANDATORY per Constitution Principle III)  
+**Primary Dependencies**: 
+- USXpress.Monitoring (observability)
+- USXpress.Configuration.Mongo (data access)
+- USXpress.Kafka (messaging)
+- SendGrid (email service)
+- **XAuthTokenFactory** (from 002-xauth-token-factory - already complete)
+
+**Storage**: MongoDB Atlas with TLS authentication (MANDATORY per Architecture Standards)  
+**Testing**: xUnit + 90%+ coverage requirement (MANDATORY per Constitution Principle V)  
+**Target Platform**: Linux containers with Kubernetes deployment  
+**Project Type**: Microservices architecture (MANDATORY per Constitution Principle II)  
+**Performance Goals**: 
+- API gateway routes 1000+ concurrent requests with <100ms average response time (SC-001)
+- Carrier vetting <2 seconds (SC-003)
+- X-Auth validation <10ms overhead (SC-008)
+- TokenFactory <50ms generation (SC-009)
+
+**Constraints**: 
+- CLEAN architecture compliance (MANDATORY per Constitution Principle I)
+- Zero data loss during migration (SC-006)
+- 002-xauth-token-factory already merged - must integrate TokenFactory
+- Subdomain routing: api.io.proxy, api.io.common, api.io.cass, api.io.elsa, api.io.larry, api.io.lea (FR-016)
+
+**NEEDS CLARIFICATION**:
+1. ~~Highway/Mcleod API endpoint contracts and authentication methods~~ → RESOLVED in research.md
+2. ~~SendGrid template ID structure and API version~~ → RESOLVED in research.md  
+3. ~~Existing Python MongoDB collection schemas for data migration~~ → RESOLVED in research.md
+4. ~~Kafka topic names and message schemas for background jobs~~ → RESOLVED in research.md
+5. ~~External pricing service API contracts~~ → RESOLVED in research.md
+6. ~~Google Jobs integration endpoint details~~ → RESOLVED in research.md
+
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+### Pre-Design Compliance Gates (per Constitution)
+
+- **[x] CLEAN Architecture**: Core/Infrastructure/Models separation verified - spec defines this structure
+- **[x] Microservice Boundaries**: 6 domains (Proxy, Common, Cass, Elsa, Larry, Lea) with independent databases
+- **[x] USXpress Standards**: Monitoring, MongoDB, Kafka packages specified in FR-008 through FR-010
+- **[x] Observability**: Structured logging, OpenTelemetry, Grafana metrics required in FR-010
+- **[x] Test Coverage**: 90%+ requirement in SC-004, unit tests before implementation per Principle V
+- **[x] Infrastructure as Code**: Deployment YAMLs required in FR-014, FR-016 following edi-platform patterns
+
+### Architecture Validation
+
+- **[x] Domain Ownership**: Each service owns its data - no cross-domain database access per spec
+- **[x] API Contracts**: Well-defined interfaces between services via IO.Proxy gateway
+- **[x] Event Streaming**: Kafka topics for background processing per FR-009
+- **[x] Performance Baselines**: Metrics established before rollout per SC-001 through SC-010
+
+### Post-Design Compliance Gates (Phase 1 Complete)
+
+- **[x] Research Complete**: All NEEDS CLARIFICATION resolved in `research.md`
+- **[x] Data Model Defined**: Entities documented in `data-model.md` with MongoDB collections
+- **[x] API Contracts Specified**: 6 service contracts in `contracts/*.yaml`
+- **[x] Developer Guide Ready**: `quickstart.md` with build/run instructions
+- **[x] Agent Context Updated**: Windsurf rules updated with .NET 10 context
+
+**All Constitution gates PASSED. Ready for Phase 2 (task generation).**
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/001-dotnet10-migration/
+├── plan.md              # This file
+├── research.md          # Phase 0 output - research findings
+├── data-model.md        # Phase 1 output - entity definitions
+├── quickstart.md        # Phase 1 output - developer setup
+├── contracts/           # Phase 1 output - API contracts
+│   ├── io-proxy-api.yaml
+│   ├── io-common-api.yaml
+│   ├── io-cass-api.yaml
+│   ├── io-elsa-api.yaml
+│   ├── io-larry-api.yaml
+│   └── io-lea-api.yaml
+└── tasks.md             # Phase 2 output (generated by /speckit.tasks)
+```
+
+### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
+
+```text
+# IO Platform Microservices
+dotnet/                          # MANDATORY per FR-015
+├── src/
+│   ├── Common/
+│   │   ├── Core/               # Business logic and interfaces
+│   │   ├── Infrastructure/      # External integrations
+│   │   └── Models/             # Domain types
+│   └── Apps/
+│       ├── RestAPI/
+│       │   ├── IO.Proxy/       # API Gateway (P1)
+│       │   ├── IO.Common/      # Email + Context (P1)
+│       │   ├── IO.Cass/        # Carrier vetting (P2)
+│       │   ├── IO.Elsa/        # Pricing (P2)
+│       │   ├── IO.Larry/       # Vendor lookup (P2)
+│       │   └── IO.Lea/         # Job search (P2)
+│       ├── Handlers/           # Kafka consumers
+│       └── Jobs/               # Scheduled tasks
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+├── .octopus/deploy/            # Infrastructure as Code
+│   ├── io-proxy-api.yaml
+│   ├── io-common-api.yaml
+│   ├── io-cass-api.yaml
+│   ├── io-elsa-api.yaml
+│   ├── io-larry-api.yaml
+│   └── io-lea-api.yaml
+├── Directory.Packages.props     # Centralized package management
+├── Dockerfile                   # Multi-stage build
+└── docker-compose.yaml          # Local development
+```
+
+**Structure Decision**: Following Constitution Principle I (CLEAN) and II (Microservices). Each domain service has its own database and deployment. Common libraries are framework-independent. 002-xauth-token-factory already provides TokenFactory in Common/Core/Authentication.
+
+## Complexity Tracking
+
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| No violations required. All complexity is justified by:
+- 6 microservices = 6 independent business domains per spec
+- CLEAN architecture = required for maintainability per Constitution
+- USXpress packages = required for observability/integration per Constitution

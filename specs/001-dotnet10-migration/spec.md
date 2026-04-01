@@ -105,7 +105,7 @@ As a system administrator, I want vendor lookup and job search background jobs m
 
 - **FR-001**: System MUST provide API gateway that routes requests to appropriate domain microservices with load balancing
 - **FR-002**: System MUST implement email service using SendGrid with HTML template rendering and signature support  
-- **FR-003**: System MUST provide user context management with MongoDB persistence and Genesys driver integration
+- **FR-003**: System MUST provide user context management with MongoDB persistence (Genesys integration deferred to post-migration phase)
 - **FR-004**: System MUST implement carrier vetting service with Highway and Mcleod API integration following existing business rules
 - **FR-005**: System MUST provide pricing calculation service with external API integration and cost breakdown
 - **FR-006**: System MUST implement vendor lookup service with geographic search and scheduled data synchronization
@@ -113,8 +113,8 @@ As a system administrator, I want vendor lookup and job search background jobs m
 - **FR-008**: System MUST use MongoDB Atlas for data persistence with TLS authentication and proper connection pooling
 - **FR-009**: System MUST implement Kafka message consumption for background processing with proper consumer groups
 - **FR-010**: System MUST include structured logging, OpenTelemetry tracing, and Grafana metrics for observability
-- **FR-011**: System MUST authenticate requests via X-Auth token middleware with scope-based validation following Python pattern
-- **FR-012**: System MUST implement TokenFactory for zero-trust runtime token generation using environment-based master token
+- **FR-011**: System MUST authenticate requests via X-Auth token middleware with scope-based validation following USXpress Azure AD patterns
+- **FR-012**: System MUST integrate existing TokenFactory from 002-xauth-token-factory for zero-trust runtime token generation using environment-based master token
 - **FR-013**: System MUST support graceful shutdown and health endpoints for all services
 - **FR-014**: System MUST deploy using Docker containers with multi-stage builds and environment-specific configuration
 - **FR-015**: System MUST organize all .NET migration artifacts under dotnet/ folder structure with proper separation

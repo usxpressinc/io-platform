@@ -1,0 +1,103 @@
+# IO.Elsa API Deployment Configuration
+# Subdomain: api.io.elsa
+
+name: io-elsa-api
+octopus:
+  space: io-platform
+  group: pricing
+
+infrastructure:
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: io-elsa-api
+          group: pricing
+          env: dev
+        roles:
+          - name: readWrite
+            database: io_elsa
+
+api:
+  service:
+    targetPort: 8083
+    subdomain: api.io.elsa
+    publicAccess: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  health:
+    path: /health
+    readinessPath: /ready
+    livenessPath: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+  configVars:
+    ASPNETCORE_ENVIRONMENT: Production
+    ASPNETCORE_URLS: http://+:8083
+    KAFKA_BOOTSTRAP_SERVERS: kafka.infra.svc.cluster.local:9092
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.infra.svc.cluster.local:4317
+  secretVars:
+    XAUTH_MASTER_TOKEN: '#{Octopus.Variable["XAuth.MasterToken"]}'
+  
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: io-elsa-tls
+  host: api.io.elsa
+  paths:
+    - path: /
+      pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+  grafana:
+    enabled: true
+    dashboard: io-elsa
+
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+volumes:
+  - name: config
+    configMap:
+      name: io-elsa-config
+
+volumeMounts:
+  - name: config
+    mountPath: /app/config
+    readOnly: true

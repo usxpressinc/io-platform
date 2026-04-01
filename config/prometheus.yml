@@ -1,0 +1,62 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8889']
+
+  - job_name: 'io-proxy'
+    static_configs:
+      - targets: ['io-proxy:8080']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'io-common'
+    static_configs:
+      - targets: ['io-common:8081']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'io-cass'
+    static_configs:
+      - targets: ['io-cass:8082']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'io-elsa'
+    static_configs:
+      - targets: ['io-elsa:8083']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'io-larry'
+    static_configs:
+      - targets: ['io-larry:8084']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'io-lea'
+    static_configs:
+      - targets: ['io-lea:8085']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb:27017']
+    scrape_interval: 30s
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+    scrape_interval: 30s

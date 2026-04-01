@@ -1,0 +1,251 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  mongodb:
+    image: mongo:7.0
+    container_name: io-platform-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: io-platform-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-indexes:/docker-entrypoint-initdb.d
+    networks:
+      - io-platform
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: io-platform-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - io-platform
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: io-platform-kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_HOST://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    networks:
+      - io-platform
+
+  # Monitoring Infrastructure
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: io-platform-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - io-platform
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: io-platform-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - io-platform
+
+  # IO Platform Services
+  io-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Proxy
+    container_name: io-proxy
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE_NAME=io-platform-dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - XAUTH_MASTER_TOKEN=master-token-dev
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://prometheus:9090
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - io-platform
+    volumes:
+      - ./config:/app/config
+
+  io-common:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Common
+    container_name: io-common
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8081
+      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE_NAME=io-platform-dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - XAUTH_MASTER_TOKEN=master-token-dev
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - io-platform
+    volumes:
+      - ./config:/app/config
+
+  io-cass:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Cass
+    container_name: io-cass
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8082
+      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE_NAME=io-platform-dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - HIGHWAY_API_URL=${HIGHWAY_API_URL}
+      - HIGHWAY_API_KEY=${HIGHWAY_API_KEY}
+      - MCLEOD_API_URL=${MCLEOD_API_URL}
+      - MCLEOD_API_KEY=${MCLEOD_API_KEY}
+      - XAUTH_MASTER_TOKEN=master-token-dev
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - io-platform
+    volumes:
+      - ./config:/app/config
+
+  io-elsa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Elsa
+    container_name: io-elsa
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8083
+      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE_NAME=io-platform-dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - PRICING_API_URL=${PRICING_API_URL}
+      - PRICING_API_KEY=${PRICING_API_KEY}
+      - XAUTH_MASTER_TOKEN=master-token-dev
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - io-platform
+    volumes:
+      - ./config:/app/config
+
+  io-larry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Larry
+    container_name: io-larry
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8084
+      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE_NAME=io-platform-dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - XAUTH_MASTER_TOKEN=master-token-dev
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - io-platform
+    volumes:
+      - ./config:/app/config
+
+  io-lea:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Lea
+    container_name: io-lea
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8085
+      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
+      - MONGODB_DATABASE_NAME=io-platform-dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - GOOGLE_JOBS_API_KEY=${GOOGLE_JOBS_API_KEY}
+      - XAUTH_MASTER_TOKEN=master-token-dev
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - io-platform
+    volumes:
+      - ./config:/app/config
+
+volumes:
+  mongodb_data:
+  grafana_data:
+  prometheus_data:
+
+networks:
+  io-platform:
+    driver: bridge

@@ -1,0 +1,227 @@
+# IO.Proxy API Contract
+# API Gateway - Routes requests to domain microservices
+
+openapi: 3.0.3
+info:
+  title: IO.Proxy API Gateway
+  version: 1.0.0
+  description: |
+    Central API gateway for IO Platform. Routes requests to appropriate domain
+    microservices with authentication, rate limiting, and monitoring.
+
+servers:
+  - url: https://api.io.proxy
+    description: Production
+  - url: http://localhost:8080
+    description: Local Development
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /ready:
+    get:
+      summary: Readiness probe
+      operationId: getReady
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadyResponse'
+
+  # Common Service Routes
+  /api/common/{path}:
+    x-route-to: io-common-api
+    parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Proxy to IO.Common GET endpoints
+      operationId: proxyCommonGet
+      security:
+        - bearerAuth: [io:common:read]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Proxy to IO.Common POST endpoints
+      operationId: proxyCommonPost
+      security:
+        - bearerAuth: [io:common:write]
+      responses:
+        '201':
+          description: Created
+
+  # Cass Service Routes
+  /api/cass/{path}:
+    x-route-to: io-cass-api
+    parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Proxy to IO.Cass GET endpoints
+      operationId: proxyCassGet
+      security:
+        - bearerAuth: [io:cass:read]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Proxy to IO.Cass POST endpoints
+      operationId: proxyCassPost
+      security:
+        - bearerAuth: [io:cass:write]
+      responses:
+        '201':
+          description: Created
+
+  # Elsa Service Routes
+  /api/elsa/{path}:
+    x-route-to: io-elsa-api
+    parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Proxy to IO.Elsa GET endpoints
+      operationId: proxyElsaGet
+      security:
+        - bearerAuth: [io:elsa:read]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Proxy to IO.Elsa POST endpoints
+      operationId: proxyElsaPost
+      security:
+        - bearerAuth: [io:elsa:write]
+      responses:
+        '201':
+          description: Created
+
+  # Larry Service Routes
+  /api/larry/{path}:
+    x-route-to: io-larry-api
+    parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Proxy to IO.Larry GET endpoints
+      operationId: proxyLarryGet
+      security:
+        - bearerAuth: [io:larry:read]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Proxy to IO.Larry POST endpoints
+      operationId: proxyLarryPost
+      security:
+        - bearerAuth: [io:larry:write]
+      responses:
+        '201':
+          description: Created
+
+  # Lea Service Routes
+  /api/lea/{path}:
+    x-route-to: io-lea-api
+    parameters:
+      - name: path
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Proxy to IO.Lea GET endpoints
+      operationId: proxyLeaGet
+      security:
+        - bearerAuth: [io:lea:read]
+      responses:
+        '200':
+          description: Success
+    post:
+      summary: Proxy to IO.Lea POST endpoints
+      operationId: proxyLeaPost
+      security:
+        - bearerAuth: [io:lea:write]
+      responses:
+        '201':
+          description: Created
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: X-Auth scoped token from 002-xauth-token-factory
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - service
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        service:
+          type: string
+        version:
+          type: string
+        uptime:
+          type: string
+        dependencies:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+
+    ReadyResponse:
+      type: object
+      required:
+        - ready
+      properties:
+        ready:
+          type: boolean
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              passed:
+                type: boolean
+

@@ -1,0 +1,105 @@
+# IO.Cass API Deployment Configuration
+# Subdomain: api.io.cass
+
+name: io-cass-api
+octopus:
+  space: io-platform
+  group: carrier-vetting
+
+infrastructure:
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: io-cass-api
+          group: carrier-vetting
+          env: dev
+        roles:
+          - name: readWrite
+            database: io_cass
+
+api:
+  service:
+    targetPort: 8082
+    subdomain: api.io.cass
+    publicAccess: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  health:
+    path: /health
+    readinessPath: /ready
+    livenessPath: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+  configVars:
+    ASPNETCORE_ENVIRONMENT: Production
+    ASPNETCORE_URLS: http://+:8082
+    KAFKA_BOOTSTRAP_SERVERS: kafka.infra.svc.cluster.local:9092
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.infra.svc.cluster.local:4317
+  secretVars:
+    HIGHWAY_API_KEY: '#{Octopus.Variable["Highway.ApiKey"]}'
+    MCLEOD_API_KEY: '#{Octopus.Variable["McLeod.ApiKey"]}'
+    XAUTH_MASTER_TOKEN: '#{Octopus.Variable["XAuth.MasterToken"]}'
+  
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: io-cass-tls
+  host: api.io.cass
+  paths:
+    - path: /
+      pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+  grafana:
+    enabled: true
+    dashboard: io-cass
+
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+volumes:
+  - name: config
+    configMap:
+      name: io-cass-config
+
+volumeMounts:
+  - name: config
+    mountPath: /app/config
+    readOnly: true

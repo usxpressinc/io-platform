@@ -22,14 +22,18 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
-    <!-- <PackageReference Include="USXpress.Monitoring" /> -->
-    <!-- <PackageReference Include="USXpress.Configuration.Mongo" /> -->
+    <PackageReference Include="USXpress.Monitoring" />
+    <PackageReference Include="USXpress.Configuration.Mongo" />
+    <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="Confluent.Kafka" />
     <PackageReference Include="Ardalis.Result" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>

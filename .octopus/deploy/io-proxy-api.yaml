@@ -1,0 +1,103 @@
+# IO.Proxy API Gateway Deployment Configuration
+# Subdomain: api.io.proxy
+
+name: io-proxy-api
+octopus:
+  space: io-platform
+  group: api-gateway
+
+infrastructure:
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: io-proxy-api
+          group: api-gateway
+          env: dev
+        roles:
+          - name: readWrite
+            database: io_proxy
+
+api:
+  service:
+    targetPort: 8080
+    subdomain: api.io.proxy
+    publicAccess: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  health:
+    path: /health
+    readinessPath: /ready
+    livenessPath: /health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+  configVars:
+    ASPNETCORE_ENVIRONMENT: Production
+    ASPNETCORE_URLS: http://+:8080
+    KAFKA_BOOTSTRAP_SERVERS: kafka.infra.svc.cluster.local:9092
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.infra.svc.cluster.local:4317
+  secretVars:
+    XAUTH_MASTER_TOKEN: '#{Octopus.Variable["XAuth.MasterToken"]}'
+  
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: io-proxy-tls
+  host: api.io.proxy
+  paths:
+    - path: /
+      pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+  grafana:
+    enabled: true
+    dashboard: io-proxy
+
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+volumes:
+  - name: config
+    configMap:
+      name: io-proxy-config
+
+volumeMounts:
+  - name: config
+    mountPath: /app/config
+    readOnly: true

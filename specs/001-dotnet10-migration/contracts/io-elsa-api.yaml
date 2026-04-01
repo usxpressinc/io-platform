@@ -1,0 +1,243 @@
+# IO.Elsa API Contract
+# Pricing Calculation Service
+
+openapi: 3.0.3
+info:
+  title: IO.Elsa API
+  version: 1.0.0
+  description: |
+    Pricing calculation service for IO Platform. Calculates load pricing
+    with external API integration and detailed cost breakdowns.
+
+servers:
+  - url: https://api.io.elsa
+    description: Production
+  - url: http://localhost:8083
+    description: Local Development
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+
+  /ready:
+    get:
+      summary: Readiness probe
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is ready
+
+  /api/pricing/calculate:
+    post:
+      summary: Calculate pricing
+      description: Calculate load pricing with distance, base cost, and surcharges
+      operationId: calculatePricing
+      tags:
+        - Pricing
+      security:
+        - bearerAuth: [io:elsa:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculatePricingRequest'
+      responses:
+        '200':
+          description: Pricing calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingCalculation'
+        '400':
+          description: Invalid request
+        '422':
+          description: Unable to calculate - invalid locations
+        '503':
+          description: External pricing service unavailable
+
+  /api/pricing/{id}:
+    get:
+      summary: Get pricing calculation by ID
+      operationId: getPricingCalculation
+      tags:
+        - Pricing
+      security:
+        - bearerAuth: [io:elsa:read]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pricing retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingCalculation'
+        '404':
+          description: Pricing not found
+
+  /api/pricing/{id}/refresh:
+    post:
+      summary: Refresh pricing calculation
+      description: Recalculate pricing with current rates
+      operationId: refreshPricing
+      tags:
+        - Pricing
+      security:
+        - bearerAuth: [io:elsa:write]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pricing refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingCalculation'
+        '404':
+          description: Original pricing not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CalculatePricingRequest:
+      type: object
+      required:
+        - loadId
+        - origin
+        - destination
+      properties:
+        loadId:
+          type: string
+        origin:
+          $ref: '#/components/schemas/Location'
+        destination:
+          $ref: '#/components/schemas/Location'
+        equipmentType:
+          type: string
+        weight:
+          type: number
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+        accessorials:
+          type: array
+          items:
+            type: string
+        expirationMinutes:
+          type: integer
+          default: 60
+          description: Quote validity duration
+
+    Location:
+      type: object
+      required:
+        - city
+        - state
+      properties:
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        country:
+          type: string
+          default: US
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+    Dimensions:
+      type: object
+      properties:
+        length:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+        unit:
+          type: string
+          enum: [inches, feet, cm, m]
+
+    PricingCalculation:
+      type: object
+      required:
+        - id
+        - loadId
+        - origin
+        - destination
+        - distance
+        - baseCost
+        - totalCost
+      properties:
+        id:
+          type: string
+        loadId:
+          type: string
+        origin:
+          $ref: '#/components/schemas/Location'
+        destination:
+          $ref: '#/components/schemas/Location'
+        distance:
+          type: number
+          description: Distance in miles
+        baseCost:
+          type: number
+        fuelSurcharge:
+          type: number
+        accessorials:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessorialCharge'
+        totalCost:
+          type: number
+        currency:
+          type: string
+          default: USD
+        calculatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        externalQuoteId:
+          type: string
+        status:
+          type: string
+          enum: [valid, expired, error]
+
+    AccessorialCharge:
+      type: object
+      required:
+        - type
+        - amount
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+
