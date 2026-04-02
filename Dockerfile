@@ -23,7 +23,7 @@ COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
 # Restore all dependencies in one command
 ENV NUGET_XMLDOC_MODE=none
 RUN echo ">>> Restoring NuGet packages..." && \
-    dotnet restore io-platform.sln
+    GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN dotnet restore io-platform.sln
 
 # Stage 2: Build Common/Shared projects
 FROM restore AS build-common
@@ -44,13 +44,19 @@ COPY src/Apps/ src/Apps/
 # Build and publish only the services we actually use
 WORKDIR /app
 RUN echo ">>> Publishing IO.Proxy..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
+    dotnet publish "src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj" -c Release -o /app/publish-proxy --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Common..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Common/IO.Common.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
+    dotnet publish "src/Apps/RestAPI/IO.Common/IO.Common.csproj" -c Release -o /app/publish-common --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Clara..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Clara/IO.Clara.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
+    dotnet publish "src/Apps/RestAPI/IO.Clara/IO.Clara.csproj" -c Release -o /app/publish-clara --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Elsa..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
+    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish-elsa --no-restore /p:WarningLevel=0 && \
+    echo ">>> Combining published services..." && \
+    mkdir -p /app/publish && \
+    cp -r /app/publish-proxy/* /app/publish/ && \
+    cp -r /app/publish-common/* /app/publish/ && \
+    cp -r /app/publish-clara/* /app/publish/ && \
+    cp -r /app/publish-elsa/* /app/publish/
 
 # Stage 4: Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS final
