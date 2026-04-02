@@ -22,8 +22,10 @@ COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
 
 # Restore all dependencies in one command
 ENV NUGET_XMLDOC_MODE=none
+ENV GITHUB_USER=${GITHUB_USER}
+ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 RUN echo ">>> Restoring NuGet packages..." && \
-    GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN dotnet restore io-platform.sln
+    dotnet restore io-platform.sln
 
 # Stage 2: Build Common/Shared projects
 FROM restore AS build-common
