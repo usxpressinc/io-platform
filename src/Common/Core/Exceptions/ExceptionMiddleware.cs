@@ -21,27 +21,27 @@ public class ExceptionMiddleware
         ILogger<ExceptionMiddleware> logger,
         ExceptionMiddlewareOptions options)
     {
-        _next = next;
-        _logger = logger;
-        _options = options;
+        this._next = next;
+        this._logger = logger;
+        this._options = options;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await this._next(context);
         }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex);
+            await this.HandleExceptionAsync(context, ex);
         }
     }
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var errorResponse = CreateErrorResponse(exception);
-        var statusCode = GetStatusCode(exception);
+        var errorResponse = this.CreateErrorResponse(exception);
+        var statusCode = this.GetStatusCode(exception);
 
         context.Response.Clear();
         context.Response.StatusCode = statusCode;
@@ -55,13 +55,13 @@ public class ExceptionMiddleware
         }
 
         // Log the exception with appropriate level
-        LogException(exception, context, errorResponse);
+        this.LogException(exception, context, errorResponse);
 
         // Write error response
         var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            WriteIndented = _options.IncludeStackTrace
+            WriteIndented = this._options.IncludeStackTrace
         };
 
         var jsonResponse = JsonSerializer.Serialize(errorResponse, jsonOptions);
@@ -87,7 +87,7 @@ public class ExceptionMiddleware
                     Code = e.ErrorCode
                 }).ToList(),
                 Timestamp = timestamp,
-                IncludeStackTrace = _options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
+                IncludeStackTrace = this._options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
             },
             NotFoundException notFoundEx => new ErrorResponse
             {
@@ -131,15 +131,15 @@ public class ExceptionMiddleware
                     Message = d
                 }).ToList(),
                 Timestamp = timestamp,
-                IncludeStackTrace = _options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
+                IncludeStackTrace = this._options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
             },
             _ => new ErrorResponse
             {
                 ErrorId = errorId,
                 ErrorCode = "internal_server_error",
-                Message = _options.ShowDetailedErrors ? exception.Message : "An unexpected error occurred",
+                Message = this._options.ShowDetailedErrors ? exception.Message : "An unexpected error occurred",
                 Timestamp = timestamp,
-                IncludeStackTrace = _options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
+                IncludeStackTrace = this._options.IncludeStackTrace && !string.IsNullOrEmpty(exception.StackTrace)
             }
         };
     }
@@ -160,7 +160,7 @@ public class ExceptionMiddleware
 
     private void LogException(Exception exception, HttpContext context, ErrorResponse errorResponse)
     {
-        var logLevel = GetLogLevel(exception);
+        var logLevel = this.GetLogLevel(exception);
         var path = context.Request.Path;
         var method = context.Request.Method;
         var userAgent = context.Request.Headers["User-Agent"].FirstOrDefault();
@@ -170,13 +170,13 @@ public class ExceptionMiddleware
 
         if (logLevel == LogLevel.Error)
         {
-            _logger.LogError(exception, 
+            this._logger.LogError(exception, 
                 "{LogMessage} | ErrorId: {ErrorId} | CorrelationId: {CorrelationId} | UserAgent: {UserAgent}",
                 logMessage, errorResponse.ErrorId, correlationId, userAgent);
         }
         else
         {
-            _logger.Log(logLevel, exception,
+            this._logger.Log(logLevel, exception,
                 "{LogMessage} | ErrorId: {ErrorId} | CorrelationId: {CorrelationId} | UserAgent: {UserAgent}",
                 logMessage, errorResponse.ErrorId, correlationId, userAgent);
         }

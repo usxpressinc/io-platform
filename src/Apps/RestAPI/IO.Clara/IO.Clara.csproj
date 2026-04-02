@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UserSecretsId>io-cass-api-7d6c8b4a-2e1f-4d5c-9b8a-1c3e5f7d9b2e</UserSecretsId>
+    <UserSecretsId>io-clara-api-7d6c8b4a-2e1f-4d5c-9b8a-1c3e5f7d9b2e</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -155,16 +155,18 @@ services:
       timeout: 10s
       retries: 5
 
-  io-cass:
+  io-clara:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: io-cass
+      args:
+        SERVICE_NAME: IO.Clara
+    container_name: io-clara
     restart: unless-stopped
     ports:
       - "8082:8082"
     env_file:
-      - .env.io-cass
+      - .env.io-clara
     depends_on:
       - mongodb
       - kafka
@@ -181,6 +183,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IO.Elsa
     container_name: io-elsa
     restart: unless-stopped
     ports:
@@ -199,7 +203,6 @@ services:
       timeout: 10s
       retries: 5
 
-  
   # Nginx Reverse Proxy for subdomain routing
   nginx:
     image: nginx:1.24-alpine
@@ -214,7 +217,7 @@ services:
     depends_on:
       - io-proxy
       - io-common
-      - io-cass
+      - io-clara
       - io-elsa
     networks:
       - io-network

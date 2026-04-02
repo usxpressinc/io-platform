@@ -17,8 +17,8 @@ public class HealthController : ControllerBase
         HealthCheckService healthCheckService,
         ILogger<HealthController> logger)
     {
-        _healthCheckService = healthCheckService;
-        _logger = logger;
+        this._healthCheckService = healthCheckService;
+        this._logger = logger;
     }
 
     /// <summary>
@@ -29,9 +29,9 @@ public class HealthController : ControllerBase
     {
         try
         {
-            _logger.LogDebug("Health check requested");
+            this._logger.LogDebug("Health check requested");
 
-            var healthReport = await _healthCheckService.CheckHealthAsync();
+            var healthReport = await this._healthCheckService.CheckHealthAsync();
 
             var response = new
             {
@@ -49,13 +49,13 @@ public class HealthController : ControllerBase
             };
 
             return healthReport.Status == HealthStatus.Healthy 
-                ? Ok(response)
-                : StatusCode(503, response); // Service Unavailable for unhealthy
+                ? this.Ok(response)
+                : this.StatusCode(503, response); // Service Unavailable for unhealthy
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during health check");
-            return StatusCode(500, new
+            this._logger.LogError(ex, "Error during health check");
+            return this.StatusCode(500, new
             {
                 status = "Unhealthy",
                 timestamp = DateTime.UtcNow,
@@ -72,14 +72,14 @@ public class HealthController : ControllerBase
     {
         try
         {
-            _logger.LogDebug("Simple health check requested");
+            this._logger.LogDebug("Simple health check requested");
 
-            return Ok(new { status = "OK" });
+            return this.Ok(new { status = "OK" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during simple health check");
-            return StatusCode(500, new { status = "ERROR" });
+            this._logger.LogError(ex, "Error during simple health check");
+            return this.StatusCode(500, new { status = "ERROR" });
         }
     }
 }

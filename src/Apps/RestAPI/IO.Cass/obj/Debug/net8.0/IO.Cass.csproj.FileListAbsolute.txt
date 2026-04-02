@@ -1,9 +1,0 @@
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.csproj.AssemblyReference.cache
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\rpswa.dswa.cache.json
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.AssemblyInfoInputs.cache
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.AssemblyInfo.cs
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.csproj.CoreCompileInputs.cache
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Cass\obj\Debug\net8.0\IO.Cass.sourcelink.json

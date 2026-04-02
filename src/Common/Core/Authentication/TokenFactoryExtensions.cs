@@ -95,7 +95,8 @@ public static IServiceCollection AddTokenFactory(
                 // Generate scoped token
                 var result = tokenFactory.GenerateScopedToken(
                     request.MasterToken,
-                    request.Scopes ?? Array.Empty<string>(),
+                    request.Scopes ?? [
+                    ],
                     request.ValidFor,
                     request.RequesterId);
 

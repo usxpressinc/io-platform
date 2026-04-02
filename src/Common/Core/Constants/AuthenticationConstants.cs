@@ -51,14 +51,15 @@ public static class AuthenticationConstants
     public const string ScopesContextKey = "Scopes";
     
     // Skip Authentication Paths
-    public static readonly string[] SkipAuthenticationPaths = {
+    public static readonly string[] SkipAuthenticationPaths =
+    [
         "/health",
         "/ready", 
         "/swagger",
         "/openapi",
         "/swagger.json",
-        "/swagger.yaml"
-    };
+        "/swagger.yaml",
+    ];
 }
 
 /// <summary>

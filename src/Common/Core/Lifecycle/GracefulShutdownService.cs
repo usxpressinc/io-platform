@@ -21,13 +21,15 @@ public class GracefulShutdownService : IHostedService, IDisposable
         IHostApplicationLifetime hostApplicationLifetime,
         TimeSpan? shutdownTimeout = null)
     {
-        _logger = logger;
-        _hostApplicationLifetime = hostApplicationLifetime;
-        _components = new List<IGracefulShutdownComponent>();
-        _shutdownTimeout = shutdownTimeout ?? TimeSpan.FromSeconds(30);
+        this._logger = logger;
+        this._hostApplicationLifetime = hostApplicationLifetime;
+        this._components =
+        [
+        ];
+        this._shutdownTimeout = shutdownTimeout ?? TimeSpan.FromSeconds(30);
 
         // Register for application lifetime events
-        hostApplicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
+        hostApplicationLifetime.ApplicationStopping.Register(this.OnApplicationStopping);
     }
 
     /// <summary>
@@ -35,69 +37,67 @@ public class GracefulShutdownService : IHostedService, IDisposable
     /// </summary>
     public void RegisterComponent(IGracefulShutdownComponent component)
     {
-        lock (_lock)
+        lock (this._lock)
         {
-            if (!_disposed)
+            if (!this._disposed)
             {
-                _components.Add(component);
-                _logger.LogDebug("Registered graceful shutdown component: {ComponentType}", component.GetType().Name);
+                this._components.Add(component);
+                this._logger.LogDebug("Registered graceful shutdown component: {ComponentType}", component.GetType().Name);
             }
         }
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Graceful shutdown service started with timeout: {Timeout}", _shutdownTimeout);
+        this._logger.LogInformation("Graceful shutdown service started with timeout: {Timeout}", this._shutdownTimeout);
         return Task.CompletedTask;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Graceful shutdown service stopping");
+        this._logger.LogInformation("Graceful shutdown service stopping");
         
         // Wait for all components to complete shutdown
-        await Task.WhenAll(_components.Select(component => 
-            ShutdownComponentSafely(component, cancellationToken)));
-        
-        _logger.LogInformation("Graceful shutdown service completed");
+        await Task.WhenAll(this._components.Select(component => this.ShutdownComponentSafely(component, cancellationToken)));
+
+        this._logger.LogInformation("Graceful shutdown service completed");
     }
 
     private void OnApplicationStopping()
     {
-        _logger.LogInformation("Application stopping event received - initiating graceful shutdown");
+        this._logger.LogInformation("Application stopping event received - initiating graceful shutdown");
         
         // Start graceful shutdown in background
         Task.Run(async () =>
         {
             try
             {
-                using var cts = new CancellationTokenSource(_shutdownTimeout);
-                await ShutdownAllComponentsAsync(cts.Token);
+                using var cts = new CancellationTokenSource(this._shutdownTimeout);
+                await this.ShutdownAllComponentsAsync(cts.Token);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during graceful shutdown");
+                this._logger.LogError(ex, "Error during graceful shutdown");
             }
         });
     }
 
     private async Task ShutdownAllComponentsAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting graceful shutdown of {ComponentCount} components", _components.Count);
+        this._logger.LogInformation("Starting graceful shutdown of {ComponentCount} components", this._components.Count);
         
-        var shutdownTasks = _components.Select(component => 
-            ShutdownComponentSafely(component, cancellationToken));
+        var shutdownTasks = this._components.Select(component => this.ShutdownComponentSafely(component, cancellationToken));
 
         var results = await Task.WhenAll(shutdownTasks);
         
         var successful = results.Count(r => r);
         var failed = results.Count(r => !r);
-        
-        _logger.LogInformation("Graceful shutdown completed: {Successful} successful, {Failed} failed", successful, failed);
+
+        this._logger.LogInformation("Graceful shutdown completed: {Successful} successful, {Failed} failed", successful, failed);
         
         if (failed > 0)
         {
-            _logger.LogWarning("Some components failed to shutdown gracefully within timeout");
+            this._logger.LogWarning("Some components failed to shutdown gracefully within timeout");
         }
     }
 
@@ -107,28 +107,28 @@ public class GracefulShutdownService : IHostedService, IDisposable
     {
         try
         {
-            _logger.LogDebug("Shutting down component: {ComponentType}", component.GetType().Name);
+            this._logger.LogDebug("Shutting down component: {ComponentType}", component.GetType().Name);
             
             await component.ShutdownAsync(cancellationToken);
-            
-            _logger.LogDebug("Component shutdown completed: {ComponentType}", component.GetType().Name);
+
+            this._logger.LogDebug("Component shutdown completed: {ComponentType}", component.GetType().Name);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to shutdown component: {ComponentType}", component.GetType().Name);
+            this._logger.LogError(ex, "Failed to shutdown component: {ComponentType}", component.GetType().Name);
             return false;
         }
     }
 
     public void Dispose()
     {
-        lock (_lock)
+        lock (this._lock)
         {
-            if (!_disposed)
+            if (!this._disposed)
             {
-                _components.Clear();
-                _disposed = true;
+                this._components.Clear();
+                this._disposed = true;
             }
         }
     }
@@ -155,7 +155,7 @@ public abstract class GracefulShutdownComponentBase : IGracefulShutdownComponent
 
     protected GracefulShutdownComponentBase(ILogger logger)
     {
-        Logger = logger;
+        this.Logger = logger;
     }
 
     public abstract Task ShutdownAsync(CancellationToken cancellationToken);
@@ -173,21 +173,21 @@ public class HttpServerGracefulShutdown : GracefulShutdownComponentBase
         TimeSpan? drainTimeout = null)
         : base(logger)
     {
-        _drainTimeout = drainTimeout ?? TimeSpan.FromSeconds(15);
+        this._drainTimeout = drainTimeout ?? TimeSpan.FromSeconds(15);
     }
 
     public override async Task ShutdownAsync(CancellationToken cancellationToken)
     {
-        Logger.LogInformation("Starting HTTP server graceful shutdown with drain timeout: {Timeout}", _drainTimeout);
+        this.Logger.LogInformation("Starting HTTP server graceful shutdown with drain timeout: {Timeout}", this._drainTimeout);
         
         // Implementation would:
         // 1. Stop accepting new requests
         // 2. Wait for in-flight requests to complete
         // 3. Close connections gracefully
         
-        await Task.Delay(_drainTimeout, cancellationToken);
-        
-        Logger.LogInformation("HTTP server graceful shutdown completed");
+        await Task.Delay(this._drainTimeout, cancellationToken);
+
+        this.Logger.LogInformation("HTTP server graceful shutdown completed");
     }
 }
 
@@ -203,7 +203,7 @@ public class DatabaseGracefulShutdown : GracefulShutdownComponentBase
 
     public override async Task ShutdownAsync(CancellationToken cancellationToken)
     {
-        Logger.LogInformation("Starting database connection graceful shutdown");
+        this.Logger.LogInformation("Starting database connection graceful shutdown");
         
         // Implementation would:
         // 1. Stop accepting new database operations
@@ -211,8 +211,8 @@ public class DatabaseGracefulShutdown : GracefulShutdownComponentBase
         // 3. Close database connections gracefully
         
         await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-        
-        Logger.LogInformation("Database graceful shutdown completed");
+
+        this.Logger.LogInformation("Database graceful shutdown completed");
     }
 }
 
@@ -228,7 +228,7 @@ public class KafkaGracefulShutdown : GracefulShutdownComponentBase
 
     public override async Task ShutdownAsync(CancellationToken cancellationToken)
     {
-        Logger.LogInformation("Starting Kafka consumer graceful shutdown");
+        this.Logger.LogInformation("Starting Kafka consumer graceful shutdown");
         
         // Implementation would:
         // 1. Stop consuming new messages
@@ -237,7 +237,7 @@ public class KafkaGracefulShutdown : GracefulShutdownComponentBase
         // 4. Close consumer connections
         
         await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
-        
-        Logger.LogInformation("Kafka consumer graceful shutdown completed");
+
+        this.Logger.LogInformation("Kafka consumer graceful shutdown completed");
     }
 }

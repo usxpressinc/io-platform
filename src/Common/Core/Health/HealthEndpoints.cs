@@ -16,8 +16,8 @@ public class ServiceHealthCheck : IHealthCheck
         ILogger<ServiceHealthCheck> logger,
         ServiceHealthConfiguration config)
     {
-        _logger = logger;
-        _config = config;
+        this._logger = logger;
+        this._config = config;
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -28,16 +28,16 @@ public class ServiceHealthCheck : IHealthCheck
         {
             var healthData = new Dictionary<string, object>
             {
-                ["ServiceName"] = _config.ServiceName,
-                ["Version"] = _config.Version,
-                ["Uptime"] = DateTime.UtcNow.Subtract(_config.StartedAt).ToString(),
+                ["ServiceName"] = this._config.ServiceName,
+                ["Version"] = this._config.Version,
+                ["Uptime"] = DateTime.UtcNow.Subtract(this._config.StartedAt).ToString(),
                 ["CheckedAt"] = DateTime.UtcNow
             };
 
             // Check all dependencies
-            var dependencyTasks = _config.Dependencies.Select(async dep =>
+            var dependencyTasks = this._config.Dependencies.Select(async dep =>
             {
-                var depHealth = await CheckDependencyHealth(dep, cancellationToken);
+                var depHealth = await this.CheckDependencyHealth(dep, cancellationToken);
                 return new KeyValuePair<string, object>(dep.Name, depHealth);
             });
 
@@ -57,7 +57,7 @@ public class ServiceHealthCheck : IHealthCheck
                 ? "All dependencies are healthy" 
                 : "Some dependencies are unhealthy";
 
-            _logger.LogDebug("Health check completed: {Status} - {Description}", status, description);
+            this._logger.LogDebug("Health check completed: {Status} - {Description}", status, description);
 
             return new HealthCheckResult(
                 status,
@@ -66,7 +66,7 @@ public class ServiceHealthCheck : IHealthCheck
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Health check failed with exception");
+            this._logger.LogError(ex, "Health check failed with exception");
             return HealthCheckResult.Unhealthy("Health check failed", ex);
         }
     }
@@ -80,11 +80,11 @@ public class ServiceHealthCheck : IHealthCheck
             switch (dependency.Type)
             {
                 case DependencyType.MongoDB:
-                    return await CheckMongoDbHealth(dependency, cancellationToken);
+                    return await this.CheckMongoDbHealth(dependency, cancellationToken);
                 case DependencyType.Kafka:
-                    return await CheckKafkaHealth(dependency, cancellationToken);
+                    return await this.CheckKafkaHealth(dependency, cancellationToken);
                 case DependencyType.Http:
-                    return await CheckHttpHealth(dependency, cancellationToken);
+                    return await this.CheckHttpHealth(dependency, cancellationToken);
                 default:
                     return new DependencyHealth
                     {
@@ -95,7 +95,7 @@ public class ServiceHealthCheck : IHealthCheck
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Dependency health check failed for {DependencyName}", dependency.Name);
+            this._logger.LogWarning(ex, "Dependency health check failed for {DependencyName}", dependency.Name);
             return new DependencyHealth
             {
                 Status = HealthStatus.Unhealthy,
@@ -155,7 +155,9 @@ public class ServiceHealthConfiguration
     public string ServiceName { get; set; } = string.Empty;
     public string Version { get; set; } = "1.0.0";
     public DateTime StartedAt { get; set; } = DateTime.UtcNow;
-    public List<DependencyConfiguration> Dependencies { get; set; } = new();
+    public List<DependencyConfiguration> Dependencies { get; set; } =
+    [
+    ];
 }
 
 /// <summary>

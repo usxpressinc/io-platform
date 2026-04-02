@@ -1,7 +1,7 @@
-# IO.Cass API Deployment Configuration
-# Subdomain: api.io.cass
+# IO.Clara API Deployment Configuration
+# Subdomain: api.io.clara
 
-name: io-cass-api
+name: io-clara-api
 octopus:
   space: USXpress
   group: io
@@ -16,18 +16,18 @@ infrastructure:
           env: "#{Mongo__Env}"
         roles:
           - name: readWrite
-            database: '#{Cass__DatabaseName}'
-            collection: '#{Cass__CollectionName}'
+            database: '#{Clara__DatabaseName}'
+            collection: '#{Clara__CollectionName}'
 
   auth:
     roles:
-      - cass-reader
-      - cass-writer
+      - clara-reader
+      - clara-writer
     group_roles_assigment:
       - name: Everybody
         roles:
-          - cass-reader
-          - cass-writer
+          - clara-reader
+          - clara-writer
     redirect_uri_paths:
       - path: /signin-oidc
         type: api
@@ -51,6 +51,7 @@ api:
     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.infra.svc.cluster.local:4317
   secretVars:
     HIGHWAY_API_KEY: '#{Octopus.Variable["Highway.ApiKey"]}'
-    MCLEOD_API_KEY: '#{Octopus.Variable["McLeod.ApiKey"]}'
+    AUTH__API_TOKEN: '#{Octopus.Variable["Auth.ApiToken"]}'
+    AUTH__VALIDATION_ENDPOINT: '#{Octopus.Variable["Auth.ValidationEndpoint"]}'
+    AUTH__VALIDATION_TOKEN: '#{Octopus.Variable["Auth.ValidationToken"]}'
     XAUTH_MASTER_TOKEN: '#{Octopus.Variable["XAuth.MasterToken"]}'
-  

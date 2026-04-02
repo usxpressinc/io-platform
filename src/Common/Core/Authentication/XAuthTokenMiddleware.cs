@@ -26,39 +26,39 @@ public class XAuthTokenMiddleware
         XAuthTokenOptions options,
         TokenFactory? tokenFactory = null)
     {
-        _next = next;
-        _logger = logger;
-        _httpClientFactory = httpClientFactory;
-        _options = options;
-        _tokenFactory = tokenFactory;
+        this._next = next;
+        this._logger = logger;
+        this._httpClientFactory = httpClientFactory;
+        this._options = options;
+        this._tokenFactory = tokenFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
-        _httpContext = context;
+        this._httpContext = context;
         
         // Skip authentication for health endpoints and Swagger
         if (ShouldSkipAuthentication(context.Request.Path))
         {
-            await _next(context);
+            await this._next(context);
             return;
         }
 
-        var token = ExtractToken(context.Request);
+        var token = this.ExtractToken(context.Request);
         
         if (string.IsNullOrEmpty(token))
         {
-            _logger.LogWarning("Missing X-Auth token for request: {Path}", context.Request.Path);
+            this._logger.LogWarning("Missing X-Auth token for request: {Path}", context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsync(CreateErrorResponse("missing_token", "X-Auth token is required"));
             return;
         }
 
-        var validationResult = await ValidateTokenAsync(token);
+        var validationResult = await this.ValidateTokenAsync(token);
         
         if (!validationResult.IsValid)
         {
-            _logger.LogWarning("Invalid X-Auth token for request: {Path}", context.Request.Path);
+            this._logger.LogWarning("Invalid X-Auth token for request: {Path}", context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             await context.Response.WriteAsync(CreateErrorResponse(
                 validationResult.ErrorCode ?? "invalid_token", 
@@ -71,7 +71,7 @@ public class XAuthTokenMiddleware
         context.Items["UserId"] = validationResult.UserId;
         context.Items["Scopes"] = validationResult.Scopes;
         
-        await _next(context);
+        await this._next(context);
     }
 
     private string? ExtractToken(HttpRequest request)
@@ -97,7 +97,7 @@ public class XAuthTokenMiddleware
         try
         {
             // Get the required scopes from the endpoint
-            var requiredScopes = GetRequiredScopesForRequest();
+            var requiredScopes = this.GetRequiredScopesForRequest();
             
             if (requiredScopes.Length == 0)
             {
@@ -106,11 +106,11 @@ public class XAuthTokenMiddleware
             }
             
             // Use MSAL to validate the token and extract scopes
-            return await ValidateTokenWithMSALAsync(token, requiredScopes);
+            return await this.ValidateTokenWithMSALAsync(token, requiredScopes);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating X-Auth token");
+            this._logger.LogError(ex, "Error validating X-Auth token");
             return new TokenValidationResult 
             { 
                 IsValid = false, 
@@ -125,32 +125,32 @@ public class XAuthTokenMiddleware
         try
         {
             // Option 1: Simple token validation (for development/testing)
-            if (token == _options.ApiToken)
+            if (token == this._options.ApiToken)
             {
                 return new TokenValidationResult 
                 { 
                     IsValid = true, 
                     UserId = "api-user",
-                    Scopes = new[] { "common", "clara", "elsa", "larry", "lea" }
+                    Scopes = ["common", "clara", "elsa", "larry", "lea"]
                 };
             }
 
             // Option 2: Validate scoped token with TokenFactory
-            if (_tokenFactory != null && token.Contains('.'))
+            if (this._tokenFactory != null && token.Contains('.'))
             {
-                return await ValidateScopedTokenAsync(token, requiredScopes);
+                return await this.ValidateScopedTokenAsync(token, requiredScopes);
             }
 
             // Option 3: Use MSAL to validate JWT token
             if (token.StartsWith("eyJ"))
             {
-                return await ValidateJWTTokenWithMSALAsync(token, requiredScopes);
+                return await this.ValidateJWTTokenWithMSALAsync(token, requiredScopes);
             }
 
             // Option 4: Call external validation service
-            if (!string.IsNullOrEmpty(_options.ValidationEndpoint))
+            if (!string.IsNullOrEmpty(this._options.ValidationEndpoint))
             {
-                return await ValidateTokenWithServiceAsync(token, requiredScopes);
+                return await this.ValidateTokenWithServiceAsync(token, requiredScopes);
             }
 
             return new TokenValidationResult 
@@ -162,7 +162,7 @@ public class XAuthTokenMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in MSAL token validation");
+            this._logger.LogError(ex, "Error in MSAL token validation");
             return new TokenValidationResult 
             { 
                 IsValid = false, 
@@ -176,7 +176,7 @@ public class XAuthTokenMiddleware
     {
         try
         {
-            if (_tokenFactory == null)
+            if (this._tokenFactory == null)
             {
                 return new TokenValidationResult 
                 { 
@@ -186,7 +186,7 @@ public class XAuthTokenMiddleware
                 };
             }
 
-            var tokenData = _tokenFactory.ValidateScopedToken(token);
+            var tokenData = this._tokenFactory.ValidateScopedToken(token);
             
             if (tokenData == null)
             {
@@ -212,7 +212,7 @@ public class XAuthTokenMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating scoped token");
+            this._logger.LogError(ex, "Error validating scoped token");
             return new TokenValidationResult 
             { 
                 IsValid = false, 
@@ -228,9 +228,9 @@ public class XAuthTokenMiddleware
         {
             // Create MSAL confidential client application
             var app = ConfidentialClientApplicationBuilder
-                .Create(_options.ClientId!)
-                .WithCertificate(_options.Certificate) // Use certificate or secret
-                .WithAuthority(new Uri(_options.Authority!))
+                .Create(this._options.ClientId!)
+                .WithCertificate(this._options.Certificate) // Use certificate or secret
+                .WithAuthority(new Uri(this._options.Authority!))
                 .Build();
 
             // Validate the token and extract claims
@@ -252,7 +252,8 @@ public class XAuthTokenMiddleware
             }
 
             // Extract user information and scopes from the validated token
-            var tokenScopes = result.Scopes?.ToArray() ?? Array.Empty<string>();
+            var tokenScopes = result.Scopes?.ToArray() ?? [
+            ];
             var userId = result.Account?.HomeAccountId?.Identifier ?? "unknown";
 
             // Check if token has any of the required scopes
@@ -269,7 +270,7 @@ public class XAuthTokenMiddleware
         }
         catch (MsalServiceException ex)
         {
-            _logger.LogError(ex, "MSAL service exception: {ErrorCode} - {Message}", ex.ErrorCode, ex.Message);
+            this._logger.LogError(ex, "MSAL service exception: {ErrorCode} - {Message}", ex.ErrorCode, ex.Message);
             
             return new TokenValidationResult 
             { 
@@ -280,7 +281,7 @@ public class XAuthTokenMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error in MSAL validation");
+            this._logger.LogError(ex, "Unexpected error in MSAL validation");
             return new TokenValidationResult 
             { 
                 IsValid = false, 
@@ -294,9 +295,9 @@ public class XAuthTokenMiddleware
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("token-validation");
+            var client = this._httpClientFactory.CreateClient("token-validation");
             
-            var request = new HttpRequestMessage(HttpMethod.Post, _options.ValidationEndpoint)
+            var request = new HttpRequestMessage(HttpMethod.Post, this._options.ValidationEndpoint)
             {
                 Content = new StringContent(
                     JsonSerializer.Serialize(new { 
@@ -307,7 +308,7 @@ public class XAuthTokenMiddleware
                     "application/json")
             };
             
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ValidationToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._options.ValidationToken);
             
             var response = await client.SendAsync(request);
             
@@ -332,7 +333,7 @@ public class XAuthTokenMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calling token validation service");
+            this._logger.LogError(ex, "Error calling token validation service");
             return new TokenValidationResult 
             { 
                 IsValid = false, 
@@ -346,7 +347,7 @@ public class XAuthTokenMiddleware
     {
         // This would normally be extracted from the endpoint's authorization attributes
         // For now, we'll implement a simple path-based scope mapping
-        var path = _httpContext?.Request?.Path.Value ?? "";
+        var path = this._httpContext?.Request?.Path.Value ?? "";
         
         return path switch
         {

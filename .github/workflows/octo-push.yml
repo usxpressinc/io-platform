@@ -29,7 +29,7 @@ jobs:
         uses: variant-inc/actions-dotnet@v2
         with:
           ecr_repository: usxpress/io-platform
-          dotnet-version: 9.x
+          dotnet-version: 8.x
 
       - name: Release 🛸
         uses: variant-inc/actions-octopus@v3

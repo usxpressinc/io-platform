@@ -16,8 +16,8 @@ public class EmailController : ControllerBase
 
     public EmailController(EmailService emailService, ILogger<EmailController> logger)
     {
-        _emailService = emailService;
-        _logger = logger;
+        this._emailService = emailService;
+        this._logger = logger;
     }
 
     /// <summary>
@@ -30,23 +30,23 @@ public class EmailController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Sending email to {Email}", request.To);
+            this._logger.LogInformation("Sending email to {Email}", request.To);
 
-            var result = await _emailService.SendEmailAsync(request.To, request.Subject, request.HtmlContent, request.TextContent);
+            var result = await this._emailService.SendEmailAsync(request.To, request.Subject, request.HtmlContent, request.TextContent);
 
             if (result)
             {
-                return Ok(new { success = true, message = "Email sent successfully" });
+                return this.Ok(new { success = true, message = "Email sent successfully" });
             }
             else
             {
-                return BadRequest(new { success = false, message = "Failed to send email" });
+                return this.BadRequest(new { success = false, message = "Failed to send email" });
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending email to {Email}", request.To);
-            return StatusCode(500, new { success = false, message = "Internal server error" });
+            this._logger.LogError(ex, "Error sending email to {Email}", request.To);
+            return this.StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 }

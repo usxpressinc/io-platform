@@ -335,7 +335,9 @@ public class TransformationSettings
     public bool TransformResponseBody { get; set; } = false;
     public bool AddMetadataToResponse { get; set; } = false;
     public bool EnableTransformationLogging { get; set; } = true;
-    public List<string> HeadersToRemove { get; set; } = new();
+    public List<string> HeadersToRemove { get; set; } =
+    [
+    ];
 }
 
 /// <summary>
@@ -347,7 +349,9 @@ public class ServiceRoute
     public string PathPrefix { get; set; } = string.Empty;
     public Dictionary<string, string> PathRewrites { get; set; } = new();
     public Dictionary<string, string> HeadersToAdd { get; set; } = new();
-    public List<string> HeadersToRemove { get; set; } = new();
+    public List<string> HeadersToRemove { get; set; } =
+    [
+    ];
     public Dictionary<string, string> QueryParametersToAdd { get; set; } = new();
 }
 

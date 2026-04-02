@@ -10,6 +10,7 @@ namespace IO.Elsa.Core.Pricing;
 public interface ISpapiPricingService
 {
     Task<SpapiPricingResponse> LookupPriceAsync(Dictionary<string, object> requestBody);
+    Task<SpapiPricingResponse> CalculatePriceAsync(SpapiPricingRequest request);
 }
 
 /// <summary>
@@ -24,42 +25,44 @@ public class SpapiPricingService : ISpapiPricingService
         IElsaPricingApiClient elsaApiClient,
         ILogger<SpapiPricingService> logger)
     {
-        _elsaApiClient = elsaApiClient;
-        _logger = logger;
+        this._elsaApiClient = elsaApiClient;
+        this._logger = logger;
     }
 
     public async Task<SpapiPricingResponse> LookupPriceAsync(Dictionary<string, object> requestBody)
     {
         try
         {
-            _logger.LogInformation("Starting SPAPI price lookup");
+            this._logger.LogInformation("Starting SPAPI price lookup");
 
             // Process stops from the request body (matching Python implementation)
-            var processedRequest = ProcessStopsInRequest(requestBody);
-            
-            _logger.LogDebug("Processed SPAPI request: {Request}", JsonSerializer.Serialize(processedRequest));
+            var processedRequest = this.ProcessStopsInRequest(requestBody);
+
+            this._logger.LogDebug("Processed SPAPI request: {Request}", JsonSerializer.Serialize(processedRequest));
 
             // Call Elsa pricing API
-            var apiResponse = await _elsaApiClient.GetPriceAsync(processedRequest);
-            
-            _logger.LogDebug("Elsa API response: {Response}", JsonSerializer.Serialize(apiResponse));
+            var apiResponse = await this._elsaApiClient.GetPriceAsync(processedRequest);
+
+            this._logger.LogDebug("Elsa API response: {Response}", JsonSerializer.Serialize(apiResponse));
 
             // Extract pricing data
-            var pricingData = apiResponse.Data?.Pricing ?? new List<ElsaPricingItem>();
+            var pricingData = apiResponse.Data?.Pricing ??
+            [
+            ];
             
             // Find the "01-BROKERAGE" pricing item (matching Python implementation)
             var brokeragePriceItem = pricingData.FirstOrDefault(x => x.Name == "01-BROKERAGE");
             
             if (brokeragePriceItem?.Price == null)
             {
-                _logger.LogWarning("No brokerage pricing item found in Elsa API response");
+                this._logger.LogWarning("No brokerage pricing item found in Elsa API response");
                 return new SpapiPricingResponse
                 {
                     Error = "No brokerage pricing available"
                 };
             }
 
-            _logger.LogDebug("Brokerage price item: {PriceItem}", JsonSerializer.Serialize(brokeragePriceItem));
+            this._logger.LogDebug("Brokerage price item: {PriceItem}", JsonSerializer.Serialize(brokeragePriceItem));
 
             // Create response
             var result = new SpapiPricingResponse
@@ -69,14 +72,14 @@ public class SpapiPricingService : ISpapiPricingService
                 BasePrice = brokeragePriceItem.Price.Cost
             };
 
-            _logger.LogInformation("SPAPI price lookup completed successfully. All-in price: {AllInPrice}, Distance: {Distance}", 
+            this._logger.LogInformation("SPAPI price lookup completed successfully. All-in price: {AllInPrice}, Distance: {Distance}", 
                 result.AllInPrice, result.Distance);
 
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during SPAPI price lookup");
+            this._logger.LogError(ex, "Error during SPAPI price lookup");
             return new SpapiPricingResponse
             {
                 Error = ex.Message
@@ -111,14 +114,14 @@ public class SpapiPricingService : ISpapiPricingService
                     {
                         foreach (var property in jsonElement.EnumerateObject())
                         {
-                            stopData[property.Name] = ParseObjectValue(property.Value);
+                            stopData[property.Name] = this.ParseObjectValue(property.Value);
                         }
                     }
                     else if (kvp.Value is Dictionary<string, object> dict)
                     {
                         foreach (var item in dict)
                         {
-                            stopData[item.Key] = ParseObjectValue(item.Value);
+                            stopData[item.Key] = this.ParseObjectValue(item.Value);
                         }
                     }
 
@@ -128,7 +131,7 @@ public class SpapiPricingService : ISpapiPricingService
             else
             {
                 // Process non-stop data
-                processedRequest[kvp.Key] = ParseObjectValue(kvp.Value);
+                processedRequest[kvp.Key] = this.ParseObjectValue(kvp.Value);
             }
         }
 
@@ -146,7 +149,7 @@ public class SpapiPricingService : ISpapiPricingService
     {
         if (value is JsonElement jsonElement)
         {
-            return ParseJsonElement(jsonElement);
+            return this.ParseJsonElement(jsonElement);
         }
 
         if (value is string stringValue)
@@ -174,7 +177,7 @@ public class SpapiPricingService : ISpapiPricingService
             var parsedDict = new Dictionary<string, object>();
             foreach (var kvp in dict)
             {
-                parsedDict[kvp.Key] = ParseObjectValue(kvp.Value);
+                parsedDict[kvp.Key] = this.ParseObjectValue(kvp.Value);
             }
             return parsedDict;
         }
@@ -184,7 +187,7 @@ public class SpapiPricingService : ISpapiPricingService
             var list = new List<object>();
             foreach (var item in enumerable)
             {
-                list.Add(ParseObjectValue(item));
+                list.Add(this.ParseObjectValue(item));
             }
             return list;
         }
@@ -200,7 +203,7 @@ public class SpapiPricingService : ISpapiPricingService
         switch (element.ValueKind)
         {
             case JsonValueKind.String:
-                return ParseObjectValue(element.GetString() ?? string.Empty);
+                return this.ParseObjectValue(element.GetString() ?? string.Empty);
             case JsonValueKind.Number:
                 if (element.TryGetInt32(out var intValue))
                     return intValue;
@@ -213,18 +216,64 @@ public class SpapiPricingService : ISpapiPricingService
                 var dict = new Dictionary<string, object>();
                 foreach (var property in element.EnumerateObject())
                 {
-                    dict[property.Name] = ParseJsonElement(property.Value);
+                    dict[property.Name] = this.ParseJsonElement(property.Value);
                 }
                 return dict;
             case JsonValueKind.Array:
                 var list = new List<object>();
                 foreach (var item in element.EnumerateArray())
                 {
-                    list.Add(ParseJsonElement(item));
+                    list.Add(this.ParseJsonElement(item));
                 }
                 return list;
             default:
                 return element.GetRawText();
+        }
+    }
+
+    public async Task<SpapiPricingResponse> CalculatePriceAsync(SpapiPricingRequest request)
+    {
+        try
+        {
+            this._logger.LogInformation("Starting price calculation for {StopCount} stops", request.Stops?.Count ?? 0);
+
+            // Convert SpapiPricingRequest to dictionary format expected by the API
+            var requestBody = new Dictionary<string, object>();
+            
+            if (request.AdditionalData != null)
+            {
+                foreach (var kvp in request.AdditionalData)
+                {
+                    requestBody[kvp.Key] = this.ParseObjectValue(kvp.Value);
+                }
+            }
+
+            // Add stops to request
+            if (request.Stops != null)
+            {
+                for (int i = 0; i < request.Stops.Count; i++)
+                {
+                    var stop = request.Stops[i];
+                    var stopKey = $"stops.{i}";
+                    requestBody[stopKey] = new Dictionary<string, object>
+                    {
+                        ["seq"] = i,
+                        // Add additional stop data if present
+                        ["additionalData"] = stop.AdditionalData ?? new Dictionary<string, object>()
+                    };
+                }
+            }
+
+            // Call the existing LookupPriceAsync method
+            return await this.LookupPriceAsync(requestBody);
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, "Error during price calculation");
+            return new SpapiPricingResponse
+            {
+                Error = ex.Message
+            };
         }
     }
 }

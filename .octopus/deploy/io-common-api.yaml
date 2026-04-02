@@ -1,0 +1,60 @@
+# IO.Common API Deployment Configuration
+# Subdomain: api.io.common
+
+name: io-common-api
+octopus:
+  space: USXpress
+  group: io
+tags:
+  owner: USXpress
+  team: Luchadores
+  purpose: API for IO.Common operations like sending emails.
+infrastructure:
+  auth:
+    roles:
+      - io-common-reader
+      - io-common-writer
+    group_roles_assignment:
+      - io-common-reader
+      - io-common-writer
+    redirect_uri_paths:
+      - path: /signin-oidc
+        type: api
+      - path: /swagger/oauth2-redirect.html
+        type: spa
+      - path: https://localhost:7224/swagger/oauth2-redirect.html
+        type: spa
+      - path: /
+        type: spa
+  mongodb:
+    atlas:
+      user:
+        cluster:
+          project: mongodb
+          group: enterprise
+          env: "#{Mongo__Env}"
+        roles:
+          - name: readWrite
+            database: "#{Mongo__Database}"
+            collection: "#{Mongo__Collection}"
+api:
+  enabled: true
+  routes:
+    subdomains:
+      - product: io
+        type: api
+        app: common
+  service:
+    targetPort: 8080
+  global:
+    upstream:
+      perTryTimeout: 15s
+  configVars:
+    ASPNETCORE_ENVIRONMENT: Production
+    ASPNETCORE_URLS: http://+:8080
+    KAFKA_BOOTSTRAP_SERVERS: kafka.infra.svc.cluster.local:9092
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.infra.svc.cluster.local:4317
+  secretVars:
+    SENDGRID_API_KEY: '#{Octopus.Variable["SendGrid.ApiKey"]}'
+    XAUTH_MASTER_TOKEN: '#{Octopus.Variable["XAuth.MasterToken"]}'
+  

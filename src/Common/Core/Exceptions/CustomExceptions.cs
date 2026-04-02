@@ -14,16 +14,16 @@ public class BusinessException : Exception
     public BusinessException(string message, string? errorCode = null, int? statusCode = null, List<string>? details = null)
         : base(message)
     {
-        ErrorCode = errorCode;
-        StatusCode = statusCode;
-        Details = details;
+        this.ErrorCode = errorCode;
+        this.StatusCode = statusCode;
+        this.Details = details;
     }
 
     public BusinessException(string message, Exception innerException, string? errorCode = null, int? statusCode = null)
         : base(message, innerException)
     {
-        ErrorCode = errorCode;
-        StatusCode = statusCode;
+        this.ErrorCode = errorCode;
+        this.StatusCode = statusCode;
     }
 }
 
@@ -37,13 +37,17 @@ public class ValidationException : BusinessException
     public ValidationException(List<ValidationError> errors)
         : base("Validation failed", "validation_error", 400)
     {
-        Errors = errors ?? new List<ValidationError>();
+        this.Errors = errors ??
+        [
+        ];
     }
 
     public ValidationException(string message, List<ValidationError>? errors = null)
         : base(message, "validation_error", 400)
     {
-        Errors = errors ?? new List<ValidationError>();
+        this.Errors = errors ??
+        [
+        ];
     }
 }
 
@@ -58,9 +62,9 @@ public class ValidationError
 
     public ValidationError(string propertyName, string errorMessage, string? errorCode = null)
     {
-        PropertyName = propertyName;
-        ErrorMessage = errorMessage;
-        ErrorCode = errorCode;
+        this.PropertyName = propertyName;
+        this.ErrorMessage = errorMessage;
+        this.ErrorCode = errorCode;
     }
 }
 
@@ -75,8 +79,8 @@ public class NotFoundException : BusinessException
     public NotFoundException(string resourceType, string resourceId)
         : base($"{resourceType} with ID '{resourceId}' was not found", "not_found", 404)
     {
-        ResourceType = resourceType;
-        ResourceId = resourceId;
+        this.ResourceType = resourceType;
+        this.ResourceId = resourceId;
     }
 
     public NotFoundException(string message)
@@ -106,13 +110,13 @@ public class ForbiddenException : BusinessException
     public ForbiddenException(string? requiredPermission = null)
         : base("Access forbidden", "forbidden", 403)
     {
-        RequiredPermission = requiredPermission;
+        this.RequiredPermission = requiredPermission;
     }
 
     public ForbiddenException(string message, string? requiredPermission = null)
         : base(message, "forbidden", 403)
     {
-        RequiredPermission = requiredPermission;
+        this.RequiredPermission = requiredPermission;
     }
 }
 
@@ -127,8 +131,8 @@ public class ConflictException : BusinessException
     public ConflictException(string resourceType, string resourceId, string message = null)
         : base(message ?? $"Conflict with existing {resourceType}", "conflict", 409)
     {
-        ResourceType = resourceType;
-        ResourceId = resourceId;
+        this.ResourceType = resourceType;
+        this.ResourceId = resourceId;
     }
 }
 
@@ -143,8 +147,8 @@ public class TimeoutException : BusinessException
     public TimeoutException(string operation, TimeSpan timeoutDuration)
         : base($"Operation '{operation}' timed out after {timeoutDuration.TotalSeconds} seconds", "timeout", 408)
     {
-        Operation = operation;
-        TimeoutDuration = timeoutDuration;
+        this.Operation = operation;
+        this.TimeoutDuration = timeoutDuration;
     }
 }
 
@@ -164,9 +168,9 @@ public class ExternalServiceException : BusinessException
         int? serviceStatusCode = null)
         : base(message, "external_service_error", 502)
     {
-        ServiceName = serviceName;
-        ServiceErrorCode = serviceErrorCode;
-        ServiceStatusCode = serviceStatusCode;
+        this.ServiceName = serviceName;
+        this.ServiceErrorCode = serviceErrorCode;
+        this.ServiceStatusCode = serviceStatusCode;
     }
 
     public ExternalServiceException(
@@ -177,9 +181,9 @@ public class ExternalServiceException : BusinessException
         int? serviceStatusCode = null)
         : base(message, innerException, "external_service_error", 502)
     {
-        ServiceName = serviceName;
-        ServiceErrorCode = serviceErrorCode;
-        ServiceStatusCode = serviceStatusCode;
+        this.ServiceName = serviceName;
+        this.ServiceErrorCode = serviceErrorCode;
+        this.ServiceStatusCode = serviceStatusCode;
     }
 }
 
@@ -193,7 +197,7 @@ public class ConfigurationException : BusinessException
     public ConfigurationException(string configurationKey, string message)
         : base($"Configuration error for '{configurationKey}': {message}", "configuration_error", 500)
     {
-        ConfigurationKey = configurationKey;
+        this.ConfigurationKey = configurationKey;
     }
 }
 
@@ -209,9 +213,9 @@ public class RateLimitExceededException : BusinessException
     public RateLimitExceededException(string limitType, int limit, TimeSpan retryAfter)
         : base($"Rate limit exceeded for {limitType}. Limit: {limit}. Retry after {retryAfter.TotalSeconds}s", "rate_limit_exceeded", 429)
     {
-        LimitType = limitType;
-        Limit = limit;
-        RetryAfter = retryAfter;
+        this.LimitType = limitType;
+        this.Limit = limit;
+        this.RetryAfter = retryAfter;
     }
 }
 

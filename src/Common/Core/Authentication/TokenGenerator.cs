@@ -161,14 +161,17 @@ public static class TokenGenerator
             // Check if token is expired
             if (tokenData.expires_at < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
             {
-                return Array.Empty<string>();
+                return [
+                ];
             }
             
-            return tokenData.scopes ?? Array.Empty<string>();
+            return tokenData.scopes ?? [
+            ];
         }
         catch
         {
-            return Array.Empty<string>();
+            return [
+            ];
         }
     }
 
@@ -236,7 +239,8 @@ public static class TokenGenerator
 /// </summary>
 internal class SimpleTokenData
 {
-    public string[] scopes { get; set; } = Array.Empty<string>();
+    public string[] scopes { get; set; } = [
+    ];
     public long expires_at { get; set; }
     public string type { get; set; } = "simple";
 }

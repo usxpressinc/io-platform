@@ -12,9 +12,10 @@
     <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Microsoft.Identity.Web" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <!-- <PackageReference Include="USXpress.Monitoring" /> -->
-    <!-- <PackageReference Include="USXpress.Configuration.Mongo" /> -->
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="NSwag.AspNetCore" />
     <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="USXpress.Monitoring" />
   </ItemGroup>
 
   <ItemGroup>

@@ -17,8 +17,8 @@ public class TokenFactory
 
     public TokenFactory(TokenFactoryOptions options, ILogger<TokenFactory> logger)
     {
-        _options = options;
-        _logger = logger;
+        this._options = options;
+        this._logger = logger;
     }
 
     /// <summary>
@@ -38,9 +38,9 @@ public class TokenFactory
         try
         {
             // Validate the master token first
-            if (!ValidateMasterToken(masterToken))
+            if (!this.ValidateMasterToken(masterToken))
             {
-                _logger.LogWarning("Invalid master token used for token generation");
+                this._logger.LogWarning("Invalid master token used for token generation");
                 return null;
             }
 
@@ -61,7 +61,7 @@ public class TokenFactory
 
             // Sign the token data with the factory secret
             var tokenJson = JsonSerializer.Serialize(tokenData);
-            var signature = SignToken(tokenJson);
+            var signature = this.SignToken(tokenJson);
             
             var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenJson)) + "." + signature;
 
@@ -76,7 +76,7 @@ public class TokenFactory
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating scoped token");
+            this._logger.LogError(ex, "Error generating scoped token");
             return null;
         }
     }
@@ -100,7 +100,7 @@ public class TokenFactory
             var signature = parts[1];
 
             // Verify the signature
-            var expectedSignature = SignToken(tokenJson);
+            var expectedSignature = this.SignToken(tokenJson);
             if (!string.Equals(signature, expectedSignature, StringComparison.Ordinal))
             {
                 return null;
@@ -118,7 +118,7 @@ public class TokenFactory
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating scoped token");
+            this._logger.LogError(ex, "Error validating scoped token");
             return null;
         }
     }
@@ -149,9 +149,9 @@ public class TokenFactory
             }
 
             // Verify master token signature if configured
-            if (!string.IsNullOrEmpty(_options.MasterTokenSignature))
+            if (!string.IsNullOrEmpty(this._options.MasterTokenSignature))
             {
-                var expectedSignature = ComputeHash(tokenJson, _options.MasterTokenSecret);
+                var expectedSignature = ComputeHash(tokenJson, this._options.MasterTokenSecret);
                 return string.Equals(tokenData.signature, expectedSignature, StringComparison.Ordinal);
             }
 
@@ -170,7 +170,7 @@ public class TokenFactory
     /// <returns>The signature</returns>
     private string SignToken(string tokenJson)
     {
-        return ComputeHash(tokenJson, _options.FactorySecret);
+        return ComputeHash(tokenJson, this._options.FactorySecret);
     }
 
     /// <summary>
@@ -233,7 +233,7 @@ public class TokenFactory
 
         foreach (var service in services)
         {
-            var token = GenerateScopedToken(
+            var token = this.GenerateScopedToken(
                 masterToken, 
                 service.Scopes, 
                 validFor, 
@@ -268,7 +268,8 @@ public class ScopedTokenResult
 {
     public string Token { get; set; } = string.Empty;
     public string TokenId { get; set; } = string.Empty;
-    public string[] Scopes { get; set; } = Array.Empty<string>();
+    public string[] Scopes { get; set; } = [
+    ];
     public DateTime ExpiresAt { get; set; }
     public DateTime GeneratedAt { get; set; }
 }
@@ -279,7 +280,8 @@ public class ScopedTokenResult
 public class ScopedTokenData
 {
     public string token_id { get; set; } = string.Empty;
-    public string[] scopes { get; set; } = Array.Empty<string>();
+    public string[] scopes { get; set; } = [
+    ];
     public long expires_at { get; set; }
     public long generated_at { get; set; }
     public string generated_by { get; set; } = "token-factory";

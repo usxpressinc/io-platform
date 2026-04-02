@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Proxy", "src\Apps\RestAP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Common", "src\Apps\RestAPI\IO.Common\IO.Common.csproj", "{30000000-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Cass", "src\Apps\RestAPI\IO.Cass\IO.Cass.csproj", "{30000000-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Clara", "src\Apps\RestAPI\IO.Clara\IO.Clara.csproj", "{30000000-0000-0000-0000-000000000003}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Elsa", "src\Apps\RestAPI\IO.Elsa\IO.Elsa.csproj", "{30000000-0000-0000-0000-000000000004}"
 EndProject

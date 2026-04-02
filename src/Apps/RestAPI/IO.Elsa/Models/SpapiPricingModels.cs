@@ -12,6 +12,11 @@ public class SpapiPricingRequest
     /// </summary>
     [JsonExtensionData]
     public Dictionary<string, object>? AdditionalData { get; set; }
+
+    /// <summary>
+    /// List of stops for the pricing request
+    /// </summary>
+    public List<SpapiStop>? Stops { get; set; }
 }
 
 /// <summary>

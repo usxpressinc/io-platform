@@ -134,13 +134,13 @@ services:
     volumes:
       - ./config:/app/config
 
-  io-cass:
+  io-clara:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: IO.Cass
-    container_name: io-cass
+        SERVICE_NAME: IO.Clara
+    container_name: io-clara
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -150,8 +150,9 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - HIGHWAY_API_URL=${HIGHWAY_API_URL}
       - HIGHWAY_API_KEY=${HIGHWAY_API_KEY}
-      - MCLEOD_API_URL=${MCLEOD_API_URL}
-      - MCLEOD_API_KEY=${MCLEOD_API_KEY}
+      - AUTH__API_TOKEN=${AUTH__API_TOKEN}
+      - AUTH__VALIDATION_ENDPOINT=${AUTH__VALIDATION_ENDPOINT}
+      - AUTH__VALIDATION_TOKEN=${AUTH__VALIDATION_TOKEN}
       - XAUTH_MASTER_TOKEN=master-token-dev
     ports:
       - "8082:8082"

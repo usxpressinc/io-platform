@@ -1,98 +1,58 @@
-using IO.Platform.Common.Core.Configuration;
-using IO.Platform.Common.Core.Exceptions;
-using IO.Platform.Common.Core.Lifecycle;
-using IO.Elsa.Core.Pricing;
-using IO.Elsa.Infrastructure.Data;
+using IO.Elsa.App;
+using IO.Elsa.Core;
 using IO.Elsa.Infrastructure;
-using USXpress.Monitoring;
-using USXpress.Monitoring.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace IO.Elsa;
 
-var configuration = builder.Configuration;
-var environment = Enum.Parse<MonitoringEnvironment>(
-    configuration.GetValue<string>(EnvironmentVariables.ApplicationEnvironment) ?? "development",
-    ignoreCase: true);
-var project = configuration.GetValue<string>(EnvironmentVariables.ApplicationProject) ?? "io-platform";
-var group = configuration.GetValue<string>(EnvironmentVariables.ApplicationGroup) ?? "pricing";
-
-// Configure structured logging and OpenTelemetry
-builder.Services.AddStructuredLogging(configuration, "IO.Elsa");
-builder.Services.AddOpenTelemetryInstrumentation(configuration, "IO.Elsa");
-
-// Add environment configuration management
-builder.Services.AddEnvironmentConfiguration(configuration, "IO.Elsa");
-
-// Add monitoring (Grafana/OTEL)
-builder.AddMonitoring(new MonitoringOptions
+/// <summary>
+/// Entry point class for the application, responsible for initializing and starting the application.
+/// </summary>
+public static class Program
 {
-    ProjectGroup = group,
-    ProjectName = project,
-    Environment = environment,
-    ReleaseVersion = configuration.GetValue<string>("REVISION") ?? "1.0.0",
-    EnableOtel = true,
-});
-
-// Add MongoDB using USXpress Configuration.Mongo
-builder.AddMongoDb()
-       .AddPricingDataRepository();
-
-// Add HttpClient for Elsa pricing API
-builder.Services.AddHttpClient<IElsaPricingApiClient, ElsaPricingApiClient>();
-
-// Add pricing services
-builder.Services.AddSingleton<IPricingBusinessService, PricingBusinessService>();
-builder.Services.AddSingleton<ISpapiPricingService, SpapiPricingService>();
-
-// Add repositories
-builder.Services.AddSingleton<RateCardRepository>();
-builder.Services.AddSingleton<PriceQuoteRepository>();
-
-// Add graceful shutdown
-builder.Services.AddSingleton<IGracefulShutdownComponent, HttpServerGracefulShutdown>();
-builder.Services.AddHostedService<GracefulShutdownService>();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "IO Elsa API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new()
+    /// <summary>
+    /// Main entry point for the application.
+    /// </summary>
+    /// <param name="args">Arguments.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    public static async Task Main(string[] args)
     {
-        Description = "X-Auth token (Bearer token or X-Auth-Token header)",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new Dictionary<string, string[]>
-    {
-        { "Bearer", Array.Empty<string>() }
-    });
-});
+        WebApplication app;
+        try
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+            builder.Configuration.AddUserSecrets(typeof(Program).Assembly);
 
-// Configure middleware pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "IO Elsa API v1");
-        c.RoutePrefix = "swagger";
-    });
+            builder.AddCore().AddInfrastructure().AddApplication();
+
+            app = builder.Build();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly during initialization");
+            Console.Write(ex.ToString());
+            return;
+        }
+
+        try
+        {
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseCors();
+
+            await app.MapRoutes().RunAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly");
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
+        }
+    }
 }
-
-app.UseHttpsRedirection();
-
-// Add exception handling middleware
-app.UseExceptionHandling();
-
-app.UseAuthorization();
-app.MapControllers();
-
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
-app.MapGet("/ready", () => Results.Ok(new { status = "ready", timestamp = DateTime.UtcNow }));
-
-app.Run();
