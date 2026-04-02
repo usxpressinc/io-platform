@@ -1,10 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using IO.Elsa.Core.Pricing;
-using IO.Elsa.Infrastructure.Data;
-using IO.Elsa.Models;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace IO.Elsa.Endpoints;
 

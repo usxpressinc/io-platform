@@ -1,10 +1,5 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace IO.Proxy.Middleware;
 
@@ -12,22 +7,12 @@ namespace IO.Proxy.Middleware;
 /// Request/response transformation middleware for API Gateway
 /// Handles path rewriting, header management, and content transformation
 /// </summary>
-public class TransformationMiddleware
+public class TransformationMiddleware(
+    RequestDelegate next,
+    ILogger<TransformationMiddleware> logger,
+    TransformationSettings settings
+)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<TransformationMiddleware> _logger;
-    private readonly TransformationSettings _settings;
-
-    public TransformationMiddleware(
-        RequestDelegate next,
-        ILogger<TransformationMiddleware> logger,
-        TransformationSettings settings)
-    {
-        _next = next;
-        _logger = logger;
-        _settings = settings;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         var originalPath = context.Request.Path.Value;
@@ -36,30 +21,31 @@ public class TransformationMiddleware
         try
         {
             // Transform request
-            await TransformRequestAsync(context);
+            await this.TransformRequestAsync(context);
 
             // Process the request
-            await _next(context);
+            await next(context);
 
             // Transform response
-            await TransformResponseAsync(context);
+            await this.TransformResponseAsync(context);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during request/response transformation");
+            logger.LogError(ex, "Error during request/response transformation");
             throw;
         }
         finally
         {
             // Log the transformation for debugging
-            if (_settings.EnableTransformationLogging)
+            if (settings.EnableTransformationLogging)
             {
-                _logger.LogDebug(
+                logger.LogDebug(
                     "Request transformed: {OriginalPath} -> {NewPath} | {OriginalQS} -> {NewQS}",
                     originalPath,
                     context.Request.Path.Value,
                     originalQueryString,
-                    context.Request.QueryString.Value);
+                    context.Request.QueryString.Value
+                );
             }
         }
     }
@@ -67,18 +53,18 @@ public class TransformationMiddleware
     private async Task TransformRequestAsync(HttpContext context)
     {
         var path = context.Request.Path.Value ?? string.Empty;
-        var serviceRoute = FindServiceRoute(path);
+        var serviceRoute = this.FindServiceRoute(path);
 
         if (serviceRoute != null)
         {
             // Apply path rewriting
-            await ApplyPathRewritingAsync(context, serviceRoute);
+            await this.ApplyPathRewritingAsync(context, serviceRoute);
 
             // Add headers
-            AddHeaders(context, serviceRoute);
+            this.AddHeaders(context, serviceRoute);
 
             // Remove headers
-            RemoveHeaders(context, serviceRoute);
+            this.RemoveHeaders(context, serviceRoute);
 
             // Store service information for downstream use
             context.Items["ServiceName"] = serviceRoute.ServiceName;
@@ -89,18 +75,23 @@ public class TransformationMiddleware
     private async Task TransformResponseAsync(HttpContext context)
     {
         // Add gateway-specific response headers
-        if (_settings.AddGatewayHeaders)
+        if (settings.AddGatewayHeaders)
         {
-            context.Response.Headers.Add("X-Gateway-Service", 
-                context.Items["ServiceName"]?.ToString() ?? "unknown");
-            context.Response.Headers.Add("X-Gateway-Version", "1.0.0");
-            context.Response.Headers.Add("X-Gateway-Timestamp", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+            context.Response.Headers.Append(
+                "X-Gateway-Service",
+                context.Items["ServiceName"]?.ToString() ?? "unknown"
+            );
+            context.Response.Headers.Append("X-Gateway-Version", "1.0.0");
+            context.Response.Headers.Append(
+                "X-Gateway-Timestamp",
+                DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
+            );
         }
 
         // Transform response body if needed
-        if (_settings.TransformResponseBody)
+        if (settings.TransformResponseBody)
         {
-            await TransformResponseBodyAsync(context);
+            await this.TransformResponseBodyAsync(context);
         }
     }
 
@@ -114,33 +105,33 @@ public class TransformationMiddleware
             {
                 ServiceName = "IO.Common",
                 PathPrefix = "/api/common",
-                PathRewrites = new Dictionary<string, string> { { "^/api/common", "" } }
+                PathRewrites = new Dictionary<string, string> { { "^/api/common", "" } },
             },
             var p when p.StartsWith("/api/cass/") => new ServiceRoute
             {
                 ServiceName = "IO.Cass",
                 PathPrefix = "/api/cass",
-                PathRewrites = new Dictionary<string, string> { { "^/api/cass", "" } }
+                PathRewrites = new Dictionary<string, string> { { "^/api/cass", "" } },
             },
             var p when p.StartsWith("/api/elsa/") => new ServiceRoute
             {
                 ServiceName = "IO.Elsa",
                 PathPrefix = "/api/elsa",
-                PathRewrites = new Dictionary<string, string> { { "^/api/elsa", "" } }
+                PathRewrites = new Dictionary<string, string> { { "^/api/elsa", "" } },
             },
             var p when p.StartsWith("/api/larry/") => new ServiceRoute
             {
                 ServiceName = "IO.Larry",
                 PathPrefix = "/api/larry",
-                PathRewrites = new Dictionary<string, string> { { "^/api/larry", "" } }
+                PathRewrites = new Dictionary<string, string> { { "^/api/larry", "" } },
             },
             var p when p.StartsWith("/api/lea/") => new ServiceRoute
             {
                 ServiceName = "IO.Lea",
                 PathPrefix = "/api/lea",
-                PathRewrites = new Dictionary<string, string> { { "^/api/lea", "" } }
+                PathRewrites = new Dictionary<string, string> { { "^/api/lea", "" } },
             },
-            _ => null
+            _ => null,
         };
     }
 
@@ -154,13 +145,13 @@ public class TransformationMiddleware
             if (newPath != path)
             {
                 context.Request.Path = newPath;
-                _logger.LogDebug("Rewrote path: {OriginalPath} -> {NewPath}", path, newPath);
+                logger.LogDebug("Rewrote path: {OriginalPath} -> {NewPath}", path, newPath);
                 break;
             }
         }
 
         // Handle query string transformation if needed
-        await TransformQueryStringAsync(context, serviceRoute);
+        await this.TransformQueryStringAsync(context, serviceRoute);
     }
 
     private async Task TransformQueryStringAsync(HttpContext context, ServiceRoute serviceRoute)
@@ -168,8 +159,10 @@ public class TransformationMiddleware
         // Add default query parameters if configured
         if (serviceRoute.QueryParametersToAdd?.Any() == true)
         {
-            var queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(context.Request.QueryString.Value);
-            
+            var queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
+                context.Request.QueryString.Value
+            );
+
             foreach (var param in serviceRoute.QueryParametersToAdd)
             {
                 if (!queryDict.ContainsKey(param.Key))
@@ -178,7 +171,9 @@ public class TransformationMiddleware
                 }
             }
 
-            context.Request.QueryString = new QueryString("?" + Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDict));
+            context.Request.QueryString = new QueryString(
+                "?" + Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDict)
+            );
         }
     }
 
@@ -195,7 +190,7 @@ public class TransformationMiddleware
         // Add standard gateway headers
         context.Request.Headers.Add("X-Forwarded-Proto", context.Request.Scheme);
         context.Request.Headers.Add("X-Forwarded-Host", context.Request.Host.ToString());
-        context.Request.Headers.Add("X-Forwarded-For", GetClientIpAddress(context));
+        context.Request.Headers.Add("X-Forwarded-For", this.GetClientIpAddress(context));
         context.Request.Headers.Add("X-Request-Id", context.TraceIdentifier);
     }
 
@@ -209,28 +204,28 @@ public class TransformationMiddleware
 
     private async Task TransformResponseBodyAsync(HttpContext context)
     {
-        if (!_ShouldTransformResponse(context))
+        if (!this._ShouldTransformResponse(context))
         {
             return;
         }
 
         var originalBodyStream = context.Response.Body;
-        
+
         using var responseBody = new MemoryStream();
         context.Response.Body = responseBody;
 
         try
         {
-            await _next(context);
+            await next(context);
 
             if (responseBody.Length > 0)
             {
                 responseBody.Seek(0, SeekOrigin.Begin);
                 var originalContent = await new StreamReader(responseBody).ReadToEndAsync();
-                
+
                 // Apply response transformations
-                var transformedContent = TransformResponseContent(originalContent, context);
-                
+                var transformedContent = this.TransformResponseContent(originalContent, context);
+
                 // Write transformed content
                 context.Response.Body = originalBodyStream;
                 context.Response.ContentLength = null;
@@ -251,17 +246,20 @@ public class TransformationMiddleware
     private string TransformResponseContent(string content, HttpContext context)
     {
         // Apply JSON transformations if response is JSON
-        if (IsJsonResponse(context))
+        if (this.IsJsonResponse(context))
         {
             try
             {
                 var jsonElement = JsonSerializer.Deserialize<JsonElement>(content);
-                var transformedJson = TransformJsonResponse(jsonElement, context);
-                return JsonSerializer.Serialize(transformedJson, new JsonSerializerOptions 
-                { 
-                    WriteIndented = false,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                var transformedJson = this.TransformJsonResponse(jsonElement, context);
+                return JsonSerializer.Serialize(
+                    transformedJson,
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = false,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    }
+                );
             }
             catch (JsonException)
             {
@@ -276,17 +274,18 @@ public class TransformationMiddleware
     private JsonElement TransformJsonResponse(JsonElement jsonElement, HttpContext context)
     {
         // Add gateway metadata to JSON response
-        var jsonObject = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonElement.GetRawText()) 
-                        ?? new Dictionary<string, object>();
+        var jsonObject =
+            JsonSerializer.Deserialize<Dictionary<string, object>>(jsonElement.GetRawText())
+            ?? new Dictionary<string, object>();
 
-        if (_settings.AddMetadataToResponse)
+        if (settings.AddMetadataToResponse)
         {
             jsonObject["_gateway"] = new Dictionary<string, object>
             {
                 ["service"] = context.Items["ServiceName"]?.ToString() ?? "unknown",
                 ["version"] = "1.0.0",
                 ["timestamp"] = DateTime.UtcNow,
-                ["requestId"] = context.TraceIdentifier
+                ["requestId"] = context.TraceIdentifier,
             };
         }
 
@@ -296,16 +295,16 @@ public class TransformationMiddleware
     private bool _ShouldTransformResponse(HttpContext context)
     {
         // Only transform successful JSON responses
-        return context.Response.StatusCode >= 200 && 
-               context.Response.StatusCode < 300 &&
-               IsJsonResponse(context);
+        return context.Response.StatusCode >= 200
+            && context.Response.StatusCode < 300
+            && this.IsJsonResponse(context);
     }
 
     private bool IsJsonResponse(HttpContext context)
     {
         var contentType = context.Response.ContentType?.ToLowerInvariant();
-        return contentType?.Contains("application/json") == true ||
-               contentType?.Contains("application/hal+json") == true;
+        return contentType?.Contains("application/json") == true
+            || contentType?.Contains("application/hal+json") == true;
     }
 
     private string GetClientIpAddress(HttpContext context)
@@ -370,7 +369,8 @@ public static class TransformationMiddlewareExtensions
     /// </summary>
     public static IApplicationBuilder UseRequestTransformation(
         this IApplicationBuilder builder,
-        Action<TransformationSettings> configureSettings)
+        Action<TransformationSettings> configureSettings
+    )
     {
         var settings = new TransformationSettings();
         configureSettings(settings);

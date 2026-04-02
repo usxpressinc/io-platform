@@ -1,24 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {}
+    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {}
   },
   "projects": {
-    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {
+    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+        "projectUniqueName": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
         "projectName": "IO.Common",
-        "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+        "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
         "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\obj\\",
+        "outputPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "c:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
+          "C:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
           "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -34,8 +34,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
-                "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj"
+              "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
+                "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj"
               }
             }
           }
@@ -59,6 +59,11 @@
             "Ardalis.Result": {
               "target": "Package",
               "version": "[10.1.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Asp.Versioning.Http": {
+              "target": "Package",
+              "version": "[8.1.0, )",
               "versionCentrallyManaged": true
             },
             "FluentValidation": {
@@ -121,6 +126,11 @@
               "version": "[4.1.1, )",
               "versionCentrallyManaged": true
             },
+            "NSwag.AspNetCore": {
+              "target": "Package",
+              "version": "[14.2.0, )",
+              "versionCentrallyManaged": true
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.3, )",
@@ -154,6 +164,7 @@
           },
           "centralPackageVersions": {
             "Ardalis.Result": "10.1.0",
+            "Asp.Versioning.Http": "8.1.0",
             "Confluent.Kafka": "2.8.0",
             "coverlet.collector": "6.0.2",
             "FluentValidation": "11.11.0",
@@ -193,6 +204,7 @@
             "MongoDB.Driver": "2.28.0",
             "Moq": "4.20.72",
             "Newtonsoft.Json": "13.0.3",
+            "NSwag.AspNetCore": "14.2.0",
             "OpenTelemetry": "1.9.0",
             "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.9.0",
             "OpenTelemetry.Extensions.Hosting": "1.9.0",
@@ -240,21 +252,21 @@
         }
       }
     },
-    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
+    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+        "projectUniqueName": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+        "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
+        "outputPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "c:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
+          "C:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
           "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -381,6 +393,7 @@
           },
           "centralPackageVersions": {
             "Ardalis.Result": "10.1.0",
+            "Asp.Versioning.Http": "8.1.0",
             "Confluent.Kafka": "2.8.0",
             "coverlet.collector": "6.0.2",
             "FluentValidation": "11.11.0",
@@ -420,6 +433,7 @@
             "MongoDB.Driver": "2.28.0",
             "Moq": "4.20.72",
             "Newtonsoft.Json": "13.0.3",
+            "NSwag.AspNetCore": "14.2.0",
             "OpenTelemetry": "1.9.0",
             "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.9.0",
             "OpenTelemetry.Extensions.Hosting": "1.9.0",

@@ -134,6 +134,7 @@
           },
           "centralPackageVersions": {
             "Ardalis.Result": "10.1.0",
+            "Asp.Versioning.Http": "8.1.0",
             "Confluent.Kafka": "2.8.0",
             "coverlet.collector": "6.0.2",
             "FluentValidation": "11.11.0",
@@ -173,6 +174,7 @@
             "MongoDB.Driver": "2.28.0",
             "Moq": "4.20.72",
             "Newtonsoft.Json": "13.0.3",
+            "NSwag.AspNetCore": "14.2.0",
             "OpenTelemetry": "1.9.0",
             "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.9.0",
             "OpenTelemetry.Extensions.Hosting": "1.9.0",
@@ -361,6 +363,7 @@
           },
           "centralPackageVersions": {
             "Ardalis.Result": "10.1.0",
+            "Asp.Versioning.Http": "8.1.0",
             "Confluent.Kafka": "2.8.0",
             "coverlet.collector": "6.0.2",
             "FluentValidation": "11.11.0",
@@ -400,6 +403,7 @@
             "MongoDB.Driver": "2.28.0",
             "Moq": "4.20.72",
             "Newtonsoft.Json": "13.0.3",
+            "NSwag.AspNetCore": "14.2.0",
             "OpenTelemetry": "1.9.0",
             "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.9.0",
             "OpenTelemetry.Extensions.Hosting": "1.9.0",

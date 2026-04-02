@@ -1,4 +1,6 @@
 using IO.Common.App;
+using IO.Common.Core;
+using IO.Common.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +27,7 @@ public static class Program
 
             builder.Configuration.AddUserSecrets(typeof(Program).Assembly);
 
-            builder.AddApplication();
+            builder.AddCore().AddInfrastructure().AddApplication();
 
             app = builder.Build();
         }
@@ -38,6 +40,10 @@ public static class Program
 
         try
         {
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseCors();
+
             await app.MapRoutes().RunAsync();
         }
         catch (Exception ex)

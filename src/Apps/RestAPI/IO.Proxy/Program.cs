@@ -2,10 +2,6 @@ using IO.Core.Authentication;
 using USXpress.Monitoring;
 using USXpress.Monitoring.Models;
 using IO.Proxy.Routes;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

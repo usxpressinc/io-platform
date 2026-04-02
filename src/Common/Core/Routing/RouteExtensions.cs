@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
-using static Microsoft.AspNetCore.Http.Results;
 using System.ComponentModel.DataAnnotations;
 
 namespace IO.Platform.Common.Core.Routing;

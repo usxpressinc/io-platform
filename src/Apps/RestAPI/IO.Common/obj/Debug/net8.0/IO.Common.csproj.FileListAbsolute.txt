@@ -245,3 +245,5 @@ c:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Common\obj\Debug\net8.0\I
 c:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Common\obj\Debug\net8.0\IO.Common.pdb
 c:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Common\obj\Debug\net8.0\IO.Common.genruntimeconfig.cache
 c:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Common\obj\Debug\net8.0\ref\IO.Common.dll
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Common\bin\Debug\net8.0\Asp.Versioning.Abstractions.dll
+C:\Users\gmackay\repos\io-platform\src\Apps\RestAPI\IO.Common\bin\Debug\net8.0\Asp.Versioning.Http.dll

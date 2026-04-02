@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "aeBHR72tAuE=",
+  "dgSpecHash": "I2owO+1CLrQ=",
   "success": true,
-  "projectFilePath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+  "projectFilePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gmackay\\.nuget\\packages\\apache.avro\\1.12.0\\apache.avro.1.12.0.nupkg.sha512",
     "C:\\Users\\gmackay\\.nuget\\packages\\awssdk.core\\3.7.100.14\\awssdk.core.3.7.100.14.nupkg.sha512",

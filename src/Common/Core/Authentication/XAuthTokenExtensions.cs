@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
-using System.Security.Cryptography.X509Certificates;
 
 namespace IO.Core.Authentication;
 

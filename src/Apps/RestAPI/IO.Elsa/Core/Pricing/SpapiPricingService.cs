@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using IO.Elsa.Infrastructure;
 using IO.Elsa.Models;
 using System.Text.Json;

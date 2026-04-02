@@ -2,8 +2,6 @@ using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using IO.Core.Constants;
 
 namespace IO.Core.Authentication;

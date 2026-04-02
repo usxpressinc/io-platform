@@ -1,9 +1,6 @@
 using IO.Platform.Common.Core.Configuration;
 using IO.Platform.Common.Core.Exceptions;
 using IO.Platform.Common.Core.Lifecycle;
-using IO.Platform.Common.Core.Monitoring;
-using IO.Platform.Common.Core.Health;
-using IO.Platform.Common.Infrastructure.MongoDb;
 using IO.Elsa.Core.Pricing;
 using IO.Elsa.Infrastructure.Data;
 using IO.Elsa.Infrastructure;

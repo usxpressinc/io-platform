@@ -1,7 +1,4 @@
-using Microsoft.Extensions.Logging;
 using IO.Elsa.Infrastructure.Data;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace IO.Elsa.Core.Pricing;
 
