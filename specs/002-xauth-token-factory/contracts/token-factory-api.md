@@ -149,20 +149,6 @@ X-Master-Token: {master-token}
     "scopes": ["io-elsa-reader", "io-elsa-writer"],
     "expiresAt": "2026-03-31T21:00:00Z",
     "generatedAt": "2026-03-31T20:00:00Z"
-  },
-  "larry": {
-    "token": "eyJ0b2tlbl9pZCI6... .signature...",
-    "tokenId": "880e8400-e29b-41d4-a716-446655440003",
-    "scopes": ["io-larry-reader", "io-larry-writer"],
-    "expiresAt": "2026-03-31T21:00:00Z",
-    "generatedAt": "2026-03-31T20:00:00Z"
-  },
-  "lea": {
-    "token": "eyJ0b2tlbl9pZCI6... .signature...",
-    "tokenId": "990e8400-e29b-41d4-a716-446655440004",
-    "scopes": ["io-lea-reader", "io-lea-writer"],
-    "expiresAt": "2026-03-31T21:00:00Z",
-    "generatedAt": "2026-03-31T20:00:00Z"
   }
 }
 ```
@@ -317,10 +303,6 @@ eyJ0b2tlbl9pZCI6IjEyMy4uLiIsInNjb3BlcyI6WyJpby1jb21tb24tcmVhZGVyIl0s... .aBcD123
 | `io-cass-writer` | Cass | Write access |
 | `io-elsa-reader` | Elsa | Read access |
 | `io-elsa-writer` | Elsa | Write access |
-| `io-larry-reader` | Larry | Read access |
-| `io-larry-writer` | Larry | Write access |
-| `io-lea-reader` | Lea | Read access |
-| `io-lea-writer` | Lea | Write access |
 
 ## OpenAPI Specification
 

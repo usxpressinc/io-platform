@@ -182,10 +182,6 @@ Permission scopes for different IO services.
 | CassWrite | io-cass-writer | Write access to Cass service |
 | ElsaRead | io-elsa-reader | Read access to Elsa service |
 | ElsaWrite | io-elsa-writer | Write access to Elsa service |
-| LarryRead | io-larry-reader | Read access to Larry service |
-| LarryWrite | io-larry-writer | Write access to Larry service |
-| LeaRead | io-lea-reader | Read access to Lea service |
-| LeaWrite | io-lea-writer | Write access to Lea service |
 
 ---
 

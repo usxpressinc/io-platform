@@ -70,8 +70,6 @@
 - api.io.common (internal)
 - api.io.cass (internal)
 - api.io.elsa (internal)
-- api.io.larry (internal)
-- api.io.lea (internal)
 
 ---
 

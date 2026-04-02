@@ -21,8 +21,6 @@ flowchart TB
         Common["IO.Common"]
         Cass["IO.Cass"]
         Elsa["IO.Elsa"]
-        Larry["IO.Larry"]
-        Lea["IO.Lea"]
     end
 
     Client -->|"1. POST /api/tokens/generate<br/>X-Master-Token: {master}"| TF
@@ -191,8 +189,6 @@ flowchart TD
 | `/api/common/*` | `io-common-reader` or `io-common-writer` |
 | `/api/cass/*` | `io-cass-reader` or `io-cass-writer` |
 | `/api/elsa/*` | `io-elsa-reader` or `io-elsa-writer` |
-| `/api/larry/*` | `io-larry-reader` or `io-larry-writer` |
-| `/api/lea/*` | `io-lea-reader` or `io-lea-writer` |
 | `/api/proxy/*` | `io-proxy-reader` or `io-proxy-writer` |
 
 ### Permission Model
@@ -319,8 +315,6 @@ AUTH__JWT_SECRET: "{jwt-validation-secret}"           # Secret
 | IO.Common | api.io.common | No (internal) |
 | IO.Cass | api.io.cass | No (internal) |
 | IO.Elsa | api.io.elsa | No (internal) |
-| IO.Larry | api.io.larry | No (internal) |
-| IO.Lea | api.io.lea | No (internal) |
 
 ## Testing Strategy
 

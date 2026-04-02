@@ -190,57 +190,6 @@ services:
     volumes:
       - ./config:/app/config
 
-  io-larry:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_NAME: IO.Larry
-    container_name: io-larry
-    restart: unless-stopped
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8084
-      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
-      - MONGODB_DATABASE_NAME=io-platform-dev
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - XAUTH_MASTER_TOKEN=master-token-dev
-    ports:
-      - "8084:8084"
-    depends_on:
-      - mongodb
-      - kafka
-    networks:
-      - io-platform
-    volumes:
-      - ./config:/app/config
-
-  io-lea:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_NAME: IO.Lea
-    container_name: io-lea
-    restart: unless-stopped
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8085
-      - MONGODB_CONNECTION_STRING=mongodb://admin:password123@mongodb:27017
-      - MONGODB_DATABASE_NAME=io-platform-dev
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - GOOGLE_JOBS_API_KEY=${GOOGLE_JOBS_API_KEY}
-      - XAUTH_MASTER_TOKEN=master-token-dev
-    ports:
-      - "8085:8085"
-    depends_on:
-      - mongodb
-      - kafka
-    networks:
-      - io-platform
-    volumes:
-      - ./config:/app/config
-
 volumes:
   mongodb_data:
   grafana_data:

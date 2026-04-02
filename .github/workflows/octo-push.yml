@@ -28,7 +28,7 @@ jobs:
       - name: Artifact 📦
         uses: variant-inc/actions-dotnet@v2
         with:
-          ecr_repository: usxpress/usxpress-edi-platform
+          ecr_repository: usxpress/io-platform
           dotnet-version: 9.x
 
       - name: Release 🛸

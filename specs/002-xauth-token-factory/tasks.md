@@ -62,7 +62,7 @@
 
 - [x] T010 [P] Create `TokenValidationResult.cs` model in `src/Common/Core/Authentication/`
 - [x] T011 [P] Update `XAuthTokenMiddleware.cs` header extraction logic for Bearer and X-Auth-Token headers in `src/Common/Core/Authentication/`
-- [x] T012 [P] Implement path-based scope mapping in `XAuthTokenMiddleware.cs` for /api/common, /api/cass, /api/elsa, /api/larry, /api/lea routes
+- [x] T012 [P] Implement path-based scope mapping in `XAuthTokenMiddleware.cs` for /api/common, /api/cass, /api/elsa routes
 - [x] T013 Update `XAuthTokenMiddleware.cs` token validation logic with scope checking (token in scopes pattern)
 - [x] T014 Update `XAuthTokenMiddleware.cs` bypass authentication for /health, /ready, /swagger paths
 - [x] T015 Update `XAuthTokenMiddleware.cs` structured JSON error responses for 401 and 403
@@ -122,10 +122,10 @@
 - [x] T034 [US3] Update `AuthenticationConstants.cs` add environment variable constants for AUTH__API_TOKEN, AUTH__JWT_SECRET, AUTH__CLIENT_SECRET in `src/Common/Core/Constants/`
 - [x] T035 [US3] Update `AuthenticationConstants.cs` add TokenFactory environment variable constants TOKEN_FACTORY__SECRET, TOKEN_FACTORY__MASTER_TOKEN, TOKEN_FACTORY__DEFAULT_LIFETIME_HOURS
 - [x] T036 [US3] Update `AuthenticationConstants.cs` add skip authentication paths constants for /health, /ready, /swagger
-- [x] T037 [US3] Update `ServiceEndpoints.cs` add service endpoint constants for Common, Cass, Elsa, Larry, Lea services
+- [x] T037 [US3] Update `ServiceEndpoints.cs` add service endpoint constants for Common, Cass, Elsa services
 - [x] T038 [US3] Update `MongoDbCollections.cs` add collection name constants per data model requirements
 - [x] T039 [US3] Update `KafkaTopics.cs` add topic name constants per messaging requirements
-- [x] T040 [US3] Update `AuthenticationScopes.cs` add scope constants for io-proxy-reader, io-proxy-writer, io-common-reader, io-common-writer, io-cass-reader, io-cass-writer, io-elsa-reader, io-elsa-writer, io-larry-reader, io-larry-writer, io-lea-reader, io-lea-writer
+- [x] T040 [US3] Update `AuthenticationScopes.cs` add scope constants for io-proxy-reader, io-proxy-writer, io-common-reader, io-common-writer, io-cass-reader, io-cass-writer, io-elsa-reader, io-elsa-writer
 - [x] T041 [US3] Update `IO.Proxy/Program.cs` replace hardcoded strings with constants
 - [x] T042 [US3] Update `.deploy-net/io-proxy-api.yaml` add TokenFactory secretVars: `TOKEN_FACTORY__SECRET: '#{TOKEN_FACTORY__SECRET}'` and `TOKEN_FACTORY__MASTER_TOKEN: '#{TOKEN_FACTORY__MASTER_TOKEN}'`
 - [x] T043 [US3] Update `.deploy-net/io-proxy-api.yaml` add TokenFactory configVars: `TOKEN_FACTORY__DEFAULT_LIFETIME_HOURS: '#{TOKEN_FACTORY__DEFAULT_LIFETIME_HOURS}'`
@@ -150,10 +150,6 @@
 - [x] T049 [US4] Update `.deploy-net/io-cass-api.yaml` remove `public.enabled` (internal service)
 - [x] T050 [US4] Update `.deploy-net/io-elsa-api.yaml` verify subdomain routing `product: io`, `app: elsa`, `type: api`
 - [x] T051 [US4] Update `.deploy-net/io-elsa-api.yaml` remove `public.enabled` (internal service)
-- [x] T052 [US4] Update `.deploy-net/io-larry-api.yaml` verify subdomain routing `product: io`, `app: larry`, `type: api`
-- [x] T053 [US4] Update `.deploy-net/io-larry-api.yaml` remove `public.enabled` (internal service)
-- [x] T054 [US4] Update `.deploy-net/io-lea-api.yaml` verify subdomain routing `product: io`, `app: lea`, `type: api`
-- [x] T055 [US4] Update `.deploy-net/io-lea-api.yaml` remove `public.enabled` (internal service)
 - [x] T056 [US4] Update `.deploy-net/io-proxy-api.yaml` verify `assigned_to_apps` configuration for API-to-API flow to downstream services
 
 **Checkpoint**: All subdomain routing configured correctly

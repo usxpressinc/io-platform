@@ -18,12 +18,6 @@ mkdir -p src/Apps/RestAPI/IO.Proxy
 mkdir -p src/Apps/RestAPI/IO.Common
 mkdir -p src/Apps/RestAPI/IO.Cass
 mkdir -p src/Apps/RestAPI/IO.Elsa
-mkdir -p src/Apps/RestAPI/IO.Larry
-mkdir -p src/Apps/RestAPI/IO.Lea
-mkdir -p src/Apps/Handlers/IO.Larry/VendorHandler
-mkdir -p src/Apps/Handlers/IO.Lea/JobsHandler
-mkdir -p src/Apps/Jobs/IO.Larry/VendorSync
-mkdir -p src/Apps/Jobs/IO.Lea/GoogleJobs
 mkdir -p src/Libraries
 mkdir -p tests
 mkdir -p .octopus/deploy
@@ -70,14 +64,10 @@ EndProject
 # Handler Projects
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Handlers", "Handlers", "{D4E5F6G7-H8I9-0123-DEF4-456789012345}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Larry.VendorHandler", "src\Apps\Handlers\IO.Larry\VendorHandler\IO.Larry.VendorHandler.csproj", "{66666666-7777-8888-9999-000000000000}"
-EndProject
 # ... additional handler projects
 
 # Job Projects  
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jobs", "Jobs", "{E5F6G7H8-I9J0-1234-EF56-789012345678}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Larry.VendorSync", "src\Apps\Jobs\IO.Larry\VendorSync\IO.Larry.VendorSync.csproj", "{77777777-8888-9999-0000-111111111111}"
 EndProject
 # ... additional job projects
 
@@ -384,8 +374,6 @@ public class ServiceEndpoints
     public const string CommonService = "io-common";
     public const string CassService = "io-cass";
     public const string ElsaService = "io-elsa";
-    public const string LarryService = "io-larry";
-    public const string LeaService = "io-lea";
 }
 
 public class AuthenticationScopes
@@ -393,8 +381,6 @@ public class AuthenticationScopes
     public const string CommonScope = "common";
     public const string CassScope = "clara";
     public const string ElsaScope = "elsa";
-    public const string LarryScope = "larry";
-    public const string LeaScope = "lea";
 }
 ```
 
@@ -479,40 +465,9 @@ public static class KafkaExtensions
         builder.Services.AddUSXpressKafkaConsumer(builder.Configuration);
         
         // Register consumer services
-        builder.Services.AddHostedService<VendorLookupConsumer>();
-        builder.Services.AddHostedService<JobSearchConsumer>();
+        builder.Services.AddHostedService<EmailNotificationConsumer>();
         
         return builder;
-    }
-}
-
-// src/Apps/Handlers/IO.Larry/VendorHandler/VendorLookupConsumer.cs
-using IO.Core.Constants;
-
-namespace IO.Larry.VendorHandler;
-
-public class VendorLookupConsumer : BackgroundService
-{
-    private readonly IKafkaConsumer _kafkaConsumer;
-    private readonly IVendorService _vendorService;
-
-    public VendorLookupConsumer(
-        IKafkaConsumer kafkaConsumer,
-        IVendorService vendorService)
-    {
-        _kafkaConsumer = kafkaConsumer;
-        _vendorService = vendorService;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await _kafkaConsumer.ConsumeAsync(
-            KafkaTopics.VendorLookupEvent, 
-            async (message, token) =>
-            {
-                await _vendorService.ProcessVendorLookupAsync(message, token);
-            }, 
-            stoppingToken);
     }
 }
 
@@ -796,90 +751,6 @@ public class EmailService : IEmailService
 }
 ```
 
-## **Phase 4: Handler & Job Projects**
-
-### **4.1 Larry Vendor Handler**
-
-#### **src/Apps/Handlers/IO.Larry/VendorHandler/IO.Larry.VendorHandler.csproj**
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Worker">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="USXpress.Monitoring" />
-    <PackageReference Include="USXpress.Kafka" />
-    <PackageReference Include="USXpress.Configuration.Mongo" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="../../../../Common/Core/Core.csproj" />
-    <ProjectReference Include="../../../../Common/Infrastructure/Infrastructure.csproj" />
-  </ItemGroup>
-</Project>
-```
-
-#### **Program.cs**
-```csharp
-using USXpress.Monitoring;
-using USXpress.Monitoring.Models;
-using IO.Infrastructure.Mongo;
-using USXpress.Kafka;
-
-var builder = Host.CreateApplicationBuilder(args);
-
-// Add monitoring
-// ... monitoring setup code ...
-
-// Add MongoDB repositories
-builder.AddMongoRepositories();
-
-// Add Kafka consumer
-builder.Services.AddUSXpressKafkaConsumer(builder.Configuration);
-
-// Register background service
-builder.Services.AddHostedService<VendorLookupWorker>();
-
-var host = builder.Build();
-host.Run();
-```
-
-#### **VendorLookupWorker.cs**
-```csharp
-namespace IO.Larry.VendorHandler;
-
-public class VendorLookupWorker : BackgroundService
-{
-    private readonly ILogger<VendorLookupWorker> _logger;
-    private readonly IKafkaConsumer _kafkaConsumer;
-    private readonly IVendorService _vendorService;
-
-    public VendorLookupWorker(
-        ILogger<VendorLookupWorker> logger,
-        IKafkaConsumer kafkaConsumer,
-        IVendorService vendorService)
-    {
-        _logger = logger;
-        _kafkaConsumer = kafkaConsumer;
-        _vendorService = vendorService;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await _kafkaConsumer.ConsumeAsync("vendor_lookup_evt", async (message, token) =>
-        {
-            _logger.LogInformation("Processing vendor lookup request: {Message}", message);
-            
-            // Process vendor lookup
-            await _vendorService.ProcessVendorLookupAsync(message, token);
-        }, stoppingToken);
-    }
-}
-```
-
 ## **Phase 5: Deployment Configuration**
 
 ### **5.1 Create Deployment YAMLs**
@@ -927,8 +798,6 @@ api:
     Services__Common__BaseUrl: '#{Services__Common__BaseUrl}'
     Services__Cass__BaseUrl: '#{Services__Cass__BaseUrl}'
     Services__Elsa__BaseUrl: '#{Services__Elsa__BaseUrl}'
-    Services__Larry__BaseUrl: '#{Services__Larry__BaseUrl}'
-    Services__Lea__BaseUrl: '#{Services__Lea__BaseUrl}'
   secretVars:
     AUTH__CLIENT_SECRET: '#{AUTH__CLIENT_SECRET}'
 ```
@@ -1006,12 +875,6 @@ COPY ["src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj", "src/Apps/RestAPI/IO.Proxy/"]
 COPY ["src/Apps/RestAPI/IO.Common/IO.Common.csproj", "src/Apps/RestAPI/IO.Common/"]
 COPY ["src/Apps/RestAPI/IO.Cass/IO.Cass.csproj", "src/Apps/RestAPI/IO.Cass/"]
 COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
-COPY ["src/Apps/RestAPI/IO.Larry/IO.Larry.csproj", "src/Apps/RestAPI/IO.Larry/"]
-COPY ["src/Apps/RestAPI/IO.Lea/IO.Lea.csproj", "src/Apps/RestAPI/IO.Lea/"]
-COPY ["src/Apps/Handlers/IO.Larry/VendorHandler/IO.Larry.VendorHandler.csproj", "src/Apps/Handlers/IO.Larry/VendorHandler/"]
-COPY ["src/Apps/Handlers/IO.Lea/JobsHandler/IO.Lea.JobsHandler.csproj", "src/Apps/Handlers/IO.Lea/JobsHandler/"]
-COPY ["src/Apps/Jobs/IO.Larry/VendorSync/IO.Larry.VendorSync.csproj", "src/Apps/Jobs/IO.Larry/VendorSync/"]
-COPY ["src/Apps/Jobs/IO.Lea/GoogleJobs/IO.Lea.GoogleJobs.csproj", "src/Apps/Jobs/IO.Lea/GoogleJobs/"]
 
 # Copy test projects, only for restore
 COPY ["tests/Tests.csproj", "tests/"]
@@ -1053,19 +916,7 @@ RUN echo ">>> Publishing IO.Proxy..." && \
     echo ">>> Publishing IO.Cass..." && \
     dotnet publish "src/Apps/RestAPI/IO.Cass/IO.Cass.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Elsa..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Larry..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Larry/IO.Larry.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Lea..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Lea/IO.Lea.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Larry.VendorHandler..." && \
-    dotnet publish "src/Apps/Handlers/IO.Larry/VendorHandler/IO.Larry.VendorHandler.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Lea.JobsHandler..." && \
-    dotnet publish "src/Apps/Handlers/IO.Lea/JobsHandler/IO.Lea.JobsHandler.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Larry.VendorSync..." && \
-    dotnet publish "src/Apps/Jobs/IO.Larry/VendorSync/IO.Larry.VendorSync.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Lea.GoogleJobs..." && \
-    dotnet publish "src/Apps/Jobs/IO.Lea/GoogleJobs/IO.Lea.GoogleJobs.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
+    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
 
 # Stage 4: Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim AS final
@@ -1076,28 +927,17 @@ RUN apt-get update -y \
     tzdata ca-certificates dumb-init \
     libicu-dev krb5-user openssl \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* \
-    && sed -i 's/\[openssl_init\]/# [openssl_init]/' /etc/ssl/openssl.cnf \
-    && printf "\n\n[openssl_init]\nssl_conf = ssl_sect" >> /etc/ssl/openssl.cnf \
-    && printf "\n\n[ssl_sect]\nsystem_default = ssl_default_sect" >> /etc/ssl/openssl.cnf \
-    && printf "\n\n[ssl_default_sect]\nMinProtocol = TLSv1\nCipherString = DEFAULT@SECLEVEL=0\n" >> /etc/ssl/openssl.cnf
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy startup script
 COPY scripts/startup.sh /startup.sh
 RUN chmod 755 /startup.sh
 
-# Copy all appsettings for various entrypoints
-RUN mkdir -p /appSettings && chown 1000:1000 /appSettings
+# Copy appsettings.json files to a dedicated directory
 COPY src/Apps/RestAPI/IO.Proxy/appsettings.json /appSettings/IO.Proxy.dll.json
 COPY src/Apps/RestAPI/IO.Common/appsettings.json /appSettings/IO.Common.dll.json
 COPY src/Apps/RestAPI/IO.Cass/appsettings.json /appSettings/IO.Cass.dll.json
 COPY src/Apps/RestAPI/IO.Elsa/appsettings.json /appSettings/IO.Elsa.dll.json
-COPY src/Apps/RestAPI/IO.Larry/appsettings.json /appSettings/IO.Larry.dll.json
-COPY src/Apps/RestAPI/IO.Lea/appsettings.json /appSettings/IO.Lea.dll.json
-COPY src/Apps/Handlers/IO.Larry/VendorHandler/appsettings.json /appSettings/IO.Larry.VendorHandler.dll.json
-COPY src/Apps/Handlers/IO.Lea/JobsHandler/appsettings.json /appSettings/IO.Lea.JobsHandler.dll.json
-COPY src/Apps/Jobs/IO.Larry/VendorSync/appsettings.json /appSettings/IO.Larry.VendorSync.dll.json
-COPY src/Apps/Jobs/IO.Lea/GoogleJobs/appsettings.json /appSettings/IO.Lea.GoogleJobs.dll.json
 RUN chown 1000:1000 /appSettings/*.json
 
 # Set user permissions and working directory

@@ -23,8 +23,6 @@
 - `user_contexts` - User profile and preference data
 - `email_logs` - Email sending history
 - `carrier_validations` - Carrier vetting results
-- `vendor_data` - Vendor lookup information
-- `job_postings` - Job search data
 
 ### 3b. Genesys Driver Integration
 **Decision**: Defer Genesys integration to future phase  
@@ -35,8 +33,6 @@
 **Decision**: Use USXpress.Kafka with consumer groups matching existing Python topics  
 **Rationale**: FR-009 requires Kafka message consumption. Existing Python jobs define the topic structure.  
 **Topics** (inferred from FR-006, FR-007):
-- `vendor-lookup-sync` - Vendor data synchronization
-- `job-search-index` - Job indexing for search
 - `email-notifications` - Async email processing
 
 ### 5. External Pricing Service

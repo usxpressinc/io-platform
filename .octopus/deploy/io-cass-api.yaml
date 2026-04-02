@@ -16,30 +16,34 @@ infrastructure:
           env: "#{Mongo__Env}"
         roles:
           - name: readWrite
-            database: io_cass
+            database: '#{Cass__DatabaseName}'
+            collection: '#{Cass__CollectionName}'
 
+  auth:
+    roles:
+      - cass-reader
+      - cass-writer
+    group_roles_assigment:
+      - name: Everybody
+        roles:
+          - cass-reader
+          - cass-writer
+    redirect_uri_paths:
+      - path: /signin-oidc
+        type: api
+      - path: /swagger/oauth2-redirect.html
+        type: spa
+      - path: https://localhost:7224/swagger/oauth2-redirect.html
+        type: spa
+      - path: /
+        type: spa  
 api:
+  enabled: true
   service:
     targetPort: 8082
-    subdomain: io-cass
-    publicAccess: false
-  replicas: 2
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-  health:
-    path: /health
-    readinessPath: /ready
-    livenessPath: /health
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
+  global:
+    upstream:
+      perTryTimeout: 15s
   configVars:
     ASPNETCORE_ENVIRONMENT: Production
     ASPNETCORE_URLS: http://+:8082

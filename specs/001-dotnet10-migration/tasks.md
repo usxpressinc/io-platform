@@ -142,35 +142,28 @@ description: "Task list for .NET 10 Migration with CLEAN Architecture"
 
 ## Phase 6: User Story 4 - Background Processing Migration (Priority: P2)
 
-**Goal**: Migrate vendor lookup and job search background jobs to .NET 10 Worker Services with Kafka integration
+**Goal**: Extend background processing support needed by the retained services.
 
 **Independent Test**: Can be fully tested by running the worker services and verifying Kafka message consumption and data updates occur as expected
 
 ### Implementation for User Story 4
 
 - [ ] T058 [P] [US4] Create IO.Elsa project structure in dotnet/src/Apps/RestAPI/IO.Elsa/
-- [ ] T059 [P] [US4] Create IO.Larry project structure in dotnet/src/Apps/RestAPI/IO.Larry/
-- [ ] T060 [P] [US4] Create IO.Lea project structure in dotnet/src/Apps/RestAPI/IO.Lea/
 - [ ] T061 [P] [US4] Create PricingCalculation model in dotnet/src/Common/Models/Pricing/PricingCalculation.cs
-- [ ] T062 [P] [US4] Create Vendor model in dotnet/src/Common/Models/Vendors/Vendor.cs
-- [ ] T063 [P] [US4] Create JobPosting model in dotnet/src/Common/Models/Jobs/JobPosting.cs
-- [ ] T064 [P] [US4] Implement Kafka consumer for vendor-lookup-sync in dotnet/src/Apps/Handlers/VendorLookupHandler.cs
-- [ ] T065 [P] [US4] Implement Kafka consumer for job-search-index in dotnet/src/Apps/Handlers/JobSearchHandler.cs
+- [ ] T063 [P] [US4] Create background processing models needed by retained services in dotnet/src/Common/Models/
+- [ ] T064 [P] [US4] Implement Kafka consumers required by retained services in dotnet/src/Apps/Handlers/
 - [ ] T066 [P] [US4] Implement Kafka consumer for email-notifications in dotnet/src/Apps/Handlers/EmailNotificationHandler.cs
-- [ ] T067 [P] [US4] Create MongoDB repositories for vendor data in dotnet/src/Apps/RestAPI/IO.Larry/Infrastructure/Data/VendorRepository.cs
-- [ ] T068 [P] [US4] Create MongoDB repositories for job postings in dotnet/src/Apps/RestAPI/IO.Lea/Infrastructure/Data/JobPostingRepository.cs
+- [ ] T067 [P] [US4] Create supporting MongoDB repositories required by retained services in dotnet/src/Apps/RestAPI/
 - [ ] T069 [P] [US4] Create MongoDB repositories for pricing calculations in dotnet/src/Apps/RestAPI/IO.Elsa/Infrastructure/Data/PricingRepository.cs
 - [ ] T070 [P] [US4] Implement pricing service with external API in dotnet/src/Apps/RestAPI/IO.Elsa/Core/Pricing/PricingService.cs
-- [ ] T071 [P] [US4] Implement vendor lookup service in dotnet/src/Apps/RestAPI/IO.Larry/Core/Vendors/VendorService.cs
-- [ ] T072 [P] [US4] Implement job search service with Google Jobs integration in dotnet/src/Apps/RestAPI/IO.Lea/Core/Jobs/JobSearchService.cs
+- [ ] T071 [P] [US4] Implement supporting background service logic required by retained services in dotnet/src/Apps/
 - [ ] T073 [P] [US4] Create external API clients (pricing, Google Jobs) in respective Infrastructure/External/ folders
 - [ ] T074 [P] [US4] Implement scheduled job infrastructure in dotnet/src/Apps/Jobs/
 - [ ] T075 [US4] Create pricing endpoints in dotnet/src/Apps/RestAPI/IO.Elsa/Endpoints/PricingEndpoints.cs
-- [ ] T076 [US4] Create vendor endpoints in dotnet/src/Apps/RestAPI/IO.Larry/Endpoints/VendorEndpoints.cs
-- [ ] T077 [US4] Create job posting endpoints in dotnet/src/Apps/RestAPI/IO.Lea/Endpoints/JobEndpoints.cs
+- [ ] T076 [US4] Validate endpoint integration for retained services in dotnet/src/Apps/RestAPI/
 - [ ] T078 [US4] Add error handling and monitoring for background jobs in dotnet/src/Apps/Handlers/
 - [ ] T079 [US4] Setup service configurations in respective Program.cs files
-- [ ] T080 [US4] Create deployment YAMLs with api.io.elsa, api.io.larry, api.io.lea subdomain routing in dotnet/.octopus/deploy/
+- [ ] T080 [US4] Create deployment YAMLs with api.io.elsa subdomain routing in dotnet/.octopus/deploy/
 
 **Checkpoint**: All user stories should now be independently functional
 

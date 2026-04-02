@@ -47,8 +47,6 @@ docker-compose -f dotnet/docker-compose.yaml up --build
 # - IO.Common: http://localhost:8081
 # - IO.Cass: http://localhost:8082
 # - IO.Elsa: http://localhost:8083
-# - IO.Larry: http://localhost:8084
-# - IO.Lea: http://localhost:8085
 ```
 
 ### Option 2: Individual Services
@@ -119,8 +117,6 @@ Each service exposes Swagger UI when running:
 | IO.Common | http://localhost:8081/swagger |
 | IO.Cass | http://localhost:8082/swagger |
 | IO.Elsa | http://localhost:8083/swagger |
-| IO.Larry | http://localhost:8084/swagger |
-| IO.Lea | http://localhost:8085/swagger |
 
 ## Health Checks
 
@@ -184,9 +180,6 @@ curl -o mongopem/ atlas.pem https://...
 ```bash
 # Verify topic exists
 kafka-topics.sh --list --bootstrap-server localhost:9092
-
-# Create topic if missing
-kafka-topics.sh --create --topic vendor-lookup-sync --bootstrap-server localhost:9092
 ```
 
 ### Token Validation Fails

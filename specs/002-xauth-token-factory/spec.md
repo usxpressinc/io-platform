@@ -156,7 +156,7 @@ As a platform engineer, I want to configure subdomain routing for all IO service
 - **SC-002**: TokenFactory generates scoped tokens in <50ms with 99.9% availability
 - **SC-003**: Master token cannot access API endpoints (security validation required)
 - **SC-004**: All constants are used in place of magic strings (code review validation)
-- **SC-005**: Subdomain routing resolves correctly for all services (api.io.proxy, api.io.common, api.io.cass, api.io.elsa, api.io.larry, api.io.lea)
+- **SC-005**: Subdomain routing resolves correctly for all services (api.io.proxy, api.io.common, api.io.cass, api.io.elsa)
 - **SC-006**: Only proxy service has public access enabled (security audit validation)
 - **SC-007**: Scoped tokens expire correctly after configured lifetime (functional test validation)
 - **SC-008**: Cryptographic signature validation rejects tampered tokens (security test validation)

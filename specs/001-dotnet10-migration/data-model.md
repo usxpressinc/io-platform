@@ -152,98 +152,6 @@ Per spec requirements FR-001 through FR-016, the following entities are defined 
 
 ---
 
-## IO.Larry Domain
-
-### Vendor
-**Collection**: `vendor_data`  
-**Purpose**: Service provider with location, contact information, and availability
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| Id | string (ObjectId) | Yes | Unique identifier |
-| VendorId | string | Yes | External vendor identifier |
-| Name | string | Yes | Vendor company name |
-| Type | VendorType | Yes | Carrier, Broker, 3PL, etc. |
-| Location | GeoLocation | Yes | Primary location |
-| ServiceArea | GeoPolygon | No | Geographic service area |
-| Capabilities | string[] | No | Service capabilities |
-| Contacts | VendorContact[] | No | Contact information |
-| EquipmentTypes | string[] | No | Supported equipment types |
-| InsuranceInfo | InsuranceDetails | No | Insurance coverage details |
-| Rating | decimal? | No | Performance rating (0-5) |
-| IsActive | bool | Yes | Active status flag |
-| LastSyncedAt | DateTime | No | Last data sync timestamp |
-| CreatedAt | DateTime | Yes | Record creation timestamp |
-| UpdatedAt | DateTime | Yes | Last update timestamp |
-
-**Nested: GeoLocation**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| Latitude | decimal | GPS latitude |
-| Longitude | decimal | GPS longitude |
-| Address | string | Street address |
-| City | string | City name |
-| State | string | State code |
-| ZipCode | string | Postal code |
-
-**Nested: VendorContact**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| Name | string | Contact name |
-| Phone | string | Phone number |
-| Email | string | Email address |
-| Department | string | Department/role |
-
----
-
-## IO.Lea Domain
-
-### JobPosting
-**Collection**: `job_postings`  
-**Purpose**: Employment opportunity with location, requirements, and posting details
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| Id | string (ObjectId) | Yes | Unique identifier |
-| JobId | string | Yes | External job identifier |
-| Title | string | Yes | Job title |
-| Description | string | Yes | Job description |
-| Requirements | string[] | No | Job requirements |
-| Location | JobLocation | Yes | Job location |
-| JobType | string | Yes | Full-time, Part-time, Contract |
-| Category | string | Yes | Job category |
-| SalaryRange | SalaryRange | No | Compensation range |
-| Benefits | string[] | No | Benefits offered |
-| ApplicationUrl | string | No | External application link |
-| PostedAt | DateTime | Yes | Posting date |
-| ExpiresAt | DateTime | No | Posting expiration |
-| Status | JobStatus | Yes | Active, Filled, Expired |
-| GoogleJobsId | string | No | Google Jobs integration ID |
-| CreatedAt | DateTime | Yes | Record creation timestamp |
-| UpdatedAt | DateTime | Yes | Last update timestamp |
-
-**Nested: JobLocation**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| City | string | City name |
-| State | string | State code |
-| ZipCode | string | Postal code |
-| IsRemote | bool | Remote work available |
-
-**Nested: SalaryRange**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| Min | decimal | Minimum salary |
-| Max | decimal | Maximum salary |
-| Currency | string | ISO currency code |
-| Period | string | Hour, Year, etc. |
-
----
-
 ## Cross-Domain Entities
 
 ### ServiceHealth
@@ -315,9 +223,4 @@ Draft → Active
 | carrier_validations | Status, ValidatedAt | Compound |
 | pricing_calculations | LoadId | Single |
 | pricing_calculations | Status, ExpiresAt | Compound |
-| vendor_data | VendorId | Unique |
-| vendor_data | Location (2dsphere) | Geospatial |
-| job_postings | JobId | Unique |
-| job_postings | Status, PostedAt | Compound |
-| job_postings | Location.City, Location.State | Compound |
 

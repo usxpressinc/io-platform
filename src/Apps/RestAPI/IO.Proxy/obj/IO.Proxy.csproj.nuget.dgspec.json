@@ -131,6 +131,16 @@
               "version": "[13.0.3, )",
               "versionCentrallyManaged": true
             },
+            "Polly": {
+              "target": "Package",
+              "version": "[7.2.4, )",
+              "versionCentrallyManaged": true
+            },
+            "Polly.Extensions.Http": {
+              "target": "Package",
+              "version": "[3.0.0, )",
+              "versionCentrallyManaged": true
+            },
             "Serilog": {
               "target": "Package",
               "version": "[4.2.0, )",
@@ -139,6 +149,16 @@
             "Serilog.AspNetCore": {
               "target": "Package",
               "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[7.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "USXpress.Monitoring": {
+              "target": "Package",
+              "version": "[3.1.10, )",
               "versionCentrallyManaged": true
             }
           },
@@ -189,6 +209,7 @@
             "OpenTelemetry.Instrumentation.AspNetCore": "1.9.0",
             "OpenTelemetry.Instrumentation.Http": "1.9.0",
             "Polly": "7.2.4",
+            "Polly.Extensions.Http": "3.0.0",
             "SendGrid": "9.29.0",
             "Serilog": "4.2.0",
             "Serilog.AspNetCore": "9.0.0",
@@ -415,6 +436,7 @@
             "OpenTelemetry.Instrumentation.AspNetCore": "1.9.0",
             "OpenTelemetry.Instrumentation.Http": "1.9.0",
             "Polly": "7.2.4",
+            "Polly.Extensions.Http": "3.0.0",
             "SendGrid": "9.29.0",
             "Serilog": "4.2.0",
             "Serilog.AspNetCore": "9.0.0",

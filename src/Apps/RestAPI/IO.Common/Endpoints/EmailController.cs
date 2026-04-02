@@ -1,27 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using IO.Common.Core.Email;
-using IO.Common.Core;
 using IO.Common.Infrastructure.Email;
+using IO.Common.Core;
 using IO.Common.Models;
 using System.Threading.Tasks;
 
 namespace IO.Common.Endpoints;
 
 /// <summary>
-/// Email endpoints for IO.Common service
+/// Email endpoints for IO.Common service - matching Python implementation
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class EmailController : ControllerBase
 {
-    private readonly IEmailBusinessService _emailService;
+    private readonly EmailService _emailService;
     private readonly IContextService _contextService;
     private readonly ILogger<EmailController> _logger;
 
     public EmailController(
-        IEmailBusinessService emailService,
+        EmailService emailService,
         IContextService contextService,
         ILogger<EmailController> logger)
     {
@@ -31,160 +30,31 @@ public class EmailController : ControllerBase
     }
 
     /// <summary>
-    /// Send an email
+    /// Send an email - matches Python /send endpoint exactly
     /// </summary>
     [HttpPost("send")]
-    public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
+    public async Task<IActionResult> SendEmail([FromBody] SendEmailRequest request)
     {
         try
         {
-            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("UserId")?.Value;
-            
-            _logger.LogInformation("User {UserId} sending email to {RecipientsCount} recipients", 
-                userId, request.To?.Count ?? 0);
+            _logger.LogInformation("Sending email to {Email}", request.to_emails);
 
-            var result = await _emailService.SendEmailAsync(request, userId);
+            var result = await _emailService.SendEmailAsync(request);
 
-            if (result.Success)
+            if (result.errors.Any())
             {
-                return Ok(new { 
-                    success = true,
-                    messageId = result.MessageId,
-                    sentAt = result.SentAt
-                });
+                return BadRequest(result);
             }
-            else
-            {
-                return BadRequest(new { 
-                    success = false,
-                    error = result.ErrorMessage
-                });
-            }
-        }
-        catch (ValidationException ex)
-        {
-            _logger.LogWarning(ex, "Validation error sending email");
-            return BadRequest(new { 
-                success = false,
-                error = ex.Message
-            });
+
+            return Ok(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error sending email");
-            return StatusCode(500, new { 
-                success = false,
-                error = "Internal server error"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Send a template email
-    /// </summary>
-    [HttpPost("template/send")]
-    public async Task<IActionResult> SendTemplateEmail([FromBody] TemplateEmailRequest request)
-    {
-        try
-        {
-            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("UserId")?.Value;
-            
-            _logger.LogInformation("User {UserId} sending template email {TemplateId} to {RecipientsCount} recipients", 
-                userId, request.TemplateId, request.To?.Count ?? 0);
-
-            var result = await _emailService.SendTemplateEmailAsync(request, userId);
-
-            if (result.Success)
+            return StatusCode(500, new SendEmailResponse
             {
-                return Ok(new { 
-                    success = true,
-                    messageId = result.MessageId,
-                    sentAt = result.SentAt
-                });
-            }
-            else
-            {
-                return BadRequest(new { 
-                    success = false,
-                    error = result.ErrorMessage
-                });
-            }
-        }
-        catch (ValidationException ex)
-        {
-            _logger.LogWarning(ex, "Validation error sending template email");
-            return BadRequest(new { 
-                success = false,
-                error = ex.Message
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending template email");
-            return StatusCode(500, new { 
-                success = false,
-                error = "Internal server error"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get email history for the current user
-    /// </summary>
-    [HttpGet("history")]
-    public async Task<IActionResult> GetEmailHistory([FromQuery] int limit = 50)
-    {
-        try
-        {
-            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("UserId")?.Value;
-            
-            if (string.IsNullOrEmpty(userId))
-            {
-                return BadRequest(new { error = "User ID not found" });
-            }
-
-            _logger.LogInformation("Getting email history for user {UserId}", userId);
-
-            var emails = await _emailService.GetEmailHistoryAsync(userId, limit);
-
-            return Ok(new { 
-                emails,
-                count = emails.Count
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting email history");
-            return StatusCode(500, new { 
-                error = "Internal server error"
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get email delivery status
-    /// </summary>
-    [HttpGet("status/{messageId}")]
-    public async Task<IActionResult> GetEmailStatus(string messageId)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(messageId))
-            {
-                return BadRequest(new { error = "Message ID is required" });
-            }
-
-            _logger.LogInformation("Getting email status for message {MessageId}", messageId);
-
-            var status = await _emailService.GetEmailStatusAsync(messageId);
-
-            return Ok(status);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting email status for message {MessageId}", messageId);
-            return StatusCode(500, new { 
-                error = "Internal server error"
+                status = "500",
+                errors = new List<string> { "Internal server error" }
             });
         }
     }

@@ -1,69 +1,48 @@
 using IO.Core.Authentication;
-using IO.Platform.Common.Core.Configuration;
-using IO.Platform.Common.Core.Exceptions;
-using IO.Platform.Common.Core.Lifecycle;
-using IO.Platform.Common.Core.Monitoring;
-using IO.Platform.Common.Core.Health;
-using IO.Proxy.Core.Routing;
-using IO.Proxy.Core.LoadBalancing;
-using IO.Proxy.Core.Authentication;
-using IO.Proxy.Infrastructure.Http;
-using IO.Proxy.Middleware;
-using IO.Proxy.Core.Health;
-using IO.Proxy.Core.Monitoring;
 using USXpress.Monitoring;
 using USXpress.Monitoring.Models;
-using IO.Core.Constants;
+using IO.Proxy.Routes;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Application metadata from configuration
-var configuration = builder.Configuration;
+// Configure USXpress monitoring
 var environment = Enum.Parse<MonitoringEnvironment>(
-    configuration.GetValue<string>(EnvironmentVariables.ApplicationEnvironment) ?? "development",
+    builder.Configuration["APPLICATION:ENVIRONMENT"] ?? "development",
     ignoreCase: true);
-var project = configuration.GetValue<string>(EnvironmentVariables.ApplicationProject) ?? "io-platform";
-var group = configuration.GetValue<string>(EnvironmentVariables.ApplicationGroup) ?? "gateway";
+var project = builder.Configuration["APPLICATION:PROJECT"] ?? "io-platform";
+var group = builder.Configuration["APPLICATION:GROUP"] ?? "gateway";
 
-// Configure structured logging and OpenTelemetry
-builder.Services.AddStructuredLogging(configuration, "IO.Proxy");
-builder.Services.AddOpenTelemetryInstrumentation(configuration, "IO.Proxy");
-
-// Add environment configuration management
-builder.Services.AddEnvironmentConfiguration(configuration, "IO.Proxy");
-
-// Add monitoring (Grafana/OTEL)
 builder.AddMonitoring(new MonitoringOptions
 {
     ProjectGroup = group,
     ProjectName = project,
     Environment = environment,
-    ReleaseVersion = configuration.GetValue<string>("REVISION") ?? "1.0.0",
+    ReleaseVersion = builder.Configuration["REVISION"] ?? "1.0.0",
     EnableOtel = true,
+    SerilogLoggerConfiguration = new LoggerConfiguration().WriteTo.Console(
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"),
 });
-
-// Add gateway monitoring
-builder.Services.AddGatewayMonitoring();
-
-// Add health aggregation
-builder.Services.AddSingleton<IHealthAggregationService, HealthAggregationService>();
-builder.Services.Configure<HealthAggregationSettings>(settings =>
-{
-    settings.StartedAt = DateTime.UtcNow;
-});
-
-// Add authentication forwarding
-builder.Services.AddAuthenticationForwarding(configuration);
-
-// Add gateway routing and load balancing
-builder.Services.AddGatewayRouting(configuration);
 
 // Add HTTP clients for downstream services
-builder.Services.AddGatewayHttpClients(configuration);
+builder.Services.AddHttpClient("io-common", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:Common:BaseUrl"] ?? "https://api.demo.poc.dev.usxpress.io");
+});
 
-// Add graceful shutdown
-builder.Services.AddSingleton<IGracefulShutdownComponent, HttpServerGracefulShutdown>();
-builder.Services.AddHostedService<GracefulShutdownService>();
+builder.Services.AddHttpClient("io-cass", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:Cass:BaseUrl"] ?? "https://api.demo.poc.qa.usxpress.io");
+});
+
+builder.Services.AddHttpClient("io-elsa", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:Elsa:BaseUrl"] ?? "https://api.demo.poc.qa.usxpress.io");
+});
 
 // Add services
 builder.Services.AddControllers();
@@ -75,18 +54,28 @@ builder.Services.AddSwaggerGen(c =>
     {
         Description = "X-Auth token (Bearer token or X-Auth-Token header)",
         Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    c.AddSecurityRequirement(new Dictionary<string, string[]>
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
-        { "Bearer", Array.Empty<string>() }
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
 // Add X-Auth token authentication
-builder.Services.AddXAuthTokenAuthentication(configuration);
+builder.Services.AddXAuthTokenAuthentication(builder.Configuration);
 
 // Add cross-origin resource sharing
 builder.Services.AddCors(options =>
@@ -114,21 +103,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Add exception handling middleware
-app.UseExceptionHandling();
-
-// Add request tracking middleware
-app.UseRequestTracking();
-
-// Add CORS
-app.UseCors("AllowAll");
-
-// Add request/response transformation middleware
-app.UseRequestTransformation();
-
-// Add authentication forwarding
-app.UseAuthenticationForwarding();
-
 // Add X-Auth token authentication
 app.UseXAuthTokenAuthentication();
 
@@ -137,12 +111,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Health endpoints (no authentication required)
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
-   .WithName("HealthCheck");
+// Map proxy routes
+app.MapGatewayRoutes();
 
-app.MapGet("/ready", () => Results.Ok(new { status = "ready", timestamp = DateTime.UtcNow }))
-   .WithName("ReadinessCheck");
+// Add monitoring endpoints (includes health/ready automatically)
+app.MonitoringEndpoints();
 
 // API versioning
 app.MapGet("/", () => Results.Json(new 
@@ -150,7 +123,26 @@ app.MapGet("/", () => Results.Json(new
     service = "IO Proxy API",
     version = "1.0.0",
     timestamp = DateTime.UtcNow,
-    documentation = "/swagger"
+    documentation = "/swagger",
+    endpoints = new
+    {
+        email = "/api/common/email",
+        carrierValidation = "/api/clara/carriers/valid", 
+        pricing = "/api/elsa/price/lookup",
+        health = "/health",  // Provided by USXpress.Monitoring
+        metrics = "/metrics" // Provided by USXpress.Monitoring
+    }
 }));
 
-app.Run();
+try
+{
+    await app.RunAsync();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Host terminated unexpectedly");
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}

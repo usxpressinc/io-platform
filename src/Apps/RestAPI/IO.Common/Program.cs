@@ -2,13 +2,9 @@ using IO.Platform.Common.Core.Configuration;
 using IO.Platform.Common.Core.Exceptions;
 using IO.Platform.Common.Core.Lifecycle;
 using IO.Platform.Common.Core.Monitoring;
-using IO.Platform.Common.Core.Health;
-using IO.Platform.Common.Infrastructure.MongoDb;
 using IO.Common.Infrastructure.Email;
-using IO.Common.Core.Email;
 using IO.Common.Core;
 using IO.Common.Core.Users;
-using IO.Common.Infrastructure.Data;
 using USXpress.Monitoring;
 using USXpress.Monitoring.Models;
 
@@ -38,14 +34,12 @@ builder.AddMonitoring(new MonitoringOptions
     EnableOtel = true,
 });
 
-// Add MongoDB using USXpress Configuration.Mongo
+// Add MongoDB for context service only
 builder.AddMongoDb()
-       .AddEmailLogsRepository()
        .AddContextDataRepository();
 
-// Add email service
-builder.Services.AddSingleton<IEmailService, SendGridService>();
-builder.Services.AddSingleton<IEmailBusinessService, EmailBusinessService>();
+// Add simple email service (no logging, no business layer)
+builder.Services.AddSingleton<EmailService>();
 
 // Add context service
 builder.Services.AddSingleton<IContextService, ContextService>();
@@ -53,8 +47,7 @@ builder.Services.AddSingleton<IContextService, ContextService>();
 // Add user context service
 builder.Services.AddSingleton<IUserContextBusinessService, UserContextBusinessService>();
 
-// Add repositories
-builder.Services.AddSingleton<EmailLogRepository>();
+// Add repositories for context only
 builder.Services.AddSingleton<UserContextRepository>();
 
 // Add graceful shutdown
@@ -101,7 +94,7 @@ app.UseExceptionHandling();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
-app.MapGet("/ready", () => Results.Ok(new { status = "ready", timestamp = DateTime.UtcNow }));
+// Add monitoring endpoints (includes health/ready automatically)
+app.MonitoringEndpoints();
 
 app.Run();

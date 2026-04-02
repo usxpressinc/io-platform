@@ -14,7 +14,7 @@ Follow-up TODOs: None
 Every domain MUST follow CLEAN architecture with clear separation of concerns: Core (business logic), Infrastructure (external integrations), Models (domain types). Common libraries MUST be independent of application frameworks and independently testable.
 
 ### II. Microservice Boundaries
-Each domain (Proxy, Common, Cass, Elsa, Larry, Lea) MUST be independently deployable with its own database and API contract. Cross-domain communication MUST occur through well-defined APIs or event streams, never direct database access.
+Each domain (Proxy, Common, Cass, Elsa) MUST be independently deployable with its own database and API contract. Cross-domain communication MUST occur through well-defined APIs or event streams, never direct database access.
 
 ### III. USXpress Standards Compliance
 All services MUST use USXpress standard packages: USXpress.Monitoring for observability, USXpress.Configuration.Mongo for data access, USXpress.Kafka for messaging. Authentication MUST integrate with Azure AD using established patterns.

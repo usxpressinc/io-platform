@@ -89,8 +89,6 @@ src/
 │   │   ├── IO.Common/          # Email + Context services
 │   │   ├── IO.Cass/            # Carrier vetting
 │   │   ├── IO.Elsa/            # Pricing calculations
-│   │   ├── IO.Larry/           # Vendor lookup
-│   │   └── IO.Lea/             # Job search
 │   ├── Handlers/               # Background processors
 │   └── Jobs/                   # Scheduled tasks
 
@@ -105,8 +103,6 @@ tests/
 ├── io-common-api.yaml         # Internal service
 ├── io-cass-api.yaml           # Internal service
 ├── io-elsa-api.yaml           # Internal service
-├── io-larry-api.yaml          # Internal service
-└── io-lea-api.yaml            # Internal service
 ```
 
 **Structure Decision**: The existing structure is appropriate. TokenFactory and X-Auth middleware are centralized in `src/Common/Core/Authentication/` for reuse across services. IO.Proxy hosts the TokenFactory HTTP endpoint for token generation.

@@ -81,9 +81,7 @@ src/
 │   │   ├── IO.Proxy/           # API Gateway
 │   │   ├── IO.Common/          # Email + Context services
 │   │   ├── IO.Cass/            # Carrier vetting
-│   │   ├── IO.Elsa/            # Pricing calculations
-│   │   ├── IO.Larry/           # Vendor lookup
-│   │   └── IO.Lea/             # Job search
+│   │   └── IO.Elsa/            # Pricing calculations
 │   ├── Handlers/               # Background processors (Kafka consumers)
 │   └── Jobs/                   # Scheduled tasks
 

@@ -122,58 +122,6 @@ paths:
         '201':
           description: Created
 
-  # Larry Service Routes
-  /api/larry/{path}:
-    x-route-to: io-larry-api
-    parameters:
-      - name: path
-        in: path
-        required: true
-        schema:
-          type: string
-    get:
-      summary: Proxy to IO.Larry GET endpoints
-      operationId: proxyLarryGet
-      security:
-        - bearerAuth: [io:larry:read]
-      responses:
-        '200':
-          description: Success
-    post:
-      summary: Proxy to IO.Larry POST endpoints
-      operationId: proxyLarryPost
-      security:
-        - bearerAuth: [io:larry:write]
-      responses:
-        '201':
-          description: Created
-
-  # Lea Service Routes
-  /api/lea/{path}:
-    x-route-to: io-lea-api
-    parameters:
-      - name: path
-        in: path
-        required: true
-        schema:
-          type: string
-    get:
-      summary: Proxy to IO.Lea GET endpoints
-      operationId: proxyLeaGet
-      security:
-        - bearerAuth: [io:lea:read]
-      responses:
-        '200':
-          description: Success
-    post:
-      summary: Proxy to IO.Lea POST endpoints
-      operationId: proxyLeaPost
-      security:
-        - bearerAuth: [io:lea:write]
-      responses:
-        '201':
-          description: Created
-
 components:
   securitySchemes:
     bearerAuth:

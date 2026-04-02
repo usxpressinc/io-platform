@@ -3,7 +3,7 @@
 **Feature Branch**: `001-dotnet10-migration`  
 **Created**: 2026-03-31  
 **Status**: Draft  
-**Input**: User description: "Migrate Python monolith to .NET 10 with CLEAN architecture following edi-platform patterns, creating microservices for IO.Proxy, IO.Common, IO.Cass, IO.Elsa, IO.Larry, and IO.Lea domains with USXpress infrastructure integration. Include Dockerfile, docker-compose, and deployment YAMLs organized under dotnet/ folder structure."
+**Input**: User description: "Migrate Python monolith to .NET 10 with CLEAN architecture following edi-platform patterns, creating microservices for IO.Proxy, IO.Common, IO.Cass, and IO.Elsa domains with USXpress infrastructure integration. Include Dockerfile, docker-compose, and deployment YAMLs organized under dotnet/ folder structure."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -71,22 +71,6 @@ As a carrier compliance officer, I want the carrier vetting service migrated to 
 
 ---
 
-### User Story 4 - Background Processing Migration (Priority: P2)
-
-As a system administrator, I want vendor lookup and job search background jobs migrated to .NET 10 Worker Services, so that scheduled tasks continue to function with proper Kafka integration and monitoring.
-
-**Why this priority**: Background processing is essential for data synchronization and must work reliably before full migration.
-
-**Independent Test**: Can be fully tested by running the worker services and verifying Kafka message consumption and data updates occur as expected.
-
-**Acceptance Scenarios**:
-
-1. **Given** Kafka messages are published, **When** worker services are running, **Then** messages are consumed and processed correctly
-2. **Given** scheduled job triggers, **When** execution time is reached, **Then** jobs run and update data as expected
-3. **Given** processing errors occur, **When** exceptions happen, **Then** errors are logged and monitoring alerts are triggered
-
----
-
 ### Edge Cases
 
 - What happens when external APIs (Highway, Mcleod, SendGrid) are rate limited or unavailable?
@@ -108,8 +92,6 @@ As a system administrator, I want vendor lookup and job search background jobs m
 - **FR-003**: System MUST provide user context management with MongoDB persistence (Genesys integration deferred to post-migration phase)
 - **FR-004**: System MUST implement carrier vetting service with Highway and Mcleod API integration following existing business rules
 - **FR-005**: System MUST provide pricing calculation service with external API integration and cost breakdown
-- **FR-006**: System MUST implement vendor lookup service with geographic search and scheduled data synchronization
-- **FR-007**: System MUST provide job search service with geographic polygon matching and Google Jobs integration
 - **FR-008**: System MUST use MongoDB Atlas for data persistence with TLS authentication and proper connection pooling
 - **FR-009**: System MUST implement Kafka message consumption for background processing with proper consumer groups
 - **FR-010**: System MUST include structured logging, OpenTelemetry tracing, and Grafana metrics for observability
@@ -126,8 +108,6 @@ As a system administrator, I want vendor lookup and job search background jobs m
 - **UserContext**: Represents user profile and preference data stored in MongoDB for personalization
 - **CarrierValidation**: Represents carrier eligibility assessment with contacts and compliance status
 - **PricingCalculation**: Represents load pricing breakdown with distance, base cost, and surcharges
-- **Vendor**: Represents service provider with location, contact information, and availability
-- **JobPosting**: Represents employment opportunity with location, requirements, and posting details
 - **ServiceHealth**: Represents microservice health status with dependencies and performance metrics
 - **XAuthToken**: Represents authentication token with scope validation for API access control
 - **TokenFactory**: Represents zero-trust token generation system with master token and scoped token lifecycle

@@ -76,51 +76,6 @@ This plan breaks down the current monolithic FastAPI application into logical do
 
 ---
 
-### **4. IO.LARRY Domain**
-**Purpose**: Vendor lookup and location-based services
-**Endpoints**:
-- `POST /api/larry/vendor/lookup` - Vendor location lookup
-
-**Dependencies**:
-- XPM API (`Larry_xpm_api`)
-- Authentication scope: `["larry"]`
-
-**External Integrations**:
-- XPM vendor management system
-
-**Background Processing**: 
-- Scheduled vendor code updates (30-minute intervals)
-
-**Key Features**:
-- Location-based vendor searches
-- Scheduled data synchronization
-
----
-
-### **5. IO.LEA Domain**
-**Purpose**: Job posting and geographic search
-**Endpoints**:
-- `POST /api/lea/jobs/lookup` - Geographic job search
-
-**Dependencies**:
-- Google Maps KML data (`Nora_GoogleMapsKml`)
-- GeoServices for location matching
-- Authentication scope: `["lea"]`
-
-**External Integrations**:
-- Geographic location services
-- Polygon-based job matching
-
-**Background Processing**:
-- Scheduled Google Jobs updates (30-minute intervals)
-
-**Key Features**:
-- Geographic polygon matching
-- Distance-based job filtering
-- Point-in-polygon calculations
-
----
-
 ## Shared Infrastructure Components
 
 ### **IO.PROXY Domain (New)**
@@ -172,8 +127,6 @@ This plan breaks down the current monolithic FastAPI application into logical do
 1. **io-common**: Email + Context services
 2. **io-cass**: Carrier vetting logic
 3. **io-elsa**: Pricing calculations
-4. **io-larry**: Vendor lookup + scheduled updates
-5. **io-lea**: Job search + scheduled updates
 
 ### **Phase 3: Migration**
 1. Deploy domain APIs independently
@@ -212,9 +165,7 @@ src/
 │   │   ├── IO.Proxy/           # API Gateway
 │   │   ├── IO.Common/          # Email + Context API
 │   │   ├── IO.Cass/            # Carrier vetting API
-│   │   ├── IO.Elsa/            # Pricing API
-│   │   ├── IO.Larry/           # Vendor lookup API
-│   │   └── IO.Lea/             # Job search API
+│   │   └── IO.Elsa/            # Pricing API
 │   ├── Handlers/               # Background processors
 │   └── Jobs/                   # Scheduled tasks
 └── Libraries/                  # Shared utilities
@@ -284,49 +235,6 @@ api:
     Serilog__MinimumLevel__Default: Information
   secretVars:
     AUTH__CLIENT_SECRET: '#{AUTH__CLIENT_SECRET}'
-```
-
-#### **Handler Services Pattern**
-```yaml
----
-name: io-larry-vendor-handler
-octopus:
-  space: USXpress
-  group: vendor
-tags:
-  owner: USXpress
-  team: Platform
-  purpose: Vendor lookup background processing
-infrastructure:
-  kafka:
-    topics:
-      - name: vendor_lookup_evt
-        bounded_context: io
-        schema_type: json
-        reference: vendor-processing
-    service_account: io
-    consumer_group:
-      enabled: true
-      suffix: "#{consumer_group_suffix}"
-  mongodb:
-    atlas:
-      user:
-        cluster:
-          project: mongodb
-          group: enterprise
-          env: '#{Mongo__Env}'
-        roles:
-          - name: readWrite
-            database: '#{Database__VendorDatabaseName}'
-            collection: '#{Database__VendorCollection}'
-handler:
-  enabled: true
-  service:
-    targetPort: 8080
-  configVars:
-    APPLICATION_ENTRYPOINT: IO.Larry.VendorHandler.dll
-    Database__VendorDatabaseName: '#{Database__VendorDatabaseName}'
-    Database__VendorCollection: '#{Database__VendorCollection}'
 ```
 
 ### **Common Libraries Structure**
@@ -565,8 +473,6 @@ public static class MongoExtensions
 1. **IO.Common**: Migrate email and context services
 2. **IO.Cass**: Migrate carrier vetting with Highway/Mcleod APIs
 3. **IO.Elsa**: Migrate pricing calculations
-4. **IO.Larry**: Migrate vendor lookup + background jobs
-5. **IO.Lea**: Migrate job search + background jobs
 
 #### **Phase 4: Background Processing (Week 9-10)**
 1. Convert scheduled jobs to .NET Worker Services
