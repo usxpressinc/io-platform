@@ -17,7 +17,7 @@ COPY ["io-platform.sln", "."]
 COPY ["src/Common/Core/Core.csproj", "src/Common/Core/"]
 COPY ["src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj", "src/Apps/RestAPI/IO.Proxy/"]
 COPY ["src/Apps/RestAPI/IO.Common/IO.Common.csproj", "src/Apps/RestAPI/IO.Common/"]
-COPY ["src/Apps/RestAPI/IO.Cass/IO.Cass.csproj", "src/Apps/RestAPI/IO.Cass/"]
+COPY ["src/Apps/RestAPI/IO.Clara/IO.Clara.csproj", "src/Apps/RestAPI/IO.Clara/"]
 COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
 
 # Restore all dependencies in one command
@@ -47,8 +47,8 @@ RUN echo ">>> Publishing IO.Proxy..." && \
     dotnet publish "src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Common..." && \
     dotnet publish "src/Apps/RestAPI/IO.Common/IO.Common.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Cass..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Cass/IO.Cass.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
+    echo ">>> Publishing IO.Clara..." && \
+    dotnet publish "src/Apps/RestAPI/IO.Clara/IO.Clara.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0 && \
     echo ">>> Publishing IO.Elsa..." && \
     dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish --no-restore /p:WarningLevel=0
 
@@ -75,7 +75,7 @@ RUN chmod 755 /startup.sh
 RUN mkdir -p /appSettings && chown 1000:1000 /appSettings
 COPY src/Apps/RestAPI/IO.Proxy/appsettings.json /appSettings/IO.Proxy.dll.json
 COPY src/Apps/RestAPI/IO.Common/appsettings.json /appSettings/IO.Common.dll.json
-COPY src/Apps/RestAPI/IO.Cass/appsettings.json /appSettings/IO.Cass.dll.json
+COPY src/Apps/RestAPI/IO.Clara/appsettings.json /appSettings/IO.Clara.dll.json
 COPY src/Apps/RestAPI/IO.Elsa/appsettings.json /appSettings/IO.Elsa.dll.json
 RUN chown 1000:1000 /appSettings/*.json
 
