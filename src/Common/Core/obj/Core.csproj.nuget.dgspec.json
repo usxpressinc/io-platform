@@ -146,6 +146,8 @@
           "centralPackageVersions": {
             "Ardalis.Result": "10.1.0",
             "Asp.Versioning.Http": "8.1.0",
+            "AWSSDK.Core": "3.7.100.14",
+            "AWSSDK.SecurityToken": "3.7.100.14",
             "Confluent.Kafka": "2.8.0",
             "coverlet.collector": "6.0.2",
             "FluentValidation": "11.11.0",
