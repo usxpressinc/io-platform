@@ -1,100 +1,52 @@
-using IO.Platform.Common.Core.Configuration;
-using IO.Platform.Common.Core.Exceptions;
-using IO.Platform.Common.Core.Lifecycle;
-using IO.Platform.Common.Core.Monitoring;
-using IO.Common.Infrastructure.Email;
-using IO.Common.Core;
-using IO.Common.Core.Users;
-using USXpress.Monitoring;
-using USXpress.Monitoring.Models;
+using IO.Common.App;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace IO.Common;
 
-var configuration = builder.Configuration;
-var environment = Enum.Parse<MonitoringEnvironment>(
-    configuration.GetValue<string>(EnvironmentVariables.ApplicationEnvironment) ?? "development",
-    ignoreCase: true);
-var project = configuration.GetValue<string>(EnvironmentVariables.ApplicationProject) ?? "io-platform";
-var group = configuration.GetValue<string>(EnvironmentVariables.ApplicationGroup) ?? "common";
-
-// Configure structured logging and OpenTelemetry
-builder.Services.AddStructuredLogging(configuration, "IO.Common");
-builder.Services.AddOpenTelemetryInstrumentation(configuration, "IO.Common");
-
-// Add environment configuration management
-builder.Services.AddEnvironmentConfiguration(configuration, "IO.Common");
-
-// Add monitoring (Grafana/OTEL)
-builder.AddMonitoring(new MonitoringOptions
+/// <summary>
+/// Entry point class for the application, responsible for initializing and starting the application.
+/// </summary>
+public static class Program
 {
-    ProjectGroup = group,
-    ProjectName = project,
-    Environment = environment,
-    ReleaseVersion = configuration.GetValue<string>("REVISION") ?? "1.0.0",
-    EnableOtel = true,
-});
-
-// Add MongoDB for context service only
-builder.AddMongoDb()
-       .AddContextDataRepository();
-
-// Add simple email service (no logging, no business layer)
-builder.Services.AddSingleton<EmailService>();
-
-// Add context service
-builder.Services.AddSingleton<IContextService, ContextService>();
-
-// Add user context service
-builder.Services.AddSingleton<IUserContextBusinessService, UserContextBusinessService>();
-
-// Add repositories for context only
-builder.Services.AddSingleton<UserContextRepository>();
-
-// Add graceful shutdown
-builder.Services.AddSingleton<IGracefulShutdownComponent, HttpServerGracefulShutdown>();
-builder.Services.AddHostedService<GracefulShutdownService>();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "IO Common API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new()
+    /// <summary>
+    /// Main entry point for the application.
+    /// </summary>
+    /// <param name="args">Arguments.</param>
+    /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+    public static async Task Main(string[] args)
     {
-        Description = "X-Auth token (Bearer token or X-Auth-Token header)",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new Dictionary<string, string[]>
-    {
-        { "Bearer", Array.Empty<string>() }
-    });
-});
+        WebApplication app;
+        try
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+            builder.Configuration.AddUserSecrets(typeof(Program).Assembly);
 
-// Configure middleware pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "IO Common API v1");
-        c.RoutePrefix = "swagger";
-    });
+            builder.AddApplication();
+
+            app = builder.Build();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly during initialization");
+            Console.Write(ex.ToString());
+            return;
+        }
+
+        try
+        {
+            await app.MapRoutes().RunAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly");
+        }
+        finally
+        {
+            await Log.CloseAndFlushAsync();
+        }
+    }
 }
-
-app.UseHttpsRedirection();
-
-// Add exception handling middleware
-app.UseExceptionHandling();
-
-app.UseAuthorization();
-app.MapControllers();
-
-// Add monitoring endpoints (includes health/ready automatically)
-app.MonitoringEndpoints();
-
-app.Run();

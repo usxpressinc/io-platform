@@ -1,24 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {}
+    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {}
   },
   "projects": {
-    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {
+    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+        "projectUniqueName": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
         "projectName": "IO.Common",
-        "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+        "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
         "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\obj\\",
+        "outputPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
+          "c:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
           "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -34,8 +34,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
-                "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj"
+              "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
+                "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj"
               }
             }
           }
@@ -69,6 +69,11 @@
             "Microsoft.AspNetCore.Cors": {
               "target": "Package",
               "version": "[2.1.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.11, )",
               "versionCentrallyManaged": true
             },
             "Microsoft.Extensions.Caching.Abstractions": {
@@ -134,6 +139,16 @@
             "Serilog.AspNetCore": {
               "target": "Package",
               "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[7.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "USXpress.Monitoring": {
+              "target": "Package",
+              "version": "[3.1.10, )",
               "versionCentrallyManaged": true
             }
           },
@@ -225,21 +240,21 @@
         }
       }
     },
-    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
+    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+        "projectUniqueName": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+        "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
+        "outputPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
+          "c:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
           "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
