@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+o3DlEiiuk4=",
+  "dgSpecHash": "GvSLxRCHobk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+  "projectFilePath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gmackay\\.nuget\\packages\\apache.avro\\1.12.0\\apache.avro.1.12.0.nupkg.sha512",
     "C:\\Users\\gmackay\\.nuget\\packages\\ardalis.result\\10.1.0\\ardalis.result.10.1.0.nupkg.sha512",
@@ -222,9 +222,9 @@
       "code": "NU1603",
       "level": "Warning",
       "message": "IO.Common depends on SendGrid (>= 9.29.0) but SendGrid 9.29.0 was not found. SendGrid 9.29.1 was resolved instead.",
-      "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+      "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
+      "filePath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Common\\IO.Common.csproj",
       "libraryId": "SendGrid",
       "targetGraphs": [
         "net8.0"

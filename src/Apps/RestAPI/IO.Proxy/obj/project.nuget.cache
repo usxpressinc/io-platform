@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "EpA7kLSrZfM=",
+  "dgSpecHash": "sorAI5It9H4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Proxy\\IO.Proxy.csproj",
+  "projectFilePath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Proxy\\IO.Proxy.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gmackay\\.nuget\\packages\\apache.avro\\1.12.0\\apache.avro.1.12.0.nupkg.sha512",
     "C:\\Users\\gmackay\\.nuget\\packages\\ardalis.result\\10.1.0\\ardalis.result.10.1.0.nupkg.sha512",

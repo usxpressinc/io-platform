@@ -15,11 +15,11 @@ public static class PricingRoutes
     /// </summary>
     public static IEndpointRouteBuilder MapElsaRoutesV1(this IEndpointRouteBuilder routes)
     {
-        // Group pricing routes with common prefix and authorization
+        // Group pricing routes with a common prefix and authorization
         var pricingGroup = routes.CreateApiGroup("pricing", "Pricing", "Pricing API");
 
         // SPAPI pricing lookup endpoint
-        var spapiGroup = pricingGroup.MapGroup("spapi")
+        var spapiGroup = pricingGroup.MapGroup("spot")
             .WithTags("SPAPI")
             .WithDisplayName("SPAPI Pricing");
 

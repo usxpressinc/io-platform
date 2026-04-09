@@ -1,24 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {}
+    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {}
   },
   "projects": {
-    "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
+    "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+        "projectUniqueName": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
+        "projectPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\Core.csproj",
         "packagesPath": "C:\\Users\\gmackay\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
+        "outputPath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Common\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
+          "c:\\Users\\gmackay\\repos\\io-platform\\NuGet.Config",
           "C:\\Users\\gmackay\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"

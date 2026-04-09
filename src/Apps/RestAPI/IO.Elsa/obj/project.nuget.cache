@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Mry3OyCGrqU=",
+  "dgSpecHash": "kpwT7nzyoec=",
   "success": true,
-  "projectFilePath": "C:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Elsa\\IO.Elsa.csproj",
+  "projectFilePath": "c:\\Users\\gmackay\\repos\\io-platform\\src\\Apps\\RestAPI\\IO.Elsa\\IO.Elsa.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\gmackay\\.nuget\\packages\\apache.avro\\1.12.0\\apache.avro.1.12.0.nupkg.sha512",
     "C:\\Users\\gmackay\\.nuget\\packages\\asp.versioning.abstractions\\8.1.0\\asp.versioning.abstractions.8.1.0.nupkg.sha512",

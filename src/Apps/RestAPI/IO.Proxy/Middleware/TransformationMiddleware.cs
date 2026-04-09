@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using IO.Proxy.Routing;
 
 namespace IO.Proxy.Middleware;
 
@@ -10,9 +11,16 @@ namespace IO.Proxy.Middleware;
 public class TransformationMiddleware(
     RequestDelegate next,
     ILogger<TransformationMiddleware> logger,
-    TransformationSettings settings
+    TransformationSettings settings,
+    ServiceRouteRegistry serviceRouteRegistry
 )
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     public async Task InvokeAsync(HttpContext context)
     {
         var originalPath = context.Request.Path.Value;
@@ -53,7 +61,7 @@ public class TransformationMiddleware(
     private async Task TransformRequestAsync(HttpContext context)
     {
         var path = context.Request.Path.Value ?? string.Empty;
-        var serviceRoute = this.FindServiceRoute(path);
+        var serviceRoute = FindServiceRoute(path);
 
         if (serviceRoute != null)
         {
@@ -64,7 +72,7 @@ public class TransformationMiddleware(
             this.AddHeaders(context, serviceRoute);
 
             // Remove headers
-            this.RemoveHeaders(context, serviceRoute);
+            RemoveHeaders(context, serviceRoute);
 
             // Store service information for downstream use
             context.Items["ServiceName"] = serviceRoute.ServiceName;
@@ -97,41 +105,19 @@ public class TransformationMiddleware(
 
     private ServiceRoute? FindServiceRoute(string path)
     {
-        // This would typically come from the route manager
-        // For now, implement basic path matching
-        return path.ToLowerInvariant() switch
+        var config = serviceRouteRegistry.FindRoute(path);
+
+        if (config == null)
+            return null;
+
+        return new ServiceRoute
         {
-            var p when p.StartsWith("/api/common/") => new ServiceRoute
-            {
-                ServiceName = "IO.Common",
-                PathPrefix = "/api/common",
-                PathRewrites = new Dictionary<string, string> { { "^/api/common", "" } },
-            },
-            var p when p.StartsWith("/api/cass/") => new ServiceRoute
-            {
-                ServiceName = "IO.Cass",
-                PathPrefix = "/api/cass",
-                PathRewrites = new Dictionary<string, string> { { "^/api/cass", "" } },
-            },
-            var p when p.StartsWith("/api/elsa/") => new ServiceRoute
-            {
-                ServiceName = "IO.Elsa",
-                PathPrefix = "/api/elsa",
-                PathRewrites = new Dictionary<string, string> { { "^/api/elsa", "" } },
-            },
-            var p when p.StartsWith("/api/larry/") => new ServiceRoute
-            {
-                ServiceName = "IO.Larry",
-                PathPrefix = "/api/larry",
-                PathRewrites = new Dictionary<string, string> { { "^/api/larry", "" } },
-            },
-            var p when p.StartsWith("/api/lea/") => new ServiceRoute
-            {
-                ServiceName = "IO.Lea",
-                PathPrefix = "/api/lea",
-                PathRewrites = new Dictionary<string, string> { { "^/api/lea", "" } },
-            },
-            _ => null,
+            ServiceName = config.ServiceName,
+            PathPrefix = config.PathPrefix,
+            PathRewrites = config.PathRewrites,
+            HeadersToAdd = config.HeadersToAdd,
+            HeadersToRemove = config.HeadersToRemove,
+            QueryParametersToAdd = config.QueryParametersToAdd
         };
     }
 
@@ -139,52 +125,57 @@ public class TransformationMiddleware(
     {
         var path = context.Request.Path.Value ?? string.Empty;
 
-        foreach (var rewrite in serviceRoute.PathRewrites)
+        foreach (
+            var newPath in serviceRoute
+                .PathRewrites.Select(rewrite => Regex.Replace(path, rewrite.Key, rewrite.Value))
+                .Where(newPath => newPath != path)
+        )
         {
-            var newPath = Regex.Replace(path, rewrite.Key, rewrite.Value);
-            if (newPath != path)
-            {
-                context.Request.Path = newPath;
-                logger.LogDebug("Rewrote path: {OriginalPath} -> {NewPath}", path, newPath);
-                break;
-            }
+            context.Request.Path = newPath;
+            logger.LogDebug("Rewrote path: {OriginalPath} -> {NewPath}", path, newPath);
+            break;
         }
 
         // Handle query string transformation if needed
-        await this.TransformQueryStringAsync(context, serviceRoute);
+        await TransformQueryStringAsync(context, serviceRoute);
     }
 
-    private async Task TransformQueryStringAsync(HttpContext context, ServiceRoute serviceRoute)
+    private static Task TransformQueryStringAsync(HttpContext context, ServiceRoute serviceRoute)
     {
         // Add default query parameters if configured
-        if (serviceRoute.QueryParametersToAdd?.Any() == true)
+        bool? any = serviceRoute.QueryParametersToAdd.Count != 0;
+
+        if (any != true)
+            return Task.CompletedTask;
+        var queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
+            context.Request.QueryString.Value
+        );
+
+        foreach (
+            var param in serviceRoute.QueryParametersToAdd.Where(param =>
+                !queryDict.ContainsKey(param.Key)
+            )
+        )
         {
-            var queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
-                context.Request.QueryString.Value
-            );
-
-            foreach (var param in serviceRoute.QueryParametersToAdd)
-            {
-                if (!queryDict.ContainsKey(param.Key))
-                {
-                    queryDict.Add(param.Key, param.Value);
-                }
-            }
-
-            context.Request.QueryString = new QueryString(
-                "?" + Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDict)
-            );
+            queryDict.Add(param.Key, param.Value);
         }
+
+        context.Request.QueryString = new QueryString(
+            "?" + Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("", queryDict)
+        );
+
+        return Task.CompletedTask;
     }
 
     private void AddHeaders(HttpContext context, ServiceRoute serviceRoute)
     {
-        foreach (var header in serviceRoute.HeadersToAdd)
+        foreach (
+            var header in serviceRoute.HeadersToAdd.Where(header =>
+                !context.Request.Headers.ContainsKey(header.Key)
+            )
+        )
         {
-            if (!context.Request.Headers.ContainsKey(header.Key))
-            {
-                context.Request.Headers.Add(header.Key, header.Value);
-            }
+            context.Request.Headers.Add(header.Key, header.Value);
         }
 
         // Add standard gateway headers
@@ -194,7 +185,7 @@ public class TransformationMiddleware(
         context.Request.Headers.Add("X-Request-Id", context.TraceIdentifier);
     }
 
-    private void RemoveHeaders(HttpContext context, ServiceRoute serviceRoute)
+    private static void RemoveHeaders(HttpContext context, ServiceRoute serviceRoute)
     {
         foreach (var header in serviceRoute.HeadersToRemove)
         {
@@ -245,27 +236,19 @@ public class TransformationMiddleware(
 
     private string TransformResponseContent(string content, HttpContext context)
     {
-        // Apply JSON transformations if response is JSON
-        if (this.IsJsonResponse(context))
+        // Apply JSON transformations if this response is JSON
+        if (!this.IsJsonResponse(context))
+            return content;
+        try
         {
-            try
-            {
-                var jsonElement = JsonSerializer.Deserialize<JsonElement>(content);
-                var transformedJson = this.TransformJsonResponse(jsonElement, context);
-                return JsonSerializer.Serialize(
-                    transformedJson,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = false,
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    }
-                );
-            }
-            catch (JsonException)
-            {
-                // If JSON parsing fails, return original content
-                return content;
-            }
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(content);
+            var transformedJson = this.TransformJsonResponse(jsonElement, context);
+            return JsonSerializer.Serialize(transformedJson, SerializerOptions);
+        }
+        catch (JsonException)
+        {
+            // If JSON parsing fails, return original content
+            return content;
         }
 
         return content;
@@ -335,9 +318,7 @@ public class TransformationSettings
     public bool TransformResponseBody { get; set; } = false;
     public bool AddMetadataToResponse { get; set; } = false;
     public bool EnableTransformationLogging { get; set; } = true;
-    public List<string> HeadersToRemove { get; set; } =
-    [
-    ];
+    public List<string> HeadersToRemove { get; set; } = [];
 }
 
 /// <summary>
@@ -349,9 +330,7 @@ public class ServiceRoute
     public string PathPrefix { get; set; } = string.Empty;
     public Dictionary<string, string> PathRewrites { get; set; } = new();
     public Dictionary<string, string> HeadersToAdd { get; set; } = new();
-    public List<string> HeadersToRemove { get; set; } =
-    [
-    ];
+    public List<string> HeadersToRemove { get; set; } = [];
     public Dictionary<string, string> QueryParametersToAdd { get; set; } = new();
 }
 
@@ -365,7 +344,8 @@ public static class TransformationMiddlewareExtensions
     /// </summary>
     public static IApplicationBuilder UseRequestTransformation(this IApplicationBuilder builder)
     {
-        return builder.UseMiddleware<TransformationMiddleware>(new TransformationSettings());
+        var registry = builder.ApplicationServices.GetRequiredService<ServiceRouteRegistry>();
+        return builder.UseMiddleware<TransformationMiddleware>(new TransformationSettings(), registry);
     }
 
     /// <summary>
@@ -378,6 +358,7 @@ public static class TransformationMiddlewareExtensions
     {
         var settings = new TransformationSettings();
         configureSettings(settings);
-        return builder.UseMiddleware<TransformationMiddleware>(settings);
+        var registry = builder.ApplicationServices.GetRequiredService<ServiceRouteRegistry>();
+        return builder.UseMiddleware<TransformationMiddleware>(settings, registry);
     }
 }
