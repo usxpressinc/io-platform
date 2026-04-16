@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS restore
 ARG GITHUB_TOKEN
 ARG GITHUB_USER
+ARG SERVICE_NAME
 
 WORKDIR /app
 
@@ -10,23 +11,18 @@ COPY nuget.config .
 COPY ["Directory.Packages.props", "."]
 COPY ["Directory.Build.props", "."]
 
-# Copy solution file
-COPY ["io-platform.sln", "."]
-
 # Copy ONLY the project files for services we actually use
 COPY ["src/Common/Core/Core.csproj", "src/Common/Core/"]
-COPY ["src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj", "src/Apps/RestAPI/IO.Proxy/"]
-COPY ["src/Apps/RestAPI/IO.Common/IO.Common.csproj", "src/Apps/RestAPI/IO.Common/"]
-COPY ["src/Apps/RestAPI/IO.Clara/IO.Clara.csproj", "src/Apps/RestAPI/IO.Clara/"]
-COPY ["src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj", "src/Apps/RestAPI/IO.Elsa/"]
+COPY ["src/Apps/RestAPI/${SERVICE_NAME}/${SERVICE_NAME}.csproj", "src/Apps/RestAPI/${SERVICE_NAME}/"]
 
-# Restore all dependencies in one command
+# Restore dependencies for the specific service
 ENV NUGET_XMLDOC_MODE=none
-RUN echo ">>> Restoring NuGet packages..." && \
-    dotnet restore io-platform.sln /p:WarningLevel=0
+RUN echo ">>> Restoring NuGet packages for ${SERVICE_NAME}..." && \
+    dotnet restore "src/Apps/RestAPI/${SERVICE_NAME}/${SERVICE_NAME}.csproj" /p:WarningLevel=0
 
 # Stage 2: Build Common/Shared projects
 FROM restore AS build-common
+ARG SERVICE_NAME
 
 # Copy Common source code
 COPY src/Common/ src/Common/
@@ -37,23 +33,19 @@ RUN echo ">>> Building Common/Core..." && \
 
 # Stage 3: Build and Publish Apps
 FROM build-common AS publish
+ARG SERVICE_NAME
 
 # Copy all App source code
 COPY src/Apps/ src/Apps/
 
-# Build and publish only the services we actually use
+# Build and publish only the service we actually use
 WORKDIR /app
-RUN echo ">>> Publishing IO.Proxy..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Proxy/IO.Proxy.csproj" -c Release -o /app/publish /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Common..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Common/IO.Common.csproj" -c Release -o /app/publish /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Clara..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Clara/IO.Clara.csproj" -c Release -o /app/publish /p:WarningLevel=0 && \
-    echo ">>> Publishing IO.Elsa..." && \
-    dotnet publish "src/Apps/RestAPI/IO.Elsa/IO.Elsa.csproj" -c Release -o /app/publish /p:WarningLevel=0
+RUN echo ">>> Publishing ${SERVICE_NAME}..." && \
+    dotnet publish "src/Apps/RestAPI/${SERVICE_NAME}/${SERVICE_NAME}.csproj" -c Release -o /app/publish /p:WarningLevel=0
 
 # Stage 4: Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS final
+ARG SERVICE_NAME
 
 # Runtime dependencies
 RUN apt-get update -y \
@@ -71,12 +63,9 @@ RUN apt-get update -y \
 COPY docker/scripts/startup.sh /startup.sh
 RUN chmod 755 /startup.sh
 
-# Copy appsettings for services we actually use
+# Copy appsettings for the service we actually use
 RUN mkdir -p /appSettings && chown 1000:1000 /appSettings
-COPY src/Apps/RestAPI/IO.Proxy/appsettings.json /appSettings/IO.Proxy.dll.json
-COPY src/Apps/RestAPI/IO.Common/appsettings.json /appSettings/IO.Common.dll.json
-COPY src/Apps/RestAPI/IO.Clara/appsettings.json /appSettings/IO.Clara.dll.json
-COPY src/Apps/RestAPI/IO.Elsa/appsettings.json /appSettings/IO.Elsa.dll.json
+COPY "src/Apps/RestAPI/${SERVICE_NAME}/appsettings.json" "/appSettings/${SERVICE_NAME}.dll.json"
 RUN chown 1000:1000 /appSettings/*.json
 
 # Set user permissions and working directory
