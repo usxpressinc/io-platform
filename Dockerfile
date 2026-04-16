@@ -63,11 +63,6 @@ RUN apt-get update -y \
 COPY docker/scripts/startup.sh /startup.sh
 RUN chmod 755 /startup.sh
 
-# Copy appsettings for the service we actually use
-RUN mkdir -p /appSettings && chown 1000:1000 /appSettings
-COPY "src/Apps/RestAPI/${SERVICE_NAME}/appsettings.json" "/appSettings/${SERVICE_NAME}.dll.json"
-RUN chown 1000:1000 /appSettings/*.json
-
 # Set user permissions and working directory
 RUN mkdir -p /app/log && chown -R 1000:1000 /app
 USER 1000
